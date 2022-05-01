@@ -1,0 +1,21 @@
+{
+  "name": "mote",
+  "version": "0.1.0",
+  "description": "",
+  "main": "out/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx gulp watch"
+  },
+  "author": "",
+  "license": "GPL",
+  "devDependencies": {
+    "@types/mocha": "^9.1.1",
+    "electron": "^18.2.0",
+    "gulp": "^4.0.2",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "rimraf": "^3.0.2",
+    "sinon": "^13.0.2"
+  }
+}

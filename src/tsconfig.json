@@ -1,0 +1,16 @@
+{
+	"extends": "./tsconfig.base.json",
+	"compilerOptions": {
+		"removeComments": false,
+		"preserveConstEnums": true,
+		"sourceMap": false,
+		"allowJs": true,
+		"outDir": "../out",
+		"target": "es2020",
+	},
+	"include": [
+		"./vs",
+		"./mote",
+		"./typings",
+	]
+}
