@@ -275,9 +275,17 @@ const enum TraceType {
 export class Trace {
 
 	private static readonly _None = new class extends Trace {
-		constructor() { super(-1, null); }
-		override stop() { }
-		override branch() { return this; }
+		constructor() {
+			super(-1, null); 
+		}
+		
+		override stop() {
+
+		}
+
+		override branch() { 
+			return this; 
+		}
 	};
 
 	static traceInvocation(ctor: any): Trace {

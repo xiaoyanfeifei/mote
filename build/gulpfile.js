@@ -5,7 +5,8 @@ function createCompile(src) {
 	const ts = require("gulp-typescript");
     const projectPath = path.join(__dirname, '../', src, 'tsconfig.json');
     const tsProject = ts.createProject(projectPath, {
-        allowJs: true
+        allowJs: true,
+        isolatedModules: true
     });
     return tsProject;
 }

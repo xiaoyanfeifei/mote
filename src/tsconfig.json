@@ -4,7 +4,6 @@
 		"removeComments": false,
 		"preserveConstEnums": true,
 		"sourceMap": false,
-		"allowJs": true,
 		"outDir": "../out",
 		"target": "es2020",
 	},
