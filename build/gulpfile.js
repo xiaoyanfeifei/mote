@@ -18,7 +18,8 @@ gulp.task("rimraf", function (cb) {
 gulp.task("copyFile", function () {
     return gulp.src([
         'src/**/*', //Include All files
-        '!src/**/*.ts' //It will exclude typescript files           
+        '!src/**/*.ts', //It will exclude typescript files
+        '!src/**/*.tsx'        
     ]).pipe(gulp.dest('out'));
 });
 
