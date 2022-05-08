@@ -1,17 +1,48 @@
-const Fragment = "<></>";
+import { HTMLAttributes } from ".";
+import { Attributes, Fragment, FunctionComponent, MoteNode } from "./jsx";
+import { CSSProperties } from "./style";
 
 interface NamedAttribute {
     className: string;
+    style: CSSProperties;
 }
 
 
 interface AttributeCollection extends NamedAttribute {
-    [name: string]: string | boolean | EventListenerOrEventListenerObject;
+    [name: string]: string | boolean | EventListenerOrEventListenerObject | CSSProperties;
 }
 
-export function createElement(tagName: string, attributes: Partial<AttributeCollection> | null, ...children: any[]): Element | DocumentFragment {
+
+ // DOM Elements
+export function createElement<P extends HTMLAttributes<T>, T extends HTMLElement>(
+    type: string,
+    props?: Attributes & P | null,
+    ...children: MoteNode[]);
+
+// Custom components
+export function createElement<P extends {}>(
+    type: FunctionComponent<P>,
+    props?:  P | null,
+    ...children: MoteNode[]);
+
+export function createElement<P>(
+    type: string | FunctionComponent,
+    props?: Attributes & P | null,
+    ...children: MoteNode[]){
+    if (typeof type == "string") {
+        return createElementWithHtml(type, props, children);
+    }
+    return type({...props, children: children})
+}
+
+function createElementWithHtml(tagName: string, attributes?: HTMLAttributes<any> & Attributes | null, ...children: any[]): Element | DocumentFragment {
     if (tagName === Fragment) {
-        return document.createDocumentFragment();
+        const element = document.createDocumentFragment();
+        for (const child of children) {
+            appendChild(element, child);
+        }
+    
+        return element;
     }
 
     const element = document.createElement(tagName);
@@ -21,7 +52,10 @@ export function createElement(tagName: string, attributes: Partial<AttributeColl
 
             if (key === "className") { // JSX does not allow class as a valid name
                 element.setAttribute("class", attributes.className!);
-            } else if (key.startsWith("on") && typeof attributes[key] === "function") {
+            } else if (key === "style") {
+                setStyles(element, attributes.style!);
+            } 
+            else if (key.startsWith("on") && typeof attributes[key] === "function") {
                 element.addEventListener(key.substring(2), attributeValue as EventListenerOrEventListenerObject);
             } else {
                 // <input disable />      { disable: true }
@@ -40,6 +74,17 @@ export function createElement(tagName: string, attributes: Partial<AttributeColl
     }
 
     return element;
+}
+
+type CSSKey = keyof CSSProperties;
+
+function setStyles(element: HTMLElement, styles: CSSProperties) {
+    
+    const CSSKeys: CSSKey[] = Object.keys(styles) as CSSKey[];
+    CSSKeys.map((key)=>{
+        const value = styles[key] as string;
+        element.style[key] = value;
+    });
 }
 
 function appendChild(parent: Node, child: any) {

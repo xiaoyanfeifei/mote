@@ -5,17 +5,20 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { ILogService } from "vs/platform/log/common/log";
+import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
+import { Layout } from "./layout";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { IViewsService, ViewContainerLocation } from "../common/views";
+import { ViewsService } from "./parts/views/viewsService";
+import { EXPLORER_VIEW_CONTAINER } from "../contrib/files/browser/explorerViewlet";
 
-export class Workbench {
-	protected parent: HTMLElement;
-    protected logService!: ILogService;
-    
+export class Workbench extends Layout {
+
     constructor(
 		parent: HTMLElement,
 		private readonly serviceCollection: ServiceCollection,
 	) {
-		this.parent = parent;
-        //super(parent);
+		super(parent);
     }
 
     startup() {
@@ -29,7 +32,18 @@ export class Workbench {
 				// Init the logService at first
 				this.logService = accessor.get(ILogService);
 
+				const viewsService = accessor.get(IViewsService) as ViewsService;
+				viewsService.registerPaneComposite(EXPLORER_VIEW_CONTAINER, ViewContainerLocation.Sidebar);
+
+				// Layout
+				this.initLayout(accessor);
+
 				this.renderWorkbench(instantiationService);
+
+				this.createWorkbenchLayout();
+
+				// Restore
+				this.restore();
             })
         } catch (error) {
 			throw error; // rethrow because this is a critical issue we cannot handle properly here
@@ -40,7 +54,7 @@ export class Workbench {
     private initServices(serviceCollection: ServiceCollection) {
 
 		// Layout Service
-		//serviceCollection.set(IWorkbenchLayoutService, this);
+		serviceCollection.set(IWorkbenchLayoutService, this);
 
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//
@@ -68,7 +82,39 @@ export class Workbench {
     }
 
 	private renderWorkbench(instantiationService: IInstantiationService) {
-		this.parent.appendChild(this.render());
+
+		// Create Parts
+		[
+			{ id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'], options: {} },
+		].forEach(({ id, role, classes, options }) => {
+			const partContainer = this.createPart(id, role, classes);
+			console.log(`[Workbench] create part: ${id}`);
+			this.getPart(id).create(partContainer, options);
+		});
+
+		// Add Workbench to DOM
+		this.parent.appendChild(this.container);
+	}
+
+	private createPart(id: string, role: string, classes: string[]): HTMLElement {
+		const part = document.createElement(role === 'status' ? 'footer' /* Use footer element for status bar #98376 */ : 'div');
+		part.classList.add('part', ...classes);
+		part.id = id;
+		part.setAttribute('role', role);
+		if (role === 'status') {
+			part.setAttribute('aria-live', 'off');
+		}
+
+		return part;
+	}
+
+	private restore(): void {
+		// Ask each part to restore
+		try {
+			this.restoreParts();
+		} catch (error) {
+			onUnexpectedError(error);
+		}
 	}
 
     render() {

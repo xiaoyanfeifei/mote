@@ -1,0 +1,1 @@
+import { ExplorerViewletViewsContribution } from './explorerViewlet';
