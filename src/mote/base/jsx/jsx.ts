@@ -28,6 +28,7 @@ interface FunctionComponentElement<P> extends MoteElement<P, FunctionComponent<P
 
 type FunctionComponentFactory<P> = (props?: Attributes & P, ...children: MoteNode[]) => FunctionComponentElement<P>;
 
+
 /**
  * @internal You shouldn't need to use this type since you never see these attributes
  * inside your component or have to validate them.

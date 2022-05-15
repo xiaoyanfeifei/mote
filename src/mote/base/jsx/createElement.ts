@@ -1,4 +1,4 @@
-import { HTMLAttributes } from ".";
+import { HTMLAttributes, MoteHTML, MoteSVG, MoteSVGElement, SVGAttributes } from ".";
 import { Attributes, Fragment, FunctionComponent, MoteNode } from "./jsx";
 import { CSSProperties } from "./style";
 
@@ -8,16 +8,17 @@ interface NamedAttribute {
 }
 
 
-interface AttributeCollection extends NamedAttribute {
-    [name: string]: string | boolean | EventListenerOrEventListenerObject | CSSProperties;
-}
-
-
- // DOM Elements
+// DOM Elements
 export function createElement<P extends HTMLAttributes<T>, T extends HTMLElement>(
-    type: string,
+    type: keyof MoteHTML,
     props?: Attributes & P | null,
     ...children: MoteNode[]);
+
+// SVG Elements
+export function createElement<P extends SVGAttributes<T>, T extends SVGElement>(
+    type: keyof MoteSVG,
+    props?: Attributes & P | null,
+    ...children: MoteNode[]): MoteSVGElement;
 
 // Custom components
 export function createElement<P extends {}>(

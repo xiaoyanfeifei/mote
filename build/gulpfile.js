@@ -31,5 +31,5 @@ gulp.task("compile", function () {
 gulp.task("build", gulp.series("rimraf", "copyFile", "compile"));
 
 gulp.task("watch", function() {
-    gulp.watch("src/**/*", {ignoreInitial: false}, gulp.series("build"))
+    gulp.watch("src/**/*", {ignoreInitial: false}, gulp.series("copyFile","compile"))
 })

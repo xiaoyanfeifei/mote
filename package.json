@@ -5,11 +5,15 @@
   "main": "out/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test-browser": "npx playwright install && node test/unit/browser/index.js",
+    "test-browser-no-install": "node test/unit/browser/index.js",
     "watch": "npx gulp watch"
   },
   "author": "",
   "license": "GPL",
   "devDependencies": {
+    "@playwright/test": "^1.21.0",
+    "@types/chroma-js": "^2.1.3",
     "@types/mocha": "^9.1.1",
     "csstype": "^3.0.11",
     "electron": "^18.2.0",
@@ -17,8 +21,20 @@
     "gulp-sourcemaps": "^3.0.0",
     "gulp-tsb": "^4.0.6",
     "gulp-typescript": "^6.0.0-alpha.1",
+    "istanbul-lib-instrument": "^4.0.0",
+    "istanbul-lib-report": "^3.0.0",
+    "istanbul-lib-source-maps": "^4.0.0",
+    "istanbul-reports": "^3.0.0",
+    "mocha": "^10.0.0",
+    "mocha-junit-reporter": "^2.0.0",
+    "optimist": "^0.3.5",
+    "playwright": "^1.18.1",
+    "playwright-core": "^1.21.0",
     "rimraf": "^3.0.2",
     "sinon": "^13.0.2",
     "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "chroma-js": "^2.4.2"
   }
 }

@@ -44,9 +44,9 @@ export default function Column(props: ColumnProps) {
             justifyContent: "center",
             flexShrink: 0,
             flexGrow: 0,
-            width: props.isMobile ? 28 : 22,
-            height: props.isMobile ? 24 : 18,
-            marginRight: 4
+            width: props.isMobile ? "28px" : "22px",
+            height: props.isMobile ? "24px" : "18px",
+            marginRight: "4px"
         }
     }
     const getRightStyle = ()=>{
@@ -78,6 +78,8 @@ export default function Column(props: ColumnProps) {
         )
     }
 
+    console.log("props:", props);
+
     return (
         <div style={getStyle()} onMouseMove={props.onMouseMove} onMouseLeave={props.onMouseLeave}>
             {props.left && <div style={getLeftStyle()}>{props.left}</div>}
@@ -92,12 +94,12 @@ const styles = {
     column_wrapStyle: {
         display: "flex",
         alignItems: "center",
-        minHeight: 27,
-        fontSize: 14,
-        paddingTop: 2,
-        paddingBottom: 2,
-        paddingLeft: 14,
-        paddingRight: 14,
+        minHeight: "27px",
+        fontSize: "14px",
+        paddingTop: "2px",
+        paddingBottom: "2px",
+        paddingLeft: "14px",
+        paddingRight: "14px",
         width: "100%"
     }
 }
