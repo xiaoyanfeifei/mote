@@ -1,0 +1,7 @@
+svg:not(:root) {
+    overflow: hidden;
+}
+
+img, svg {
+    vertical-align: middle;
+}

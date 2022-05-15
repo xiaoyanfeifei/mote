@@ -46,7 +46,7 @@ function createElementWithHtml(tagName: string, attributes?: HTMLAttributes<any>
         return element;
     }
 
-    const element = document.createElement(tagName);
+    const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
     if (attributes) {
         for (const key of Object.keys(attributes)) {
             const attributeValue = attributes[key];

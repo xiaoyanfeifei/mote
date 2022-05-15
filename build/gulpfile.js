@@ -1,7 +1,7 @@
 const gulp = require("gulp");
 const path = require("path");
 
-function createCompile(src) {
+function createProject(src) {
 	const ts = require("gulp-typescript");
     const projectPath = path.join(__dirname, '../', src, 'tsconfig.json');
     const tsProject = ts.createProject(projectPath, {
@@ -24,8 +24,10 @@ gulp.task("copyFile", function () {
 });
 
 gulp.task("compile", function () {
-    const compilation = createCompile("src");
-    return compilation.src().pipe(compilation()).js.pipe(gulp.dest("out"));
+    const tsProject = createProject("src");
+    return gulp.src("src/**/*.ts*", {since: gulp.lastRun("compile")})
+        .pipe(tsProject())
+        .pipe(gulp.dest("out"));
 });
 
 gulp.task("build", gulp.series("rimraf", "copyFile", "compile"));
