@@ -78,8 +78,6 @@ export default function Column(props: ColumnProps) {
         )
     }
 
-    console.log("props:", props);
-
     return (
         <div style={getStyle()}>
             {props.left && <div style={getLeftStyle()}>{props.left}</div>}

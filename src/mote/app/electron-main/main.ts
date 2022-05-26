@@ -4,6 +4,7 @@ import { ILifecycleMainService, LifecycleMainService } from "mote/platform/lifec
 import { ConsoleLoggerService } from "mote/platform/log/common/consoleLog";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
 import { ProtocolMainService } from "mote/platform/protocol/electron-main/protocolMainService";
+import { IThemeMainService, ThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
 import { coalesce, distinct } from "vs/base/common/arrays";
 import { IPathWithLineAndColumn, isValidBasename, parseLineAndColumnAware, sanitizeFilePath } from "vs/base/common/extpath";
 import { basename, resolve } from "vs/base/common/path";
@@ -23,6 +24,8 @@ import { ServiceCollection } from "vs/platform/instantiation/common/serviceColle
 import { ConsoleMainLogger, ILoggerService, ILogService, LogLevel, LogService } from "vs/platform/log/common/log";
 import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
+import { IStateMainService } from "vs/platform/state/electron-main/state";
+import { StateMainService } from "vs/platform/state/electron-main/stateMainService";
 import { MoteApplication } from "./app";
 
 class MoteMain {
@@ -71,8 +74,19 @@ class MoteMain {
         // Logger
 		services.set(ILoggerService, new ConsoleLoggerService(logService));
 
+		// Configuration
+		//const configurationService = new ConfigurationService(environmentMainService.settingsResource, fileService);
+		//services.set(IConfigurationService, configurationService);
+
         // Lifecycle
 		services.set(ILifecycleMainService, new SyncDescriptor(LifecycleMainService));
+
+		// State
+		const stateMainService = new StateMainService(environmentMainService, logService, fileService);
+		services.set(IStateMainService, stateMainService);
+
+		// Themes
+		services.set(IThemeMainService, new SyncDescriptor(ThemeMainService));
 
         // Protocol
 		services.set(IProtocolMainService, new SyncDescriptor(ProtocolMainService));

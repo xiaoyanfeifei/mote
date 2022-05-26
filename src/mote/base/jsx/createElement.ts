@@ -1,5 +1,5 @@
-import { HTMLAttributes, MoteHTML, MoteSVG, MoteSVGElement, SVGAttributes } from ".";
-import { Attributes, Fragment, FunctionComponent, MoteNode } from "./jsx";
+import { ClassAttributes, Attributes, FunctionComponent, DOMAttributes, DOMElement, HTMLAttributes, MoteHTML, MoteSVG, MoteNode, MoteSVGElement, SVGAttributes } from ".";
+import { Fragment  } from "./jsx";
 import { CSSProperties } from "./style";
 
 interface NamedAttribute {
@@ -7,12 +7,17 @@ interface NamedAttribute {
     style: CSSProperties;
 }
 
+type MoteSVGKey = keyof MoteSVG;
 
 // DOM Elements
 export function createElement<P extends HTMLAttributes<T>, T extends HTMLElement>(
     type: keyof MoteHTML,
     props?: Attributes & P | null,
     ...children: MoteNode[]);
+export function createElement<P extends DOMAttributes<T>, T extends Element>(
+    type: string,
+    props?: ClassAttributes<T> & P | null,
+    ...children: MoteNode[]): DOMElement<P, T>;
 
 // SVG Elements
 export function createElement<P extends SVGAttributes<T>, T extends SVGElement>(
@@ -31,12 +36,17 @@ export function createElement<P>(
     props?: Attributes & P | null,
     ...children: MoteNode[]){
     if (typeof type == "string") {
-        return createElementWithHtml(type, props, children);
+        return createElementWithHtml(type, 'http://www.w3.org/1999/xhtml', props, children);
     }
     return type({...props, children: children})
 }
 
-function createElementWithHtml(tagName: string, attributes?: HTMLAttributes<any> & Attributes | null, ...children: any[]): Element | DocumentFragment {
+function createElementWithHtml(
+    tagName: string,
+    namespace: string,
+    attributes?: HTMLAttributes<any> & Attributes | null, 
+    ...children: any[]
+): Element | DocumentFragment {
     if (tagName === Fragment) {
         const element = document.createDocumentFragment();
         for (const child of children) {
@@ -46,7 +56,7 @@ function createElementWithHtml(tagName: string, attributes?: HTMLAttributes<any>
         return element;
     }
 
-    const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+    const element = document.createElementNS(namespace, tagName);
     if (attributes) {
         for (const key of Object.keys(attributes)) {
             const attributeValue = attributes[key];
@@ -54,7 +64,7 @@ function createElementWithHtml(tagName: string, attributes?: HTMLAttributes<any>
             if (key === "className") { // JSX does not allow class as a valid name
                 element.setAttribute("class", attributes.className!);
             } else if (key === "style") {
-                setStyles(element, attributes.style!);
+                setStyles(element as any, attributes.style!);
             } 
             else if (key.startsWith("on") && typeof attributes[key] === "function") {
                 element.addEventListener(key.substring(2), attributeValue as EventListenerOrEventListenerObject);

@@ -1,3 +1,4 @@
+import { IPartsSplash } from "mote/platform/theme/common/themeService";
 import { ISandboxConfiguration } from "vs/base/parts/sandbox/common/sandboxTypes";
 import { NativeParsedArgs } from "vs/platform/environment/common/argv";
 
@@ -24,7 +25,7 @@ export interface INativeWindowConfiguration extends NativeParsedArgs, ISandboxCo
 	tmpDir: string;
 	userDataDir: string;
 
-    //partsSplash?: IPartsSplash;
+    partsSplash?: IPartsSplash;
 
     fullscreen?: boolean;
 	maximized?: boolean;

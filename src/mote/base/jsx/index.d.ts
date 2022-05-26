@@ -22,6 +22,8 @@ export interface CSSProperties extends CSS.Properties<string | number> {
      */
 }
 
+//#region attributes
+
 interface AriaAttributes {
 
 }
@@ -390,7 +392,20 @@ interface SVGAttributes<T> extends AriaAttributes, DOMAttributes<T> {
     zoomAndPan?: string | undefined;
 }
 
+//#endregion
+
 type JSXElementConstructor<P> = ((props: P) => MoteElement<any, any> | null);
+
+
+type PropsWithChildren<P> = P & { children?: MoteNode | undefined };
+
+export interface FunctionComponent<P = {}> {
+    (props: PropsWithChildren<P>): MoteElement<any, any> | null;
+    defaultProps?: Partial<P> | undefined;
+    displayName?: string | undefined;
+}
+
+interface FunctionComponentElement<P> extends MoteElement<P, FunctionComponent<P>> {}
 
 /**
  * @internal You shouldn't need to use this type since you never see these attributes
@@ -417,6 +432,18 @@ interface MoteHTML {
 
 interface MoteSVG {
     svg: SVGFactory;
+    path: SVGFactory;
+    polygon: SVGFactory;
+    g: SVGFactory;
+    defs: SVGFactory;
+    filter: SVGFactory;
+    feFlood: SVGFactory;
+    feColorMatrix: SVGFactory;
+    feOffset: SVGFactory;
+    feBlend: SVGFactory;
+    feGaussianBlur: SVGFactory;
+    mask: SVGFactory;
+    polyline: SVGFactory;
 }
 interface MoteElement<P = any, T extends string | JSXElementConstructor<any> = string | JSXElementConstructor<any>> {
     type: T;

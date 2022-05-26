@@ -29,7 +29,9 @@ export default function SVGIcon(props:SVGIconProps) {
     element.style.width = "100%";
     element.style.height = "100%";
     element.style.display = "block";
-    element.style.fill = "#ffffff";
+    if (props.style) {
+        element.style.fill = props.style!.fill as string;
+    }
     element.style.flexShrink = "0";
     element.setAttribute("viewBox", viewBox);
     element.classList.add(className);

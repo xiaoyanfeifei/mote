@@ -1,5 +1,6 @@
 import { Pointer, Role } from "./record";
 
+
 interface RecordStoreState<T> {
     value: T;
     role: Role;
@@ -67,6 +68,36 @@ export default class RecordStore<T = any> {
         this.path = props.path || [];
         this.instanceState = {};
         //this.syncIfNeed();
+    }
+
+    get state() {
+        const cachedRecord = null as any;
+        if (cachedRecord) {
+            if ( this.path && this.path.length > 0) {
+                //this.instanceState.value = Lodash.get(cachedRecord.value, this.path)
+            } else {
+                this.instanceState.value = cachedRecord.value as any;
+            }
+        }
+        return this.instanceState;
+    }
+
+
+    getValue(){
+        return this.state.value;
+    }
+
+    getRole() {
+        return this.state.role;
+    }
+
+    getPropertyStore(property: string) {
+        return RecordStore.createChildStore(this, this.pointer, [property]);
+    }
+
+    setRecordStoreParent<T extends RecordStore>(keyName: string, parentStore: T) {
+        parentStore.childStoreMap[keyName] = this;
+        this.recordStoreParentStore = parentStore;
     }
 
     getRecordStoreChildStore(keyName: string) {

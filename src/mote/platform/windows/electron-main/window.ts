@@ -1,6 +1,7 @@
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import { FileAccess } from "mote/base/common/network";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
+import { IThemeMainService } from "mote/platform/theme/electron-main/themeMainService";
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { IAppWindow } from "mote/platform/window/electron-main/window";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -75,6 +76,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 
     constructor(
 		@ILogService private readonly logService: ILogService,
+		@IThemeMainService private readonly themeMainService: IThemeMainService,
         @IProtocolMainService private readonly protocolMainService: IProtocolMainService,
         @IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
 	) {
@@ -151,12 +153,13 @@ export class AppWindow extends Disposable implements IAppWindow {
 		// Update window related properties
 		configuration.fullscreen = this.isFullScreen;
 		configuration.maximized = this._win.isMaximized();
-		//configuration.partsSplash = this.themeMainService.getWindowSplash();
+		configuration.partsSplash = this.themeMainService.getWindowSplash();
 
 		// Update with latest perf marks
 		mark('code/willOpenNewWindow');
 		//configuration.perfMarks = getMarks();
 
+		this.logService.info("[AppWindow] configuration", configuration);
 		// Update in config object URL for usage in renderer
 		this.configObjectUrl.update(configuration);
 	}

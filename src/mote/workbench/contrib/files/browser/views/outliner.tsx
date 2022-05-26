@@ -4,6 +4,9 @@ import Column from "mote/base/ui/column/column";
 import fonts from "mote/base/ui/fonts";
 import SVGIcon from "mote/base/ui/svgicon/svgicon";
 import { ThemedColors, ThemedStyles } from "mote/base/ui/themes";
+import BlockStore from "mote/workbench/store/blockStore";
+import RecordStore from "mote/workbench/store/recordStore";
+import SpaceStore from "mote/workbench/store/spaceStore";
 
 const PlusIcon = () => {
   
@@ -124,20 +127,30 @@ const PageItem = (props) => {
 
     const renderIcon = () => {
         return (
-            <SVGIcon name="page" style={{fill: "#ffffff"}}/>
+            <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.light}}/>
         )
     }
 
     return (
-        <Column
-            icon={renderIcon()}>
-                <ColumnName  isTopLevel/>
-        </Column>
+        <a style={getLinkStyle()}>
+            <Column
+                style={getSidebarItemStyle()}
+                icon={renderIcon()}>
+                    <ColumnName  isTopLevel/>
+            </Column>
+        </a>
     )
 }
 
 
 export class Outliner {
+
+    constructor(
+        private parentStore: RecordStore,
+        private childStores: BlockStore[]
+    ) {
+
+    }
 
     create(parent: HTMLElement) {
         const content = this.render();
@@ -145,13 +158,11 @@ export class Outliner {
     }
 
     render() {
-        const pageItems = [{}, {}];
-        console.log("PageItem(item)", PageItem({}));
-        console.log("SVG", <SVGIcon name="page" style={{fill: "#ffffff"}}/>);
+        const pageItems = this.childStores ? this.childStores.map(childStore=><PageItem />) : [];
 
         return (
             <>
-                {pageItems.map(item=>PageItem(item))}
+               {pageItems}
             </>
         )
     }
