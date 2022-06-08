@@ -104,6 +104,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 	}
 
     getWindowSplash(): IPartsSplash | undefined {
+		return undefined;
 		//return this.stateMainService.getItem<IPartsSplash>(THEME_WINDOW_SPLASH);
         return {
             baseTheme: "light",

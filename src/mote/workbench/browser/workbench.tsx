@@ -86,6 +86,7 @@ export class Workbench extends Layout {
 		// Create Parts
 		[
 			{ id: Parts.SIDEBAR_PART, role: 'none', classes: ['sidebar', 'left'], options: {} },
+			{ id: Parts.EDITOR_PART, role: 'main', classes: ['editor'], options: {} }
 		].forEach(({ id, role, classes, options }) => {
 			const partContainer = this.createPart(id, role, classes);
 			console.log(`[Workbench] create part: ${id}`);

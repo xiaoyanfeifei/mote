@@ -9,6 +9,9 @@ import { IPaneCompositePartService } from "../services/panecomposite/browser/pan
 import { DeferredPromise, Promises } from "vs/base/common/async";
 import { ViewContainerLocation } from "../common/views";
 import { FILES_VIEWLET_ID } from "../contrib/files/common/files";
+import { ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
+import { IEditorService } from "../services/editor/common/editorService";
+import { mark } from "vs/base/common/performance";
 
 export abstract class Layout extends Disposable implements IWorkbenchLayoutService {
 
@@ -34,6 +37,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	protected logService!: ILogService;
 
 	private paneCompositeService!: IPaneCompositePartService;
+	private editorService!: IEditorService;
 
     constructor(
 		protected readonly parent: HTMLElement
@@ -52,6 +56,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	protected initLayout(accessor: ServicesAccessor): void {
 		
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
+		this.editorService = accessor.get(IEditorService);
 	}
 
   
@@ -75,8 +80,23 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
     protected createWorkbenchLayout(): void {
         const sideBar = this.getPart(Parts.SIDEBAR_PART);
+		const editorPart = this.getPart(Parts.EDITOR_PART);
 
-        this.container.prepend(sideBar.getContainer()!);
+		const viewMap = {
+			[Parts.SIDEBAR_PART]: sideBar,
+			[Parts.EDITOR_PART]: editorPart,
+		}
+
+		const fromJSON = ({ type }: { type: Parts }) => viewMap[type];
+		const workbenchGrid = SerializableGrid.deserialize(
+			this.createGridDescriptor(),
+			{ fromJSON },
+			{ proportionalLayout: false }
+		);
+
+        this.container.append(sideBar.element);
+		this.container.append(editorPart.element);
+		this.container.setAttribute('role', 'application');
     }
 
 	private readonly whenReadyPromise = new DeferredPromise<void>();
@@ -98,6 +118,12 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const layoutReadyPromises: Promise<unknown>[] = [];
 		const layoutRestoredPromises: Promise<unknown>[] = [];
 
+		// Restore editors
+		layoutReadyPromises.push((async () => {
+			mark('code/willRestoreEditors');
+			
+		})());
+
 		// Restore Sidebar
 		layoutReadyPromises.push((async () => {
 			const viewlet = await this.paneCompositeService.openPaneComposite(FILES_VIEWLET_ID, ViewContainerLocation.Sidebar);
@@ -118,5 +144,49 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 				this.whenRestoredPromise.complete();
 			});
 		});
+	}
+
+	private createGridDescriptor(): ISerializedGrid {
+
+		const width = 1080;
+		const height = 800;
+
+		const titleBarHeight = 48;
+		const middleSectionHeight = height - titleBarHeight;
+
+		const sideBarNode: ISerializedLeafNode = {
+			type: 'leaf',
+			data: { type: Parts.SIDEBAR_PART },
+			size: 250,
+			visible: true
+		};
+
+		const editorNode: ISerializedLeafNode = {
+			type: 'leaf',
+			data: { type: Parts.EDITOR_PART },
+			size: 0, // Update based on sibling sizes
+			visible: true
+		};
+
+		const middleSection: ISerializedNode[] = [editorNode, sideBarNode];
+
+		const result: ISerializedGrid = {
+			root: {
+				type: 'branch',
+				size: width,
+				data: [
+					{
+						type: 'branch',
+						data: middleSection,
+						size: middleSectionHeight
+					}
+				]
+			},
+			orientation: Orientation.VERTICAL,
+			width,
+			height
+		};
+		
+		return result;
 	}
 }

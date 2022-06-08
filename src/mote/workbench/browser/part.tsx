@@ -1,6 +1,8 @@
 import { Component } from "mote/workbench/common/component";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
 import { Dimension } from "vs/base/browser/dom";
+import { ISerializableView, IViewSize } from "vs/base/browser/ui/grid/grid";
+import { Emitter, Event } from "vs/base/common/event";
 
 export interface IPartOptions {
 	hasTitle?: boolean;
@@ -13,7 +15,7 @@ class PartLayout {
     constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
 }
 
-export abstract class Part extends Component {
+export abstract class Part extends Component implements ISerializableView {
 
 	private _dimension: Dimension | undefined;
 	get dimension(): Dimension | undefined { return this._dimension; }
@@ -94,4 +96,13 @@ export abstract class Part extends Component {
 	layout(width: number, height: number, _top: number, _left: number): void {
 		this._dimension = new Dimension(width, height);
 	}
+
+	//#region ISerializableView
+
+	private _onDidChange = this._register(new Emitter<IViewSize | undefined>());
+	get onDidChange(): Event<IViewSize | undefined> { return this._onDidChange.event; }
+
+	abstract toJSON(): object;
+
+	//#endregion
 }

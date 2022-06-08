@@ -127,12 +127,12 @@ const PageItem = (props) => {
 
     const renderIcon = () => {
         return (
-            <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.light}}/>
+            <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.dark}}/>
         )
     }
 
     return (
-        <a style={getLinkStyle()}>
+        <a style={getLinkStyle()} className="tree-item">
             <Column
                 style={getSidebarItemStyle()}
                 icon={renderIcon()}>

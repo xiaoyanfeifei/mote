@@ -1,3 +1,4 @@
+import { ThemedStyles } from "mote/base/ui/themes";
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "mote/workbench/browser/panecomposite";
 import { CompositePart } from "mote/workbench/browser/parts/compositePart";
 import { IPaneCompositePart } from "mote/workbench/browser/parts/paneCompositePart";
@@ -8,6 +9,9 @@ import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
 
 export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneCompositePart {
+	toJSON(): object {
+		throw new Error("Method not implemented.");
+	}
     
     declare readonly _serviceBrand: undefined;
 
@@ -40,6 +44,10 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 	override create(parent: HTMLElement, options?: object): void {
 		this.logService.debug("[SidebarPart]#create");
 		this.element = parent;
+		this.element.style.width = "340px";
+		this.element.style.height = "100%";
+		this.element.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
+		this.element.style.position = "absolute";
 
 		super.create(parent);
 

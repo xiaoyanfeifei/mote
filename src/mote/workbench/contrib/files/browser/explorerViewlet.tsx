@@ -27,7 +27,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
     override create(parent: HTMLElement): void {
 		super.create(parent);
 		parent.classList.add('explorer-viewlet');
-        parent.style.backgroundColor = ThemedStyles.sidebarBackground.light;
+        parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
         const body = append(parent, $('.pane-body'));
         this.renderBody(body);
 	}

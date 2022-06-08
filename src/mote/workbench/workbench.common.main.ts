@@ -1,5 +1,6 @@
 //#region --- workbench parts
 
+import 'mote/workbench/browser/parts/editor/editorPart';
 import 'mote/workbench/browser/parts/paneCompositePart';
 import 'mote/workbench/browser/parts/views/viewsService';
 

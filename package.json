@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "test-browser": "npx playwright install && node test/unit/browser/index.js",
     "test-browser-no-install": "node test/unit/browser/index.js",
-    "watch": "npx gulp watch"
+    "watch": "npx gulp watch",
+    "start": "npx electron . "
   },
   "author": "",
   "license": "GPL",
