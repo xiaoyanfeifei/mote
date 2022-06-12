@@ -11,6 +11,8 @@ import { onUnexpectedError } from "vs/base/common/errors";
 import { IViewsService, ViewContainerLocation } from "../common/views";
 import { ViewsService } from "./parts/views/viewsService";
 import { EXPLORER_VIEW_CONTAINER } from "../contrib/files/browser/explorerViewlet";
+import { IThemeService } from "mote/platform/theme/common/themeService";
+import { MockThemeService } from "mote/platform/theme/common/mockThemeService";
 
 export class Workbench extends Layout {
 
@@ -32,11 +34,11 @@ export class Workbench extends Layout {
 				// Init the logService at first
 				this.logService = accessor.get(ILogService);
 
-				const viewsService = accessor.get(IViewsService) as ViewsService;
-				viewsService.registerPaneComposite(EXPLORER_VIEW_CONTAINER, ViewContainerLocation.Sidebar);
-
 				// Layout
 				this.initLayout(accessor);
+
+				const viewsService = accessor.get(IViewsService) as ViewsService;
+				viewsService.registerPaneComposite(EXPLORER_VIEW_CONTAINER, ViewContainerLocation.Sidebar);
 
 				this.renderWorkbench(instantiationService);
 
@@ -75,6 +77,8 @@ export class Workbench extends Layout {
 			serviceCollection.set(id, descriptor);
 		}
 
+		// Add mock service
+		serviceCollection.set(IThemeService, new MockThemeService());
 
 		const instantiationService = new InstantiationService(serviceCollection, true);
 

@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { IView, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
@@ -66,11 +67,11 @@ export class ViewsService extends Disposable implements IViewsService {
 				//@IWorkspaceContextService contextService: IWorkspaceContextService,
 				//@IStorageService storageService: IStorageService,
 				@IInstantiationService instantiationService: IInstantiationService,
-				//@IThemeService themeService: IThemeService,
+				@IThemeService themeService: IThemeService,
 				//@IContextMenuService contextMenuService: IContextMenuService,
 				//@IExtensionService extensionService: IExtensionService,
 			) {
-				super(viewContainer.id, logService, instantiationService);
+				super(viewContainer.id, logService, instantiationService, themeService);
 			}
 
 			protected createViewPaneContainer(element: HTMLElement): ViewPaneContainer {

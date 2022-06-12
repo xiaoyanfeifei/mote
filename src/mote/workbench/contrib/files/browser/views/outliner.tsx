@@ -33,7 +33,7 @@ interface ColumnNameProps {
     placeholder?: string;
 }
 
-const ColumnName = (props: ColumnNameProps) => {
+export const ColumnName = (props: ColumnNameProps) => {
     
 
     const getStyle=()=>{
@@ -64,7 +64,7 @@ const ColumnName = (props: ColumnNameProps) => {
     )
 }
 
-const PageItem = (props) => {
+export const PageItem = (props) => {
     
     const isMobile = false;
     const open = false;

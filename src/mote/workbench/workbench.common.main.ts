@@ -14,3 +14,10 @@ import 'mote/workbench/contrib/files/browser/files.contribution';
 
 //#endregion
 
+//#region --- workbench services
+
+import 'mote/workbench/services/hover/browser/hoverService';
+import 'mote/workbench/services/commands/common/commandService';
+
+//#endregion
+

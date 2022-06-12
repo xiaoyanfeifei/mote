@@ -1,5 +1,6 @@
 import { Color } from 'vs/base/common/color';
 import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 import { ColorIdentifier } from './colorRegistry';
 import { ColorScheme } from './theme';
@@ -69,7 +70,7 @@ export interface IThemeService {
 
 	readonly onDidColorThemeChange: Event<IColorTheme>;
 
-	g//etFileIconTheme(): IFileIconTheme;
+	//etFileIconTheme(): IFileIconTheme;
 
 	//readonly onDidFileIconThemeChange: Event<IFileIconTheme>;
 
@@ -77,6 +78,44 @@ export interface IThemeService {
 
 	//readonly onDidProductIconThemeChange: Event<IProductIconTheme>;
 
+}
+
+/**
+ * Utility base class for all themable components.
+ */
+ export class Themable extends Disposable {
+	protected theme: IColorTheme;
+
+	constructor(
+		protected themeService: IThemeService
+	) {
+		super();
+
+		this.theme = themeService.getColorTheme();
+
+		// Hook up to theme changes
+		this._register(this.themeService.onDidColorThemeChange(theme => this.onThemeChange(theme)));
+	}
+
+	protected onThemeChange(theme: IColorTheme): void {
+		this.theme = theme;
+
+		this.updateStyles();
+	}
+
+	protected updateStyles(): void {
+		// Subclasses to override
+	}
+
+	protected getColor(id: string, modify?: (color: Color, theme: IColorTheme) => Color): string | null {
+		let color = this.theme.getColor(id);
+
+		if (color && modify) {
+			color = modify(color, this.theme);
+		}
+
+		return color ? color.toString() : null;
+	}
 }
 
 export interface IPartsSplash {

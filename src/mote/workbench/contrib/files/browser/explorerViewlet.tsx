@@ -1,5 +1,12 @@
+import { ListItem } from "mote/base/browser/ui/list/list";
+import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
+import { createElement } from "mote/base/jsx/createElement";
+import SVGIcon from "mote/base/ui/svgicon/svgicon";
 import { ThemedStyles } from "mote/base/ui/themes";
+import { IThemeService } from "mote/platform/theme/common/themeService";
+import { TreeRender, TreeView } from "mote/workbench/browser/parts/views/treeView";
 import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneContainer";
+import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
 import { Extensions, IViewContainersRegistry, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
 import SpaceStore from "mote/workbench/store/spaceStore";
@@ -10,7 +17,7 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
 import { FILES_VIEWLET_ID } from "../common/files";
-import { Outliner } from "./views/outliner";
+import { ColumnName, Outliner, PageItem } from "./views/outliner";
 
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
@@ -20,8 +27,9 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
         @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
         @ILogService logService: ILogService,
         @IInstantiationService instantiationService: IInstantiationService,
+        @IThemeService themeService: IThemeService,
     ) {
-        super(FILES_VIEWLET_ID, layoutService, logService, instantiationService);
+        super(FILES_VIEWLET_ID, layoutService, logService, instantiationService, themeService);
     }
 
     override create(parent: HTMLElement): void {
@@ -46,8 +54,39 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
             table: "space",
             version: 1
         }
-        const outliner = new Outliner(spaceStore.getPagesStore(), spaceStore.getPagesStores());
-        outliner.create(container);
+        //const outliner = new Outliner(spaceStore.getPagesStore(), spaceStore.getPagesStores());
+        //outliner.create(container);
+        const renderer = new class implements TreeRender<ITreeItem> {
+            render(element: HTMLElement, value: ITreeItem) {
+                const icon = <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.dark}}/>
+                const child = <ColumnName  isTopLevel/>
+                const item = new ListItem(element, {enableClick: true});
+                item.child = child;
+                item.icon = icon;
+                item.create();
+            }
+            
+        }
+
+        const dataSource = new class implements IAsyncDataSource<ITreeItem, ITreeItem> {
+            hasChildren(element: ITreeItem): boolean {
+                return true;
+            }
+            getChildren(element: ITreeItem): Promise<Iterable<ITreeItem>> {
+                
+                const items = spaceStore.getPagesStores().map(store=>{
+                    const item: ITreeItem = {
+                        handle: "",
+                        collapsibleState: TreeItemCollapsibleState.Collapsed
+                    };
+                    return item;
+                });
+                return Promise.resolve(items);
+            }
+            
+        }
+        const treeView = this.instantiationService.createInstance(TreeView, dataSource, renderer);
+        treeView.show(container);
     }
 
 }

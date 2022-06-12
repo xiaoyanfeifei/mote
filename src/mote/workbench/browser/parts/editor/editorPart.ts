@@ -6,6 +6,7 @@ import { IEditorService } from "mote/workbench/services/editor/common/editorServ
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IResourceEditorInput } from "mote/platform/editor/common/editor";
 import { IEditorPane } from "mote/workbench/common/editor";
+import { IThemeService } from "mote/platform/theme/common/themeService";
 
 export class EditorPart extends Part implements IEditorService {
     toJSON(): object {
@@ -40,9 +41,10 @@ export class EditorPart extends Part implements IEditorService {
     private container: HTMLElement | undefined;
     
     constructor(
-        @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService
+        @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
+        @IThemeService themeService: IThemeService,
     ) {
-        super(Parts.EDITOR_PART, {hasTitle: false}, layoutService);
+        super(Parts.EDITOR_PART, {hasTitle: false}, themeService, layoutService);
     }
     openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
         throw new Error("Method not implemented.");

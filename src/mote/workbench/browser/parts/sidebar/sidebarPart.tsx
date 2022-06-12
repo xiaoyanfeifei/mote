@@ -1,9 +1,11 @@
 import { ThemedStyles } from "mote/base/ui/themes";
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "mote/workbench/browser/panecomposite";
 import { CompositePart } from "mote/workbench/browser/parts/compositePart";
 import { IPaneCompositePart } from "mote/workbench/browser/parts/paneCompositePart";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
+import { assertIsDefined } from "vs/base/common/types";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
@@ -29,10 +31,12 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
         @ILogService logService: ILogService,
         @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
         @IInstantiationService instantiationService: IInstantiationService,
+		@IThemeService themeService: IThemeService,
     ) {
         super(
             logService,
             layoutService,
+			themeService,
             instantiationService,
             Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
             "sideBar",
@@ -44,12 +48,21 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 	override create(parent: HTMLElement, options?: object): void {
 		this.logService.debug("[SidebarPart]#create");
 		this.element = parent;
-		this.element.style.width = "340px";
-		this.element.style.height = "100%";
-		this.element.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
-		this.element.style.position = "absolute";
-
+		
 		super.create(parent);
+
+	}
+
+	override updateStyles(): void {
+		super.updateStyles();
+
+		// Part container
+		const container = assertIsDefined(this.getContainer());
+
+		container.style.width = "340px";
+		container.style.height = "100%";
+		container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
+		container.style.position = "absolute";
 
 	}
 

@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IView, IViewPaneContainer } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
@@ -16,9 +17,10 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
         id: string,
         @IWorkbenchLayoutService protected layoutService: IWorkbenchLayoutService,
 		@ILogService protected logService: ILogService,
-		@IInstantiationService protected instantiationService: IInstantiationService
+		@IInstantiationService protected instantiationService: IInstantiationService,
+        @IThemeService themeService: IThemeService,
     ) {
-        super(id);
+        super(id, themeService);
     }
     
     getView(viewId: string): IView | undefined {

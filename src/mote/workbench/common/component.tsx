@@ -1,13 +1,15 @@
+import { IThemeService, Themable } from "mote/platform/theme/common/themeService";
 import { Disposable } from "vs/base/common/lifecycle";
 
-export class Component extends Disposable {
+export class Component extends Themable {
     constructor(
-		private readonly id: string
+		private readonly id: string,
+        themeService: IThemeService,
     ) {
-        super();
+        super(themeService);
     }
 
     getId(): string {
-		  return this.id;
+		return this.id;
 	}
 }

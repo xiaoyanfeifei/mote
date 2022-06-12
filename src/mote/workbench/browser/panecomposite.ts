@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { URI } from "vs/base/common/uri";
 import { BrandedService, IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
@@ -14,8 +15,9 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		id: string,
 		@ILogService protected logService: ILogService,
 		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IThemeService themeService: IThemeService,
 	) {
-		super(id);
+		super(id, themeService);
 	}
 
 	override create(parent: HTMLElement): void {

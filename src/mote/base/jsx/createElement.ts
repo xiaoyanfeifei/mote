@@ -89,7 +89,7 @@ function createElementWithHtml(
 
 type CSSKey = keyof CSSProperties;
 
-function setStyles(element: HTMLElement, styles: CSSProperties) {
+export function setStyles(element: HTMLElement, styles: CSSProperties) {
     
     const CSSKeys: CSSKey[] = Object.keys(styles) as CSSKey[];
     CSSKeys.map((key)=>{

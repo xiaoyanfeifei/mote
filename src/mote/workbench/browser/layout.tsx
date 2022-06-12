@@ -12,6 +12,7 @@ import { FILES_VIEWLET_ID } from "../contrib/files/common/files";
 import { ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
 import { IEditorService } from "../services/editor/common/editorService";
 import { mark } from "vs/base/common/performance";
+import { IThemeService } from "mote/platform/theme/common/themeService";
 
 export abstract class Layout extends Disposable implements IWorkbenchLayoutService {
 
@@ -54,6 +55,9 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	}
 
 	protected initLayout(accessor: ServicesAccessor): void {
+		this.logService.debug("[Layout] initLayout");
+		// Services
+		const themeService = accessor.get(IThemeService);
 		
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.editorService = accessor.get(IEditorService);

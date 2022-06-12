@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -22,8 +23,9 @@ export abstract class Composite extends Component {
 
 	constructor(
 		id: string,
+		themeService: IThemeService,
 	) {
-		super(id);
+		super(id, themeService);
 
 		this.visible = false;
 	}

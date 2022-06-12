@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
 import { Dimension } from "vs/base/browser/dom";
@@ -28,12 +29,17 @@ export abstract class Part extends Component implements ISerializableView {
     constructor(
 		id: string,
 		private options: IPartOptions,
+		themeService: IThemeService,
         protected readonly layoutService: IWorkbenchLayoutService
     ) {
-        super(id);
+        super(id, themeService);
 
         layoutService.registerPart(this);
     }
+
+	override updateStyles(): void {
+		super.updateStyles();
+	}
 
     /**
 	 * Note: Clients should not call this method, the workbench calls this
@@ -48,7 +54,7 @@ export abstract class Part extends Component implements ISerializableView {
 
 		this.partLayout = new PartLayout(this.options, this.contentArea);
 
-		//this.updateStyles();
+		this.updateStyles();
 	}
 
     /**

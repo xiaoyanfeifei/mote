@@ -1,3 +1,4 @@
+import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Composite, CompositeRegistry } from "mote/workbench/browser/composite";
 import { IPartOptions, Part } from "mote/workbench/browser/part";
 import { IComposite } from "mote/workbench/common/composite";
@@ -35,13 +36,14 @@ export abstract class CompositePart<T extends Composite> extends Part {
     constructor(
 		protected readonly logService: ILogService,
         layoutService: IWorkbenchLayoutService,
+		themeService: IThemeService,
         protected readonly instantiationService: IInstantiationService,
         protected readonly registry: CompositeRegistry<T>,
         private readonly defaultCompositeId: string,
         id: string,
 		options: IPartOptions
     ) {
-        super(id, options, layoutService);
+        super(id, options, themeService, layoutService);
         this.lastActiveCompositeId = defaultCompositeId;
     }
 
@@ -53,6 +55,10 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		//this.progressBar.hide();
 
 		return contentContainer;
+	}
+
+	override updateStyles(): void {
+		super.updateStyles();
 	}
 
     protected openComposite(id: string, focus?: boolean): Composite | undefined {
