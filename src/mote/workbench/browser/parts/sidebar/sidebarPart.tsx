@@ -1,4 +1,5 @@
 import { ThemedStyles } from "mote/base/ui/themes";
+import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "mote/workbench/browser/panecomposite";
 import { CompositePart } from "mote/workbench/browser/parts/compositePart";
@@ -42,7 +43,6 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
             "sideBar",
             Parts.SIDEBAR_PART, {hasTitle: true}
         )
-
     }
 
 	override create(parent: HTMLElement, options?: object): void {
@@ -59,7 +59,7 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 		// Part container
 		const container = assertIsDefined(this.getContainer());
 
-		container.style.width = "340px";
+		container.style.width = "260px";
 		container.style.height = "100%";
 		container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 		container.style.position = "absolute";

@@ -45,7 +45,7 @@ export default class BlockStore extends RecordStore {
         }));
     }
 
-    clone() {
+    override clone() {
         return new BlockStore(
             this.pointer,
             this.userId,

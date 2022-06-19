@@ -9,7 +9,7 @@ import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneCo
 import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
 import { Extensions, IViewContainersRegistry, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import SpaceStore from "mote/workbench/store/spaceStore";
+import SpaceStore from "mote/editor/common/store/spaceStore";
 import { append , $} from "vs/base/browser/dom";
 import { localize } from "vs/nls";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";

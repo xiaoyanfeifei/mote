@@ -10,3 +10,16 @@ svg:not(:root) {
 img, svg {
     vertical-align: middle;
 }
+
+*, *:focus {
+    outline: 0;
+}
+
+[contenteditable] {
+    -webkit-tap-highlight-color: transparent;
+}
+  
+[contenteditable]:empty:before {
+    display: block;
+    content: attr(placeholder);
+}

@@ -13,6 +13,8 @@ import { ViewsService } from "./parts/views/viewsService";
 import { EXPLORER_VIEW_CONTAINER } from "../contrib/files/browser/explorerViewlet";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { MockThemeService } from "mote/platform/theme/common/mockThemeService";
+import { BrowserStorageService } from "vs/platform/storage/browser/storageService";
+import { IStorageService } from "vs/platform/storage/common/storage";
 
 export class Workbench extends Layout {
 
@@ -33,6 +35,8 @@ export class Workbench extends Layout {
 			instantiationService.invokeFunction(accessor => {
 				// Init the logService at first
 				this.logService = accessor.get(ILogService);
+
+				const storageService = accessor.get(IStorageService);
 
 				// Layout
 				this.initLayout(accessor);
@@ -121,12 +125,4 @@ export class Workbench extends Layout {
 			onUnexpectedError(error);
 		}
 	}
-
-    render() {
-        return (
-            <div>
-                Hello World
-            </div>
-        )
-    }
 }

@@ -4,9 +4,9 @@ import Column from "mote/base/ui/column/column";
 import fonts from "mote/base/ui/fonts";
 import SVGIcon from "mote/base/ui/svgicon/svgicon";
 import { ThemedColors, ThemedStyles } from "mote/base/ui/themes";
-import BlockStore from "mote/workbench/store/blockStore";
-import RecordStore from "mote/workbench/store/recordStore";
-import SpaceStore from "mote/workbench/store/spaceStore";
+import BlockStore from "mote/editor/common/store/blockStore";
+import RecordStore from "mote/editor/common/store/recordStore";
+import SpaceStore from "mote/editor/common/store/spaceStore";
 
 const PlusIcon = () => {
   

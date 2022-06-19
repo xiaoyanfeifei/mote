@@ -1,4 +1,6 @@
+import { get } from "../core/commandFacade";
 import { Pointer, Role } from "./record";
+import RecordCacheStore from "./recordCacheStore";
 
 
 interface RecordStoreState<T> {
@@ -71,10 +73,11 @@ export default class RecordStore<T = any> {
     }
 
     get state() {
-        const cachedRecord = null as any;
+        const cachedRecord = RecordCacheStore.Default.getRecord({pointer: this.pointer, userId: this.userId});
+        console.log("cachedRecord:", cachedRecord, this.pointer);
         if (cachedRecord) {
             if ( this.path && this.path.length > 0) {
-                //this.instanceState.value = Lodash.get(cachedRecord.value, this.path)
+                this.instanceState.value = get(cachedRecord.value, this.path)
             } else {
                 this.instanceState.value = cachedRecord.value as any;
             }
@@ -106,5 +109,22 @@ export default class RecordStore<T = any> {
 
     getRecordStoreAtRootPath() {
         return RecordStore.createChildStore(this, this.pointer)
+    }
+
+    clone() {
+        return new RecordStore({
+            pointer: this.pointer,
+            userId: this.userId
+        });
+    }
+
+    cloneWithNewParent<T extends RecordStore>(parent: T): this {
+        const childKey = RecordStore.getChildStoreKey(this.pointer, RecordStore.keyName, this.path);
+        const childInCache = parent.getRecordStoreChildStore(childKey) as this;
+        const child = childInCache || this.clone();
+        if (!childInCache) {
+            child.setRecordStoreParent(childKey, parent);
+        }
+        return child;
     }
 }

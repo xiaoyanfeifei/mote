@@ -13,6 +13,9 @@ import { safeStringify } from "vs/base/common/objects";
 import { IMainProcessService } from "vs/platform/ipc/electron-sandbox/services";
 import { ElectronIPCMainProcessService } from "vs/platform/ipc/electron-sandbox/mainProcessService";
 import { NativeLogService } from "mote/workbench/services/log/electron-sandbox/logService";
+import { BrowserStorageService } from "vs/platform/storage/browser/storageService";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { IStorageService } from "vs/platform/storage/common/storage";
 
 export class DesktopMain extends Disposable {
 	constructor(
@@ -70,8 +73,27 @@ export class DesktopMain extends Disposable {
 			logService.trace('workbench#open(): with configuration', safeStringify(this.configuration));
 		}
 
+		const storageService = await this.createStorageService(logService);
+		// Storage
+		serviceCollection.set(IStorageService, storageService);
+
         return {serviceCollection};
     }
+
+	private async createStorageService(logService: ILogService) {
+		const storageService = new BrowserStorageService({}, logService);
+
+		try {
+			await storageService.initialize();
+		} catch (error) {
+			onUnexpectedError(error);
+			logService.error(error);
+
+			return storageService;
+		}
+
+		return storageService;
+	}
 
 }
 
