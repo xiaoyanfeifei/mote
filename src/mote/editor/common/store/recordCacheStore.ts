@@ -1,3 +1,5 @@
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import { ILogService } from "vs/platform/log/common/log";
 import { IStorageService, StorageScope, StorageTarget } from "vs/platform/storage/common/storage";
 import { Pointer, RecordWithRole } from "./record";
@@ -8,7 +10,7 @@ interface CacheKeyProps {
 }
 
 
-export default class RecordCacheStore {
+export default class RecordCacheStore extends Disposable {
 
     static Default = new RecordCacheStore();
 
@@ -16,6 +18,9 @@ export default class RecordCacheStore {
         const {pointer: {table, id}, userId} = props;
         return `${table}:${id}:${userId||""}`;
     }
+
+    private _onDidChange = this._register(new Emitter<string>());
+	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
     storageService!: IStorageService;
     logService!: ILogService;
@@ -73,6 +78,7 @@ export default class RecordCacheStore {
             }
             this.state.cache.set(key, record);
             this.storageService.store(key, JSON.stringify(record), StorageScope.WORKSPACE, StorageTarget.USER);
+            this._onDidChange.fire(key);
         } else
             this.deleteRecord(keyProps)
     }

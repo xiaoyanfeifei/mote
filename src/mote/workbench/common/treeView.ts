@@ -1,3 +1,4 @@
+import RecordStore from 'mote/editor/common/store/recordStore';
 import { Event, Emitter } from 'vs/base/common/event';
 
 export enum TreeItemCollapsibleState {
@@ -7,6 +8,8 @@ export enum TreeItemCollapsibleState {
 }
 
 export interface ITreeItem {
+
+	id: string;
 
 	handle: string;
 

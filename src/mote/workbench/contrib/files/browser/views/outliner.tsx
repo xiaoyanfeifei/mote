@@ -1,4 +1,4 @@
-import { createElement } from "mote/base/jsx/createElement";
+import { createElement, setStyles } from "mote/base/jsx/createElement";
 import { Fragment } from "mote/base/jsx/jsx";
 import Column from "mote/base/ui/column/column";
 import fonts from "mote/base/ui/fonts";
@@ -7,6 +7,8 @@ import { ThemedColors, ThemedStyles } from "mote/base/ui/themes";
 import BlockStore from "mote/editor/common/store/blockStore";
 import RecordStore from "mote/editor/common/store/recordStore";
 import SpaceStore from "mote/editor/common/store/spaceStore";
+import { $ } from "vs/base/browser/dom";
+import { IDisposable } from "vs/base/common/lifecycle";
 
 const PlusIcon = () => {
   
@@ -28,151 +30,67 @@ const PlusIcon = () => {
 interface ColumnNameProps {
     shouldWrap?: boolean;
     displayName?: string;
-    //store: RecordStore;
+    store: RecordStore;
     isTopLevel: boolean;
     placeholder?: string;
 }
 
-export const ColumnName = (props: ColumnNameProps) => {
-    
+export class NameFromStore {
 
-    const getStyle=()=>{
-        return Object.assign({}, !props.shouldWrap && fonts.textOverflowStyle || {});
+    public element!: HTMLElement;
+
+    private shouldWrap?: boolean;
+    private placeholder?: string;
+    private _store!: RecordStore;
+    private listener!: IDisposable;
+
+    private domNode!: Text;
+
+    constructor(store: RecordStore) {
+        this.store = store;
+        this.create();
     }
 
-    const getTitle = () => {
-        const title = "";
-        
-        if (null != title && title.length > 0) {
-            return title;
+    create() {
+        this.element = $("");
+        setStyles(this.element, this.getStyle());
+        this.domNode = document.createTextNode(this.getTitle());
+        this.element.appendChild(this.domNode);
+    }
+
+    set store(value: RecordStore) {
+        if (this.listener) {
+            this.listener.dispose();
         }
-        return getEmptyTitle();
+        this._store = value;
+        this.listener = this._store.onDidChange(this.update);
     }
 
-    const getEmptyTitle = () => {
-        if (props.placeholder){
-            return props.placeholder;
+    private update =() => {
+        this.domNode.textContent = this.getTitle();
+    }
+
+    getStyle=()=>{
+        return Object.assign({}, !this.shouldWrap && fonts.textOverflowStyle || {});
+    }
+
+    getTitle = () => {
+        const title = this._store.getValue();
+        if (null != title && title.length > 0) {
+            return title.join("");
+        }
+        return this.getEmptyTitle();
+    }
+
+    getEmptyTitle = () => {
+        if (this.placeholder){
+            return this.placeholder;
         } else {
             return "emptyPageTitle"
         }
     }
-
-    return (
-        <div style={getStyle()}>
-            {getTitle()}
-        </div>
-    )
 }
 
-export const PageItem = (props) => {
-    
-    const isMobile = false;
-    const open = false;
-    const focused = false;
-
-    const shouldShowChildren = () => {
-        return open;
-    }
-
-    const getPaddingLeftUnit = () => {
-        return isMobile ? 22 : 14;
-    }
-
-    const getInitialPaddingLeft = () => {
-        return isMobile ? 6 : 14;
-    }
-
-    const getLinkStyle = () => {
-        return {
-            width: "100%",
-            display: "block",
-            textDecoration: "none",
-            color: ThemedColors.inherit
-        }
-    }
-
-    const getActiveStyle = () => {
-        return {
-            background: ThemedStyles.buttonHoveredBackground.dark,
-            color: ThemedStyles.regularTextColor.dark,
-            fontWeight: fonts.fontWeight.semibold
-        }
-    }
-
-    const getSidebarItemStyle = () => {
-        return Object.assign({}, focused && {
-            background: ThemedStyles.buttonHoveredBackground.dark,
-            color: ThemedStyles.regularTextColor.dark,
-        }, props.style);
-    }
-
-    const getSubOutlinerStyle = () => {
-        const subOutlinerStyle = Object.assign({}, props.style);
-        const sidebarItemStyle = getSidebarItemStyle();
-        const paddingLeft: number = "number" == typeof(sidebarItemStyle.paddingLeft) ? sidebarItemStyle.paddingLeft as number : getInitialPaddingLeft();
-        subOutlinerStyle.paddingLeft = paddingLeft + getPaddingLeftUnit();
-        return subOutlinerStyle;
-    }
-
-    const getButtonStyle = () => {
-        return {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 20,
-            height: 20,
-            borderRadius: 3
-        }
-    }
-
-    const renderIcon = () => {
-        return (
-            <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.dark}}/>
-        )
-    }
-
-    return (
-        <a style={getLinkStyle()} className="tree-item">
-            <Column
-                style={getSidebarItemStyle()}
-                icon={renderIcon()}>
-                    <ColumnName  isTopLevel/>
-            </Column>
-        </a>
-    )
-}
-
-
-export class Outliner {
-
-    constructor(
-        private parentStore: RecordStore,
-        private childStores: BlockStore[]
-    ) {
-
-    }
-
-    create(parent: HTMLElement) {
-        const content = this.render();
-        parent.appendChild(content);
-    }
-
-    render() {
-        const pageItems = this.childStores ? this.childStores.map(childStore=><PageItem />) : [];
-
-        return (
-            <>
-               {pageItems}
-            </>
-        )
-    }
-
-    renderEmptyChildrenPlaceholder() {
-        return (
-            <span>Empty Children</span>
-        )
-    }
-}
 
 const styles = {
     outliner: {

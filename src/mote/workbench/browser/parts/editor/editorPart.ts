@@ -17,6 +17,8 @@ import BlockStore from "mote/editor/common/store/blockStore";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { ILogService } from "vs/platform/log/common/log";
+import { CommandsRegistry } from "mote/platform/commands/common/commands";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 
 export class EditorPart extends Part implements IEditorService {
     
@@ -50,16 +52,28 @@ export class EditorPart extends Part implements IEditorService {
 	readonly onDidLayout = this._onDidLayout.event;
 
     private container: HTMLElement | undefined;
+    private titleContainer: HTMLElement | undefined;
+
+    private headerContainer: EditableContainer | undefined;
+
+    private pageStore: BlockStore | undefined;
     
     constructor(
         @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
         @IThemeService themeService: IThemeService,
         @IStorageService storageService: IStorageService,
-        @ILogService logService: ILogService,
+        @ILogService private logService: ILogService,
     ) {
         super(Parts.EDITOR_PART, {hasTitle: false}, themeService, layoutService);
         RecordCacheStore.Default.storageService = storageService;
         RecordCacheStore.Default.logService = logService;
+        CommandsRegistry.registerCommand("openPage", this.openPage);
+    }
+
+    openPage = (accessor: ServicesAccessor, payload) => {
+        //this.logService.debug("payload:", payload);
+        this.pageStore = new BlockStore({id: payload.id, table:"page"},"123");
+        this.updateTitle();
     }
 
     openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
@@ -86,23 +100,25 @@ export class EditorPart extends Part implements IEditorService {
         return `calc(${padding}px + env(safe-area-inset-right))`
     }
 
+    updateTitle() {
+       
+        this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
+    }
+
     override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
         this.createCover(parent);
         const titleDomNode = $(".editor-header");
-        const titleContainer = $("");
+        this.titleContainer = $("");
 
-        titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-        titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
-        titleContainer.style.width = "100%";
+        this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+        this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
+        this.titleContainer.style.width = "100%";
 
-        const header = new EditableContainer(titleContainer, {
+        this.headerContainer = new EditableContainer(this.titleContainer!, {
             placeholder: "Untitled"
         });
 
-       const store = new BlockStore({id: "block1", table:"block"}, "123");
-        header.store = store.getPropertyStore("title");
-
-        titleDomNode.append(titleContainer);
+        titleDomNode.append(this.titleContainer);
         setStyles(titleDomNode, this.getTitleStyle());
         parent.append(titleDomNode);
         return titleDomNode;

@@ -17,7 +17,9 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
 import { FILES_VIEWLET_ID } from "../common/files";
-import { ColumnName, Outliner, PageItem } from "./views/outliner";
+import { NameFromStore, } from "./views/outliner";
+import { ICommandService } from "mote/platform/commands/common/commands";
+import BlockStore from "mote/editor/common/store/blockStore";
 
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
@@ -28,6 +30,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
         @ILogService logService: ILogService,
         @IInstantiationService instantiationService: IInstantiationService,
         @IThemeService themeService: IThemeService,
+        @ICommandService private readonly commandService: ICommandService,
     ) {
         super(FILES_VIEWLET_ID, layoutService, logService, instantiationService, themeService);
     }
@@ -41,11 +44,12 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 	}
 
     renderBody(container: HTMLElement) {
+        const that = this;
         container.style.paddingTop = "14px";
         const spaceStore = new SpaceStore({
             table: "space",
             id: "1",
-        }, {userId: "1"});
+        }, {userId: "123"});
         spaceStore.instanceState.value = {
             name: "Evan",
             id: "1",
@@ -54,16 +58,24 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
             table: "space",
             version: 1
         }
-        //const outliner = new Outliner(spaceStore.getPagesStore(), spaceStore.getPagesStores());
-        //outliner.create(container);
+
         const renderer = new class implements TreeRender<ITreeItem> {
             render(element: HTMLElement, value: ITreeItem) {
+                const pageStore = new BlockStore(
+                    {table: "page", id: value.id},
+                    "123",
+                )
+                const titleStore = pageStore.getPropertyStore("title");
                 const icon = <SVGIcon name="page" style={{fill: ThemedStyles.mediumIconColor.dark}}/>
-                const child = <ColumnName  isTopLevel/>
+                const child = new NameFromStore(titleStore);
                 const item = new ListItem(element, {enableClick: true});
-                item.child = child;
+                item.child = child.element;
                 item.icon = icon;
                 item.create();
+
+                item.onDidClick((e)=>{
+                    that.commandService.executeCommand("openPage", {id: value.id});
+                });
             }
             
         }
@@ -76,6 +88,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
                 
                 const items = spaceStore.getPagesStores().map(store=>{
                     const item: ITreeItem = {
+                        id: store.id,
                         handle: "",
                         collapsibleState: TreeItemCollapsibleState.Collapsed
                     };

@@ -36,7 +36,6 @@ export class Editable extends Widget {
 
     public set value(newValue: string) {
         this.input.innerHTML = newValue;
-        console.log("input, innner:", newValue);
     }
 
     private onValueChange() {
@@ -44,6 +43,7 @@ export class Editable extends Widget {
     }
 
     style(value: CSSProperties) {
+        this.input.removeAttribute("style");
         setStyles(this.input, value);
     }
 }

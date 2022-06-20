@@ -66,6 +66,9 @@ export function nodeToString(element:Node){
 }
 
 export function segmentsToElement(segments: Segment[]) {
+    if (!Array.isArray(segments)) {
+        segments = [];
+    }
     return segments.map(segment=>{
         const textContent = getFirstInArray(segment) as string;
         const annotations:string[][] = getSecondArrayInArray(segment);

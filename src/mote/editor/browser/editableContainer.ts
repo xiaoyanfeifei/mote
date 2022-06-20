@@ -32,10 +32,10 @@ export class EditableContainer {
 
 
     private handleChange = (value: string) => {
-        console.log("change value:", value);
         const that = this;
         Transaction.createAndCommit((transcation)=>{
             that.blockService.onChange(that._store, transcation, {startIndex:0, endIndex:0}, that.getTextValue(), value);
+            that.applyStyles()
         }, "");
     }
 
@@ -65,12 +65,11 @@ export class EditableContainer {
     set store(value: BlockStore) {
         this._store = value;
         this.update();
-        console.log("update for value");
     }
 
     private update() {
-        console.log("value:", this.getTextValue());
         this.editable.value = segmentsToElement(this.getTextValue()).join("");
+        this.applyStyles()
     }
 
     isEmpty() {

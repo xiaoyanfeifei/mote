@@ -1,3 +1,5 @@
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 import { get } from "../core/commandFacade";
 import { Pointer, Role } from "./record";
 import RecordCacheStore from "./recordCacheStore";
@@ -14,10 +16,13 @@ interface RecordStoreProps {
     path?: string[];
 }
 
-export default class RecordStore<T = any> {
+export default class RecordStore<T = any> extends Disposable {
 
     static key = 0;
     static keyName = "RecordStore";
+
+    private _onDidChange = this._register(new Emitter<void>());
+	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
     userId: string;
     pointer: Pointer;
@@ -63,18 +68,33 @@ export default class RecordStore<T = any> {
     //#endregion
 
     constructor(props: RecordStoreProps) {
+        super();
         this.userId = props.userId || "";
         this.pointer = props.pointer;
         this.id = props.pointer.id;
         this.table = props.pointer.table;
         this.path = props.path || [];
         this.instanceState = {};
-        //this.syncIfNeed();
+
+        this.sync();
+        RecordCacheStore.Default.onDidChange((e)=>{
+            if (this.identify == e) {
+                this.sync();
+                this._onDidChange.fire();
+            }
+        })
+    }
+
+    get identify() {
+        return RecordCacheStore.generateCacheKey({pointer: this.pointer, userId: this.userId});
     }
 
     get state() {
+        return this.instanceState;
+    }
+
+    private sync() {
         const cachedRecord = RecordCacheStore.Default.getRecord({pointer: this.pointer, userId: this.userId});
-        console.log("cachedRecord:", cachedRecord, this.pointer);
         if (cachedRecord) {
             if ( this.path && this.path.length > 0) {
                 this.instanceState.value = get(cachedRecord.value, this.path)
@@ -82,7 +102,6 @@ export default class RecordStore<T = any> {
                 this.instanceState.value = cachedRecord.value as any;
             }
         }
-        return this.instanceState;
     }
 
 
