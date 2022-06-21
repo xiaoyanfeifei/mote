@@ -25,6 +25,7 @@ export class Transaction {
     }
 
     id:string = uuid.v1();
+    userId: string;
     isLocal = true;
     canUndo = true;
 
@@ -32,20 +33,17 @@ export class Transaction {
     stores: RecordStore[] = [];
 
     private constructor(userId: string) {
-
+        this.userId = userId;
     }
 
     commit() {
-
+        console.log("operations:", this.operations);
     }
 
     addOperation(store:RecordStore, operation: Operation ) {
         let record = store.getRecordStoreAtRootPath().getValue();
         record = CommandFacade.execute(operation, record);
         const role = store.getRecordStoreAtRootPath().getRole();
-
-
-        console.log("new record:", record);
 
         RecordCacheStore.Default.setRecord({
             pointer: store.pointer,

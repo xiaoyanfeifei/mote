@@ -1,4 +1,6 @@
+import * as uuid from "uuid";
 import RecordStore from "mote/editor/common/store/recordStore";
+import BlockStore from "../store/blockStore";
 import { Transaction } from "./transaction";
 
 export enum Command {
@@ -19,6 +21,23 @@ export interface Operation {
 }
 
 export class EditOperation {
+
+    public static createBlockStore(type: string, transaction: Transaction) {
+        const id = uuid.v1();
+        const blockStore = new BlockStore({
+            table: "block",
+            id: id
+        }, transaction.userId);
+        this.addSetOperationForStore(blockStore, {
+            type: type
+        }, transaction);
+        return blockStore;
+    }
+
+    public static createChild(parent: BlockStore, transaction: Transaction) {
+        const child = this.createBlockStore("text", transaction);
+        this.appendToParent(parent.getContentStore(), child, transaction);
+    }
 
     public static prependChild(parent: RecordStore, prepend: RecordStore, transaction: Transaction) {
         this.addOperationForStore(parent, {id: prepend.id}, transaction, Command.ListBefore);

@@ -103,3 +103,5 @@ export default class RecordCacheStore extends Disposable {
         this.state.syncStates.delete(RecordCacheStore.generateCacheKey(e))
     }
 }
+
+window["RecordCacheStore"] = RecordCacheStore.Default;

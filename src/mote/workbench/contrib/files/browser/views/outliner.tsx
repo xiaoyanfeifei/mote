@@ -86,7 +86,7 @@ export class NameFromStore {
         if (this.placeholder){
             return this.placeholder;
         } else {
-            return "emptyPageTitle"
+            return "Untitled"
         }
     }
 }

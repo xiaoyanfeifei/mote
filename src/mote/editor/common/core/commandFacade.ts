@@ -1,4 +1,4 @@
-import { Command, Operation } from "./editOperation";
+import { Command, Operation } from "mote/editor/common/operations";
 
 
 function findIndex(arr: any[], predict: (t:any)=>boolean): number {
@@ -24,6 +24,7 @@ export function get(object, path) {
   }
 
 function filterAllNotEqId(record: any, value: any[]) {
+    value = value || [];
     value = value.filter(t=>t !== record.id);
     return value
 }

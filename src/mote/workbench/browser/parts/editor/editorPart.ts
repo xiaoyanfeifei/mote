@@ -19,6 +19,9 @@ import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { ILogService } from "vs/platform/log/common/log";
 import { CommandsRegistry } from "mote/platform/commands/common/commands";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { DocumentEditor } from "./documentEditor";
+import { EmptyHolder } from "./emptyHolder";
+import { IDisposable } from "vs/base/common/lifecycle";
 
 export class EditorPart extends Part implements IEditorService {
     
@@ -56,7 +59,11 @@ export class EditorPart extends Part implements IEditorService {
 
     private headerContainer: EditableContainer | undefined;
 
-    private pageStore: BlockStore | undefined;
+    private pageStore!: BlockStore;
+    private listener!: IDisposable;
+
+    private editor!: DocumentEditor;
+    private emptyHolder!: EmptyHolder;
     
     constructor(
         @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
@@ -71,9 +78,32 @@ export class EditorPart extends Part implements IEditorService {
     }
 
     openPage = (accessor: ServicesAccessor, payload) => {
-        //this.logService.debug("payload:", payload);
+        this.logService.debug("[EditorPart] Open page with payload", payload);
         this.pageStore = new BlockStore({id: payload.id, table:"page"},"123");
+        if (this.listener) {
+            this.listener.dispose();
+        }
+        const contentStore = this.pageStore!.getContentStore();
+        this.listener = contentStore.onDidChange(this.update);
+
         this.updateTitle();
+        this.update();
+    }
+
+    private update = () => {
+    
+        const contentStore = this.pageStore!.getContentStore();
+
+        if ((contentStore.getValue() || []).length == 0) {
+            this.editor.hidden();
+            this.emptyHolder.store = this.pageStore;
+            this.emptyHolder.show();
+        } else {
+            this.emptyHolder.hidden();
+            this.editor!.store = contentStore;
+            this.editor!.create();
+            this.editor.show();
+        }
     }
 
     openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
@@ -101,7 +131,6 @@ export class EditorPart extends Part implements IEditorService {
     }
 
     updateTitle() {
-       
         this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
     }
 
@@ -129,7 +158,13 @@ export class EditorPart extends Part implements IEditorService {
 		this.element = parent;
 		this.container = document.createElement('div');
 		this.container.classList.add('content');
+        this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+        this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
+        this.container.style.paddingTop = "25px";
 		parent.appendChild(this.container);
+
+        this.editor = new DocumentEditor(this.container!);
+        this.emptyHolder = new EmptyHolder(this.container!);
 
         return this.container;
     }

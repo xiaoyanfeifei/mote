@@ -24,7 +24,7 @@ export class EditableContainer {
     constructor(container: HTMLElement, options: EditableContainerOptions) {
         this.options = options;
         this.editable = new Editable(container, {
-            placeholder: "Untitled"
+            placeholder: options.placeholder || "Untitled"
         });
         this.editable.onDidChange(this.handleChange);
         this.applyStyles();
@@ -67,7 +67,7 @@ export class EditableContainer {
         this.update();
     }
 
-    private update() {
+    public update() {
         this.editable.value = segmentsToElement(this.getTextValue()).join("");
         this.applyStyles()
     }

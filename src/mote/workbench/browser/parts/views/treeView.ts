@@ -13,6 +13,7 @@ import { DomEmitter } from "vs/base/browser/event";
 import { ICommandService } from "mote/platform/commands/common/commands";
 
 class Root implements ITreeItem {
+    id = "root"
     label = { label: 'root' };
     handle = '0';
     parentHandle?: string | undefined = undefined;
