@@ -4,7 +4,7 @@ import { textChange } from "mote/editor/common/core/textChange";
 import BlockStore from "mote/editor/common/store/blockStore";
 import * as segmentUtils from "mote/editor/common/segmentUtils";
 import { EditOperation } from "../common/core/editOperation";
-import { Segment } from "mote/editor/common/segmentUtils";
+import { ISegment } from "mote/editor/common/segmentUtils";
 import { DIFF_INSERT, DIFF_DELETE, DIFF_EQUAL } from "diff-match-patch";
 
 export class BlockService extends Disposable {
@@ -62,7 +62,7 @@ export class BlockService extends Disposable {
         this.delete(transaction, store, selection, selectionMode);
 
         if (content.length > 0) {
-            const segment = segmentUtils.combineArray(content, []) as Segment;
+            const segment = segmentUtils.combineArray(content, []) as ISegment;
 
             const storeValue = store.getValue();
             EditOperation.addSetOperationForStore(

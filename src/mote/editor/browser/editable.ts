@@ -21,6 +21,7 @@ export class Editable extends Widget {
 
         this.input = $("");
         this.input.contentEditable = "true";
+        this.input.setAttribute("data-root", "");
         if (options.placeholder) {
             this.input.setAttribute("placeholder", options.placeholder);
         }
@@ -33,6 +34,10 @@ export class Editable extends Widget {
     public get value(): string {
 		return nodeToString(this.input);
 	}
+
+    public get element() {
+        return this.input;
+    }
 
     public set value(newValue: string) {
         this.input.innerHTML = newValue;

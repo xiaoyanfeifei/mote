@@ -4,6 +4,30 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IHoverService = createDecorator<IHoverService>('hoverService');
 
+export interface IHoverAction {
+	/**
+	 * The label to use in the hover's status bar.
+	 */
+	label: string;
+
+	/**
+	 * The command ID of the action, this is used to resolve the keybinding to display after the
+	 * action label.
+	 */
+	commandId: string;
+
+	/**
+	 * An optional class of an icon that will be displayed before the label.
+	 */
+	iconClass?: string;
+
+	/**
+	 * The callback to run the action.
+	 * @param target The action element that was activated.
+	 */
+	run(target: HTMLElement): void;
+}
+
 /**
  * A target for a hover.
  */
@@ -33,6 +57,7 @@ export interface IHoverWidget extends IDisposable {
 }
 
 export interface IHoverOptions {
+    actions?: IHoverAction[];
 	/**
 	 * The content to display in the primary section of the hover. The type of text determines the
 	 * default `hideOnHover` behavior.

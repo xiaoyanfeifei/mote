@@ -18,6 +18,14 @@ import 'mote/workbench/contrib/files/browser/files.contribution';
 
 import 'mote/workbench/services/hover/browser/hoverService';
 import 'mote/workbench/services/commands/common/commandService';
+import 'mote/workbench/services/editor/browser/editorService';
 
 //#endregion
 
+
+import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { ContextViewService } from 'vs/platform/contextview/browser/contextViewService';
+
+
+registerSingleton(IContextViewService, ContextViewService, true);

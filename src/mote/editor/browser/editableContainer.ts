@@ -1,10 +1,12 @@
 import { CSSProperties } from "mote/base/jsx";
 import { ThemedStyles } from "mote/base/ui/themes";
 import BlockStore from "mote/editor/common/store/blockStore";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { Transaction } from "../common/core/transaction";
 import { segmentsToElement } from "../common/textSerialize";
 import { BlockService } from "../services/blockService";
 import { Editable } from "./editable";
+import { OperationWrapper } from "./operationWrapper";
 
 interface EditableContainerOptions {
     style?: CSSProperties;
@@ -20,13 +22,19 @@ export class EditableContainer {
     private _store?: BlockStore;
 
     private blockService: BlockService = new BlockService();
+    private operationHandler: OperationWrapper;
 
-    constructor(container: HTMLElement, options: EditableContainerOptions) {
+    constructor(
+        container: HTMLElement, 
+        options: EditableContainerOptions,
+        @IInstantiationService private readonly instantiationService: IInstantiationService
+    ) {
         this.options = options;
         this.editable = new Editable(container, {
             placeholder: options.placeholder || "Untitled"
         });
         this.editable.onDidChange(this.handleChange);
+        this.operationHandler = this.instantiationService.createInstance(OperationWrapper, this.editable.element);
         this.applyStyles();
     }
 

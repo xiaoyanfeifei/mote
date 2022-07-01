@@ -18,7 +18,7 @@ import { IStorageService } from "vs/platform/storage/common/storage";
 import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { ILogService } from "vs/platform/log/common/log";
 import { CommandsRegistry } from "mote/platform/commands/common/commands";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { IInstantiationService, ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { DocumentEditor } from "./documentEditor";
 import { EmptyHolder } from "./emptyHolder";
 import { IDisposable } from "vs/base/common/lifecycle";
@@ -70,6 +70,7 @@ export class EditorPart extends Part implements IEditorService {
         @IThemeService themeService: IThemeService,
         @IStorageService storageService: IStorageService,
         @ILogService private logService: ILogService,
+        @IInstantiationService private readonly instantiationService: IInstantiationService
     ) {
         super(Parts.EDITOR_PART, {hasTitle: false}, themeService, layoutService);
         RecordCacheStore.Default.storageService = storageService;
@@ -143,7 +144,7 @@ export class EditorPart extends Part implements IEditorService {
         this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
         this.titleContainer.style.width = "100%";
 
-        this.headerContainer = new EditableContainer(this.titleContainer!, {
+        this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
             placeholder: "Untitled"
         });
 
@@ -163,7 +164,7 @@ export class EditorPart extends Part implements IEditorService {
         this.container.style.paddingTop = "25px";
 		parent.appendChild(this.container);
 
-        this.editor = new DocumentEditor(this.container!);
+        this.editor = this.instantiationService.createInstance(DocumentEditor, this.container!);
         this.emptyHolder = new EmptyHolder(this.container!);
 
         return this.container;

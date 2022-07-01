@@ -5,6 +5,7 @@ import { EditableContainer } from "mote/editor/browser/editableContainer";
 import BlockStore from "mote/editor/common/store/blockStore";
 import { $ } from "vs/base/browser/dom";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 interface BlockOptions {
     placeholder?: string;
@@ -41,13 +42,18 @@ class TextBasedBlock extends BaseBlock {
     protected options: BlockOptions;
     private input: EditableContainer;
 
-    constructor(options: BlockOptions) {
+    constructor(
+        options: BlockOptions,
+        @IInstantiationService private readonly instantiationService: IInstantiationService
+    ) {
         super();
         this.options = options;
-        this._element = $("text-block");
-        this.input = new EditableContainer(this._element, {
-            placeholder: options.placeholder || "Type to continue"
-        });
+        this._element = $(".text-based-block");
+        this.input = this.instantiationService.createInstance(
+            EditableContainer,
+            this._element, {
+                placeholder: options.placeholder || "Type to continue"
+            });
         if (this.getStyle()) {
             setStyles(this.element, this.getStyle()!);
         }
@@ -81,21 +87,9 @@ export class TextBlock extends TextBasedBlock {
 }
 
 
-export class HeaderBlock {
+export class HeaderBlock extends TextBasedBlock {
 
-    private options: BlockOptions;
-
-    private container: HTMLElement;
-    private input: EditableContainer;
-
-    constructor(options: BlockOptions) {
-        this.options = options;
-        this.container = $("header-block");
-        setStyles(this.container, this.getStyle());
-        this.input = new EditableContainer(this.container, {});
-    }
-
-    getStyle() {
+    override getStyle() {
         return Object.assign({
             display: "flex",
             width: "100%",

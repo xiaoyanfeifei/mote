@@ -1,44 +1,11 @@
 import { setStyles } from "mote/base/jsx/createElement";
 import fonts from "mote/base/ui/fonts";
 import { ThemedBase, ThemedColors } from "mote/base/ui/themes";
-import { getFirstInArray, getSecondArrayInArray, Segment } from "./segmentUtils";
-
-const CLASS_TEXT_MENTION_TOKEN = "mote-text-mention-token";
-
-function isNode(node?: Node | null) {
-    try {
-        return node && void 0 !== node.nodeType
-    } catch (_) {
-        return false;
-    }
-};
-
-function isElementNode(node?: Node) {
-    return isNode(node) && node!.nodeType === Node.ELEMENT_NODE
-}
-
-function isTextNode(node?: Node|null) {
-    return isNode(node) && node!.nodeType == Node.TEXT_NODE;
-}
-
-function isBrNode(node?: Node) {
-    if (isElementNode(node)) {
-        const element = node as Element;
-        return "br" === element.tagName.toLowerCase();
-    }
-    return false;
-}
-
-function isTextMentionNode(node?: Node) {
-    if (isElementNode(node)) {
-        const element = node as Element;
-        return element.classList.contains(CLASS_TEXT_MENTION_TOKEN);
-    }
-    return false;
-}
+import { isBrNode, isTextMentionNode, isTextNode } from "./htmlElementUtils";
+import { getFirstInArray, getSecondArrayInArray, ISegment } from "./segmentUtils";
 
 
-function serializeNode(node: Node) {
+export function serializeNode(node: Node) {
     let result = "";
     if (isTextMentionNode(node)) {
 
@@ -65,7 +32,7 @@ export function nodeToString(element:Node){
     return serialized;
 }
 
-export function segmentsToElement(segments: Segment[]) {
+export function segmentsToElement(segments: ISegment[]) {
     if (!Array.isArray(segments)) {
         segments = [];
     }

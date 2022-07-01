@@ -2,23 +2,7 @@ import * as uuid from "uuid";
 import RecordStore from "mote/editor/common/store/recordStore";
 import BlockStore from "../store/blockStore";
 import { Transaction } from "./transaction";
-
-export enum Command {
-    Update = 0,
-    Set,
-    ListBefore,
-    ListAfter,
-    ListRemove
-}
-
-export interface Operation {
-    id: string;
-    table: string;
-    path: string[];
-    command: Command;
-    size?: number;
-    args: any;
-}
+import { Command } from "mote/editor/common/operations";
 
 export class EditOperation {
 

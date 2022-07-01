@@ -1,7 +1,7 @@
 
-export type Annotation = [string];
+export type IAnnotation = [string];
 
-export type Segment = [string, Annotation[]?];
+export type ISegment = [string, IAnnotation[]?];
 
 export function getFirstInArray<T>(e:T[]) {
     return e[0]
@@ -23,15 +23,15 @@ function sliceArray(content: string[], startIndex: number, endIndex?: number) {
     return content.slice(Math.max(0, startIndex), endIndex);
 }
 
-export function merge(record: Segment[], segments: Segment[], startIndex: number) {
+export function merge(record: ISegment[], segments: ISegment[], startIndex: number) {
     record = emptyOrArray(record);
     if (record.length > 0) {
-        const newRecord: Segment[] = [];
+        const newRecord: ISegment[] = [];
         let bias = 0;
         let flag = false;
         for (const segment of record) {
             const content = getFirstInArray(segment) as string;
-            const annotations = getSecondArrayInArray(segment) as Annotation[];
+            const annotations = getSecondArrayInArray(segment) as IAnnotation[];
             const contentInArray = Array.from(content);
             let currentBias = bias;
             let endIndex = bias + contentInArray.length;
@@ -40,13 +40,13 @@ export function merge(record: Segment[], segments: Segment[], startIndex: number
                 const contentBefore = sliceArray(contentInArray, 0, index);
                 const contentAfter = sliceArray(contentInArray, index);
                 if (contentBefore.length > 0) {
-                    newRecord.push(combineArray(contentBefore.join(""), annotations) as Segment);
+                    newRecord.push(combineArray(contentBefore.join(""), annotations) as ISegment);
                 }
                 for (const newSegment of segments) {
                     newRecord.push(newSegment);
                 }
                 if (contentAfter.length > 0) {
-                    newRecord.push(combineArray(contentAfter.join(""), annotations) as Segment);
+                    newRecord.push(combineArray(contentAfter.join(""), annotations) as ISegment);
                 }
                 flag = true;
             } else {
@@ -59,13 +59,13 @@ export function merge(record: Segment[], segments: Segment[], startIndex: number
     return segments;
 }
 
-export function remove(record: Segment[], startIndex: number, endIndex: number) {
+export function remove(record: ISegment[], startIndex: number, endIndex: number) {
     record = emptyOrArray(record);
-    const newRecord: Segment[] = [];
+    const newRecord: ISegment[] = [];
     let offset = 0;
     for (const segment of record) {
         const content = getFirstInArray(segment) as string;
-        const annotations = getSecondArrayInArray(segment) as Annotation[];
+        const annotations = getSecondArrayInArray(segment) as IAnnotation[];
         const contentInArray = Array.from(content);
         let currentOffset = offset;
         let currentEndIndex = offset + contentInArray.length;
@@ -81,16 +81,16 @@ export function remove(record: Segment[], startIndex: number, endIndex: number) 
             const currentStartIndex = startIndex - currentOffset;
             const currentEndIndex = currentStartIndex + endIndex - startIndex;
             const newContent = contentInArray.filter((char, idx)=>!(idx >= currentStartIndex && idx <= currentEndIndex - 1));
-            newRecord.push(combineArray(newContent.join(""), annotations) as Segment);
+            newRecord.push(combineArray(newContent.join(""), annotations) as ISegment);
         }
         offset = currentEndIndex;
     }
     return newRecord;
 }
 
-export function slice(record: Segment[], startIndex: number, endIndex: number) {
+export function slice(record: ISegment[], startIndex: number, endIndex: number) {
     record = emptyOrArray(record);
-    const newRecord: Segment[] = [];
+    const newRecord: ISegment[] = [];
     let recordOffset = 0;
     let offset = 0;
     while (recordOffset < record.length && offset < endIndex) {
@@ -98,10 +98,10 @@ export function slice(record: Segment[], startIndex: number, endIndex: number) {
         if (offset >= startIndex) {
             const contentInArray = Array.from(getFirstInArray(segment) as any) as string[];
             if (!(offset + contentInArray.length <= endIndex)) {
-                const annotations = getSecondArrayInArray(segment) as Annotation[];
+                const annotations = getSecondArrayInArray(segment) as IAnnotation[];
                 const index = endIndex - offset;
                 const content = contentInArray.slice(0, index).join("");
-                newRecord.push(combineArray(content, annotations) as Segment);
+                newRecord.push(combineArray(content, annotations) as ISegment);
                 break;
             }
             newRecord.push(segment);
@@ -110,17 +110,17 @@ export function slice(record: Segment[], startIndex: number, endIndex: number) {
         } else {
             const contentInArray = Array.from(getFirstInArray(segment) as any) as string[];
             if (offset + contentInArray.length > startIndex) {
-                const annotations = getSecondArrayInArray(segment) as Annotation[];
+                const annotations = getSecondArrayInArray(segment) as IAnnotation[];
                 if (!(offset + contentInArray.length <= endIndex)) {
                     const currentStartIndex = startIndex - offset;
                     const currentEndIndex = endIndex - offset;
                     const content = contentInArray.slice(currentStartIndex, currentEndIndex).join("");
-                    newRecord.push(combineArray(content, annotations) as Segment);
+                    newRecord.push(combineArray(content, annotations) as ISegment);
                     break;
                 }
                 const currentStartIndex = startIndex - offset;
                 const content = contentInArray.slice(currentStartIndex).join("");
-                newRecord.push(combineArray(content, annotations) as Segment);
+                newRecord.push(combineArray(content, annotations) as ISegment);
                 offset += contentInArray.length;
                 recordOffset += 1;
             } else {

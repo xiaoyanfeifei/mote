@@ -3,6 +3,7 @@ import RecordStore from "mote/editor/common/store/recordStore";
 import { TextBlock } from "mote/workbench/contrib/blocks/browser/blocks";
 import { $ } from "vs/base/browser/dom";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 export class DocumentEditor extends Disposable {
 
@@ -12,7 +13,10 @@ export class DocumentEditor extends Disposable {
 
     private listener!: IDisposable;
 
-    constructor(parent: HTMLElement) {
+    constructor(
+        parent: HTMLElement,
+        @IInstantiationService private readonly instantiationService: IInstantiationService
+    ) {
         super();
 
         this.parent = parent;
@@ -54,7 +58,7 @@ export class DocumentEditor extends Disposable {
     private createBlock(id: string): HTMLElement {
         const blockStore = this.createStoreForItemId(id);
         console.log(blockStore);
-        const block = new TextBlock({});
+        const block = this.instantiationService.createInstance(TextBlock, {});
         block.store = blockStore;
         return block.element;
     }

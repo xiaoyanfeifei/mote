@@ -1,0 +1,101 @@
+export const CLASS_TEXT_MENTION_TOKEN = "caffeine-text-mention-token";
+export const CLASS_SELECTABLE_HALO = "caffeine-selectable-halo";
+export const CLASS_PAGE_CONTENT = "caffeine-page-content";
+export const CLASS_TEXT_EQUATION_TOKEN = "caffeine-text-mention-token";
+export const CLASS_IGNORE_TEXT_CONTENT = "caffeine-ignore-text-content";
+export const CLASS_TEXT_BUFFER = "caffeine-text-buffer";
+
+export function isNode(node?: Node | null) {
+    try {
+        return node && void 0 !== node.nodeType
+    } catch (_) {
+        return false;
+    }
+};
+
+export function isElementNode(node?: Node) {
+    return isNode(node) && node!.nodeType === Node.ELEMENT_NODE
+}
+
+export function isTextNode(node?: Node|null) {
+    return isNode(node) && node!.nodeType == Node.TEXT_NODE;
+}
+
+export function isBrNode(node?: Node) {
+    if (isElementNode(node)) {
+        const element = node as Element;
+        return "br" === element.tagName.toLowerCase();
+    }
+    return false;
+}
+
+export function isTextMentionNode(node?: Node) {
+    if (isElementNode(node)) {
+        const element = node as Element;
+        return element.classList.contains(CLASS_TEXT_MENTION_TOKEN);
+    }
+    return false;
+}
+
+function isDataRootElement(e) {
+    return isElementNode(e) && e.hasAttribute("data-root");
+}
+
+function isTextEquationTokenElement(e: Element) {
+    return isElementNode(e) && e.classList.contains(CLASS_TEXT_EQUATION_TOKEN);
+}
+
+function isIgnoreTextContentElement(e) {
+    return isElementNode(e) && e.classList.contains(CLASS_IGNORE_TEXT_CONTENT);
+}
+
+export const isTextBufferElement = function(e) {
+    return isElementNode(e) && e.classList.contains(CLASS_TEXT_BUFFER)
+}
+
+function getElementInParent(element:Node| null, predict:(element:Node) => boolean):Node|null {
+    for (; isNode(element) && !predict(element!); ){
+        element = element && element.parentNode;
+    }
+    return element
+}
+
+export function getDataRootInParent(container:Node) {
+    return getElementInParent(container, isDataRootElement)
+}
+
+function getTextEquationTokenElementInParent(e) {
+    // getElement in parent, until find first TextEquationTokenNode or stop with DataRoot
+    const element = getElementInParent(e, e=>isTextMentionNode(e) || isDataRootElement(e));
+    if (element && isTextMentionNode(element))
+        return element
+}
+
+export function getTextMention(container:Node) {
+    // Get TextEquationTokenElement at first
+    let element:any = getElementInParent(container, e=>isTextEquationTokenElement(e) || isDataRootElement(e));
+    if (element && isTextMentionNode(element)){
+        return element
+    }
+    // If we could not get TextEquationTokenElement, then try to get TextEquationTokenElement
+    element = getTextEquationTokenElementInParent(container);
+    if(element){
+        return element;
+    }
+
+    // Try to get IgnoreTextContentElement
+    element = getElementInParent(container, e=>isIgnoreTextContentElement(e) || isDataRootElement(e));
+    if (element && isIgnoreTextContentElement(element)){
+        return element
+    }
+}
+
+export const BOM = "\ufeff";
+const BOM_REG = new RegExp(BOM, "g");
+
+export function removeBOM(e: string) {
+    return e.replace(BOM_REG, "")
+}
+
+
+

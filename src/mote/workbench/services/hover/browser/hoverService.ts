@@ -4,6 +4,8 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { HoverWidget } from 'mote/workbench/services/hover/browser/hoverWidget';
 import { addDisposableListener, EventType } from 'vs/base/browser/dom';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { IContextViewProvider, IDelegate } from 'vs/base/browser/ui/contextview/contextview';
 
 export class HoverService implements IHoverService {
    
@@ -13,6 +15,7 @@ export class HoverService implements IHoverService {
 
     constructor(
         @IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IContextViewService private readonly _contextViewService: IContextViewService,
     ) {
 
     }
@@ -29,6 +32,8 @@ export class HoverService implements IHoverService {
 			this._currentHoverOptions = undefined;
 			hoverDisposables.dispose();
 		});
+		const provider = this._contextViewService as IContextViewProvider;
+		provider.showContextView(new HoverContextViewDelegate(hover, focus));
         if ('targetElements' in options.target) {
 			for (const element of options.target.targetElements) {
 				hoverDisposables.add(addDisposableListener(element, EventType.CLICK, () => this.hideHover()));
@@ -65,6 +70,38 @@ export class HoverService implements IHoverService {
 		if (!entry.isIntersecting) {
 			hover.dispose();
 		}
+	}
+}
+
+class HoverContextViewDelegate implements IDelegate {
+
+	get anchorPosition() {
+		return this._hover.anchor;
+	}
+
+	constructor(
+		private readonly _hover: HoverWidget,
+		private readonly _focus: boolean = false
+	) {
+	}
+
+	render(container: HTMLElement) {
+		this._hover.render(container);
+		if (this._focus) {
+			this._hover.focus();
+		}
+		return this._hover;
+	}
+
+	getAnchor() {
+		return {
+			x: this._hover.x,
+			y: this._hover.y
+		};
+	}
+
+	layout() {
+		this._hover.layout();
 	}
 }
 
