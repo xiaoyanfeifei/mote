@@ -1,10 +1,11 @@
-import { EditorState } from "mote/editor/common/editorState";
+import { TextSelection, TextSelectionMode } from "mote/editor/common/core/selection";
+import { EditorState, TextSelectionState } from "mote/editor/common/editorState";
 import { IResourceEditorInput } from "mote/platform/editor/common/editor";
 import { IEditorPane } from "mote/workbench/common/editor";
-import { IEditorService } from "mote/workbench/services/editor/common/editorService";
+import { IEditorStateService, TextSelectionUpdatePayload } from "mote/workbench/services/editor/common/editorService";
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 
-export class EditorService implements IEditorService {
+export class EditorStateService implements IEditorStateService {
     _serviceBrand: undefined;
 
     private editorState: EditorState;
@@ -12,15 +13,12 @@ export class EditorService implements IEditorService {
     constructor() {
         this.editorState = new EditorState();
     }
-    
-    openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
-        throw new Error("Method not implemented.");
-    }
 
     public getEditorState() {
         return this.editorState;
     }
-    
+
 }
 
-registerSingleton(IEditorService, EditorService);
+registerSingleton(IEditorStateService, EditorStateService);
+

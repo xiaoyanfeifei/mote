@@ -131,3 +131,12 @@ export function slice(record: ISegment[], startIndex: number, endIndex: number) 
     }
     return newRecord;
 }
+
+/**
+ * Return block value without annotations
+ * @param segments 
+ * @returns block text value
+ */
+export function collectValueFromSegment(segments: ISegment[]) {
+    return emptyOrArray(segments).map(segment=>getFirstInArray(segment)).join("");
+}

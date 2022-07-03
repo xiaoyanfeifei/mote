@@ -2,12 +2,10 @@ import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/b
 import { $, Dimension } from "vs/base/browser/dom";
 import { Emitter } from "vs/base/common/event";
 import { Part } from "mote/workbench/browser/part";
-import { IEditorService } from "mote/workbench/services/editor/common/editorService";
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IResourceEditorInput } from "mote/platform/editor/common/editor";
 import { IEditorPane } from "mote/workbench/common/editor";
 import { IThemeService } from "mote/platform/theme/common/themeService";
-import { Editable } from "mote/editor/browser/editable";
 import { assertIsDefined } from "vs/base/common/types";
 import { ThemedStyles } from "mote/base/ui/themes";
 import { setStyles } from "mote/base/jsx/createElement";
@@ -22,6 +20,7 @@ import { IInstantiationService, ServicesAccessor } from "vs/platform/instantiati
 import { DocumentEditor } from "./documentEditor";
 import { EmptyHolder } from "./emptyHolder";
 import { IDisposable } from "vs/base/common/lifecycle";
+import { IEditorService } from "mote/workbench/services/editor/common/editorService";
 
 export class EditorPart extends Part implements IEditorService {
     

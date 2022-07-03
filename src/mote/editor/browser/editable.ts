@@ -5,20 +5,28 @@ import { setStyles } from "mote/base/jsx/createElement";
 import { Widget } from "vs/base/browser/ui/widget";
 import { nodeToString } from "../common/textSerialize";
 import { Emitter, Event } from "vs/base/common/event";
+import { TextSelection } from "../common/core/selection";
+import { Range } from "mote/editor/common/core/range";
 
 interface EditableOptions {
+    getSelection?(): TextSelection | undefined;
     placeholder?: string;
 }
 
 export class Editable extends Widget {
+    private options: EditableOptions;
+
     private input: HTMLElement;
+    private testDiv = $("div");
+
+    private selection: TextSelection | undefined;
 
     private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
     constructor(container: HTMLElement, options: EditableOptions) {
         super();
-
+        this.options = options;
         this.input = $("");
         this.input.contentEditable = "true";
         this.input.setAttribute("data-root", "");
@@ -40,7 +48,23 @@ export class Editable extends Widget {
     }
 
     public set value(newValue: string) {
-        this.input.innerHTML = newValue;
+        this.testDiv.innerHTML = newValue;
+        if (this.input.innerHTML != this.testDiv.innerHTML) {
+            this.input.innerHTML = newValue;
+           
+        }
+        if (this.options.getSelection) {
+            this.selection = this.options.getSelection();
+        }
+        if (this.selection) {
+            const rangeFromElement = Range.create(this.input, this.selection);
+            const rangeFromDocument = Range.get();
+            console.log(rangeFromDocument, rangeFromElement, this.selection);
+            if (!Range.ensureRange(rangeFromDocument, rangeFromElement)){
+                console.debug("range differen, reset range from textSelection state");
+                Range.set(rangeFromElement);
+            }
+        }
     }
 
     private onValueChange() {

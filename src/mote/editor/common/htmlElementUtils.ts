@@ -45,12 +45,32 @@ function isTextEquationTokenElement(e: Element) {
     return isElementNode(e) && e.classList.contains(CLASS_TEXT_EQUATION_TOKEN);
 }
 
-function isIgnoreTextContentElement(e) {
+export function isIgnoreTextContentElement(e) {
     return isElementNode(e) && e.classList.contains(CLASS_IGNORE_TEXT_CONTENT);
 }
 
 export const isTextBufferElement = function(e) {
     return isElementNode(e) && e.classList.contains(CLASS_TEXT_BUFFER)
+}
+
+export function isContentEditable(e: Node) {
+    try {
+        const t = getElementInParent(e, (e:any)=>Boolean(e.getAttribute && e.getAttribute("contenteditable")) || isDataRootElement(e));
+        return t && t['isContentEditable'];
+    } catch (t) {
+        return false;
+    }
+}
+
+export function isTextBuffNodeContain(e: Node) {
+    if (isTextBufferElement(e)) {
+        return true;
+    }
+    try {
+        return isTextBufferElement(e.parentNode);
+    } catch (err) {
+        return false;
+    }
 }
 
 function getElementInParent(element:Node| null, predict:(element:Node) => boolean):Node|null {
@@ -64,16 +84,17 @@ export function getDataRootInParent(container:Node) {
     return getElementInParent(container, isDataRootElement)
 }
 
-function getTextEquationTokenElementInParent(e) {
+export function getTextEquationTokenElementInParent(e) {
     // getElement in parent, until find first TextEquationTokenNode or stop with DataRoot
     const element = getElementInParent(e, e=>isTextMentionNode(e) || isDataRootElement(e));
     if (element && isTextMentionNode(element))
         return element
+    return undefined;
 }
 
 export function getTextMention(container:Node) {
     // Get TextEquationTokenElement at first
-    let element:any = getElementInParent(container, e=>isTextEquationTokenElement(e) || isDataRootElement(e));
+    let element:any = getElementInParent(container, e=>isTextEquationTokenElement(e as any) || isDataRootElement(e));
     if (element && isTextMentionNode(element)){
         return element
     }

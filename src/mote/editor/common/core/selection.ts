@@ -18,7 +18,7 @@ interface ContainerWithOffset {
     offset: number;
 }
 
-function calcIndex(dataRoot:Node| null |undefined, containerWithOffset: ContainerWithOffset): number {
+export function calcIndex(dataRoot:Node| null |undefined, containerWithOffset: ContainerWithOffset): number {
     if (dataRoot === containerWithOffset.container) {
         if (isTextNode(dataRoot)) {
             const e = dataRoot && dataRoot.textContent || "";
@@ -41,7 +41,7 @@ function calcIndex(dataRoot:Node| null |undefined, containerWithOffset: Containe
     return i
 };
 
-function getIndex(container:Node, offset:number) {
+export function getIndex(container:Node, offset:number) {
     const dataRoot = getDataRootInParent(container);
 
     let containerWithOffset: ContainerWithOffset;
