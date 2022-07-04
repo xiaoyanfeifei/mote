@@ -16,7 +16,7 @@ export const IEditorStateService = createDecorator<IEditorStateService>('editorS
 
 export type TextSelectionUpdatePayload = {
     store?: BlockStore,
-    selection: TextSelection, 
+    selection?: TextSelection, 
     readOnly?: boolean 
 };
 

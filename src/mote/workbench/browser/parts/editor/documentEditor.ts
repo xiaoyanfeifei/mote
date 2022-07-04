@@ -57,7 +57,6 @@ export class DocumentEditor extends Disposable {
 
     private createBlock(id: string): HTMLElement {
         const blockStore = this.createStoreForItemId(id);
-        console.log(blockStore);
         const block = this.instantiationService.createInstance(TextBlock, {});
         block.store = blockStore;
         return block.element;

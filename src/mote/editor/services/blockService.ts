@@ -6,7 +6,11 @@ import * as segmentUtils from "mote/editor/common/segmentUtils";
 import { EditOperation } from "../common/core/editOperation";
 import { emptyOrArray, ISegment } from "mote/editor/common/segmentUtils";
 import { DIFF_INSERT, DIFF_DELETE, DIFF_EQUAL } from "diff-match-patch";
-import { EditorState } from "../common/editorState";
+import { EditorState, TextSelectionState } from "../common/editorState";
+import { Transaction } from "../common/core/transaction";
+import { getParentBlockStore } from "../common/storeUtils";
+import blockTypes, { contentTypes, pureTextTypes, textBasedTypes } from "../common/blockTypes";
+import { Lodash } from "mote/base/common/lodash";
 
 
 
@@ -95,7 +99,7 @@ export class BlockService extends Disposable {
         }
     }
 
-    public delete(transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+    public delete(transaction: Transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
         if (selection.startIndex != selection.endIndex) {
             const storeValue = store.getValue();
             const newRecord = segmentUtils.remove(storeValue, selection.startIndex, selection.endIndex);
@@ -121,6 +125,97 @@ export class BlockService extends Disposable {
             
         } else {
             // Update selection
+        }
+    }
+
+    public newLine(transaction: Transaction, store: BlockStore) {
+        const selectionState =  this.state.selectionState;
+        const selection = selectionState.selection;
+        let parentStore: BlockStore;
+        if ("page" == store.table) {
+            parentStore =  store.recordStoreParentStore as BlockStore;
+        } else {
+            const titleStore = store.recordStoreParentStore;
+            parentStore = titleStore?.recordStoreParentStore as BlockStore;
+        }
+
+        this.delete(transaction, store, selection, selectionState.mode);
+        let newLineStore = EditOperation.createBlockStore("text", transaction);
+
+        newLineStore = EditOperation.insertChildAfterTarget(
+            parentStore.getContentStore(), newLineStore, store, transaction).child as BlockStore;
+        const titleStore = newLineStore.getTitleStore();
+        this.state.updateSelection({
+            store: titleStore
+        });
+    }
+
+    public backspace(transaction: Transaction, store: BlockStore, deleteForwards: boolean, event: KeyboardEvent) {
+        const selection = this.state.selectionState.selection;
+        if (!selection) {
+            return;
+        }
+        if ( 0 !== selection.startIndex || 0 !== selection.endIndex || deleteForwards ) {
+            if ( deleteForwards) {
+                event.preventDefault();
+            } else {
+                event.preventDefault();
+                let newSelection: TextSelection;
+                if ( selection.startIndex === selection.endIndex ) {
+                    if ( deleteForwards ) {
+                        newSelection = {startIndex: selection.startIndex, endIndex: selection.endIndex + 1};
+                    } else {
+                        newSelection = {startIndex: selection.startIndex -1, endIndex: selection.endIndex};
+                    }
+                } else {
+                    newSelection = selection;
+                }
+                this.delete(transaction, store, newSelection, this.state.selectionState.mode);
+            }
+        } else {
+            event.preventDefault();
+            const parentStore = getParentBlockStore(store);
+            if (parentStore) {
+                const record = parentStore.getValue();
+                if (record) {
+                    if (textBasedTypes.has(record.type)) {
+    
+                        EditOperation.turnInto(parentStore, blockTypes.text, transaction);
+    
+                    } else if (pureTextTypes.has(record.type)) {
+    
+                        const pageContentStore = getParentBlockStore(parentStore);
+                        if (pageContentStore && pageContentStore.table == "page") {
+                            const blockIds = pageContentStore.getValue();
+                            console.log("blockIds", blockIds);
+                            const storeIdx = Lodash.findIndex(blockIds, (id)=>id==store.id);
+                            EditOperation.removeChild(pageContentStore, store, transaction);
+                            
+                            if (storeIdx > 0) {
+                                const prevStoreId = blockIds[storeIdx-1];
+                                const titleStore = BlockStore.createChildStore(pageContentStore, {
+                                    table: store.table,
+                                    id: prevStoreId
+                                }, store.path);
+                                const content = segmentUtils.collectValueFromSegment(titleStore.getValue());
+                                console.log("prevId:", prevStoreId);
+                                this.state.updateSelection({
+                                    store: titleStore,
+                                    selection: {
+                                        startIndex: content.length,
+                                        endIndex: content.length
+                                    }
+                                });
+                            }
+                            
+                            // TODO add auto focus to prev store
+                        }
+    
+                    } else if (contentTypes.has(record.type)) {
+    
+                    }
+                }
+            }
         }
     }
 }

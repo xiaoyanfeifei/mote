@@ -4,6 +4,7 @@ import BlockStore from "mote/editor/common/store/blockStore";
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { EditOperation } from "../common/core/editOperation";
 import { TextSelection } from "../common/core/selection";
 import { Transaction } from "../common/core/transaction";
 import { collectValueFromSegment, ISegment } from "../common/segmentUtils";
@@ -11,6 +12,7 @@ import { segmentsToElement } from "../common/textSerialize";
 import { BlockService } from "../services/blockService";
 import { Editable } from "./editable";
 import { OperationWrapper } from "./operationWrapper";
+import { Range } from "mote/editor/common/core/range";
 
 interface EditableContainerOptions {
     style?: CSSProperties;
@@ -41,11 +43,29 @@ export class EditableContainer extends Disposable {
             getSelection: () => this.getContainerSelection()
         });
         this.blockService = new BlockService(this.editorStateService.getEditorState());
-        this.editable.onDidChange(this.handleChange);
+        
         this.operationHandler = this.instantiationService.createInstance(OperationWrapper, this.editable.element);
         this.applyStyles();
+
+        this.registerListener();
     }
 
+    private registerListener() {
+        this.operationHandler.onDidEnter(this.handleEnter);
+        this.operationHandler.onDidDelete(this.handleBackspace);
+        this.editable.onDidChange(this.handleChange);
+        this.editorStateService.getEditorState().onDidStoreChange(this.handleStoreChange);
+    }
+
+    private handleStoreChange = (currentBlockStore: BlockStore) => {
+        console.log(this.blockStore?.id, currentBlockStore.id);
+        if (this.blockStore && this.blockStore.id == currentBlockStore?.id) {
+            
+            const rangeFromElement = Range.create(this.editable.element, this.editorStateService.getEditorState().selectionState.selection);
+            Range.set(rangeFromElement);
+            this.editable.element.focus();
+        }
+    }
 
     private handleChange = (value: string) => {
         const that = this;
@@ -53,7 +73,7 @@ export class EditableContainer extends Disposable {
         Transaction.createAndCommit((transcation)=>{
             that.blockService.onChange(that.blockStore, transcation, editorState.selectionState.selection, that.getTextValue(), value);
             that.applyStyles()
-        }, "");
+        }, this.blockStore?.userId!);
     }
 
     isEditing() {
@@ -117,5 +137,19 @@ export class EditableContainer extends Disposable {
 
     getTextValue(): ISegment[] {
         return this.blockStore?.getValue() || "";
+    }
+
+    handleEnter = (e: Event) => {
+        e.preventDefault();
+        Transaction.createAndCommit((transaction)=>{
+            this.blockService.newLine(transaction, this.blockStore!);
+        }, this.blockStore?.userId!);
+    }
+
+    handleBackspace = (e) => {
+        e.preventDefault();
+        Transaction.createAndCommit((transaction)=>{
+            this.blockService.backspace(transaction, this.blockStore!, false, e);
+        }, this.blockStore?.userId!);
     }
 }

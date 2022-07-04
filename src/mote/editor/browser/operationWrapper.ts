@@ -4,6 +4,8 @@ import { IQuickMenuService } from "mote/workbench/services/quickmenu/browser/qui
 import { addDisposableListener, EventType } from "vs/base/browser/dom";
 import { ButtonWithDropdown } from "vs/base/browser/ui/button/button";
 import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import { Emitter, Event as BaseEvent } from "vs/base/common/event";
+import { KeyCode, KeyCodeUtils } from "vs/base/common/keyCodes";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
 import { Range } from "../common/core/range";
 import { getSelectionFromRange, TextSelectionMode } from "../common/core/selection";
@@ -23,6 +25,12 @@ export class OperationWrapper extends Disposable {
     private element: HTMLElement;
     private blockstore?: BlockStore;
 
+    private _onDidDelete = this._register(new Emitter<Event>());
+	get onDidDelete(): BaseEvent<Event> { return this._onDidDelete.event; }
+
+    private _onDidEnter = this._register(new Emitter<Event>());
+	get onDidEnter(): BaseEvent<Event> { return this._onDidEnter.event; }
+
     constructor(
         element: HTMLElement, 
         //options: OperationWrapperOptions,
@@ -33,7 +41,16 @@ export class OperationWrapper extends Disposable {
         this.element = element;
 
         this._register(addDisposableListener(element, EventType.MOUSE_UP, ()=>this.handleSelect()))
-        //this._register(addDisposableListener(this.element, EventType.CLICK, ()=>this.handleSelect()))
+        this._register(addDisposableListener(element, EventType.CLICK, ()=>this.handleSelect()))
+        this._register(addDisposableListener(this.element, EventType.KEY_DOWN, (e)=>{
+            if(e.code == KeyCodeUtils.toString(KeyCode.Enter)) {
+                this._onDidEnter.fire(e);
+            }
+            if((e.code == KeyCodeUtils.toString(KeyCode.Backspace)) ||
+                (e.code == KeyCodeUtils.toString(KeyCode.Delete))) {
+                this._onDidDelete.fire(e);
+            }
+        }));
       
     }
 
@@ -45,6 +62,7 @@ export class OperationWrapper extends Disposable {
         const textSelection = getSelectionFromRange();
         const editorState = this.editorStateService.getEditorState();
         const textSelectionState = this.editorStateService.getEditorState().selectionState;
+
         if (textSelection) {
             editorState.updateSelection({
                 store: this.blockstore!,

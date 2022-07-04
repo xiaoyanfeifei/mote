@@ -59,9 +59,7 @@ export class Editable extends Widget {
         if (this.selection) {
             const rangeFromElement = Range.create(this.input, this.selection);
             const rangeFromDocument = Range.get();
-            console.log(rangeFromDocument, rangeFromElement, this.selection);
             if (!Range.ensureRange(rangeFromDocument, rangeFromElement)){
-                console.debug("range differen, reset range from textSelection state");
                 Range.set(rangeFromElement);
             }
         }

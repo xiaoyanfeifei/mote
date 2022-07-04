@@ -3,6 +3,7 @@ import RecordStore from "mote/editor/common/store/recordStore";
 import BlockStore from "../store/blockStore";
 import { Transaction } from "./transaction";
 import { Command } from "mote/editor/common/operations";
+import RecordCacheStore from "../store/recordCacheStore";
 
 export class EditOperation {
 
@@ -18,6 +19,20 @@ export class EditOperation {
         return blockStore;
     }
 
+    public static turnInto(store: BlockStore, blockType: string, transcation: Transaction) {
+        const record = store.getValue();
+        if (record && record.type != blockType) {
+            console.log("execute turn into", blockType)
+            this.addUpdateOperationForStore(
+                store,
+                {
+                    type: blockType
+                },
+                transcation
+            );
+        }
+    }
+
     public static createChild(parent: BlockStore, transaction: Transaction) {
         const child = this.createBlockStore("text", transaction);
         this.appendToParent(parent.getContentStore(), child, transaction);
@@ -29,6 +44,12 @@ export class EditOperation {
             parent: parent,
             child: prepend.cloneWithNewParent(parent)
         }
+    }
+
+    public static removeChild(parent: RecordStore, remove: RecordStore, transaction: Transaction, shouldGarbageCollect?: boolean) {
+        this.addOperationForStore(parent, {id: remove.id}, transaction, Command.ListRemove);
+        RecordCacheStore.Default.deleteRecord(remove);
+        //store.dispatch(recordSlice.actions.remove(remove.identity));
     }
 
     public static appendToParent(parent: RecordStore, append: RecordStore, transaction: Transaction) {

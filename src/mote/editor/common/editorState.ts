@@ -35,10 +35,12 @@ interface IEditorState {
 
 export class EditorState extends Disposable implements IEditorState {
     private _selectionState: TextSelectionState = initialState;
-    private _blockStore: BlockStore | undefined;
 
     private _onDidSelectionChange = this._register(new Emitter<TextSelectionState>());
 	public readonly onDidSelectionChange: Event<TextSelectionState> = this._onDidSelectionChange.event;
+
+    private _onDidStoreChange = this._register(new Emitter<BlockStore>());
+	public readonly onDidStoreChange: Event<BlockStore> = this._onDidStoreChange.event;
 
     //#region properties
 
@@ -47,16 +49,23 @@ export class EditorState extends Disposable implements IEditorState {
     }
     
     public get blockStore() {
-        return this._blockStore;
+        return this._selectionState.store;
     }
 
     //#endregion
 
     public updateSelection(payload: TextSelectionUpdatePayload): void {
+        let needStoreFire = false;
         const newState = updateTextSelection(this._selectionState, payload);
-        console.log("update newState:", newState);
+        if (newState.store && newState.store != this._selectionState.store) {
+            needStoreFire = true;
+        }
+       
         this._selectionState = Object.assign({}, this._selectionState, newState);
         this._onDidSelectionChange.fire(this._selectionState);
+        if (needStoreFire) {
+            this._onDidStoreChange.fire(this.blockStore!);
+        }
     }
 }
 

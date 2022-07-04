@@ -6,7 +6,7 @@ export class Lodash {
 
     static findIndex<T>(collection: ArrayLike<T>, predicate: (value: T, index: number, collection: ArrayLike<T>) => boolean) {
         for (let i = 0; i < collection.length; i++) {
-            if(!predicate(collection[i], i, collection)) {
+            if(predicate(collection[i], i, collection)) {
                 return i;
             }
         }

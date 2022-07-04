@@ -1,10 +1,9 @@
 import RecordStore from "mote/editor/common/store/recordStore";
 import * as uuid from "uuid";
+import { Operation } from "../operations";
 import { Role } from "../store/record";
 import RecordCacheStore from "../store/recordCacheStore";
 import CommandFacade from "./commandFacade";
-
-import { Operation } from "./editOperation";
 
 
 export interface TransactionCallback {
@@ -17,10 +16,10 @@ export class Transaction {
         return new Transaction(userId);
     }
 
-    static createAndCommit(callback: TransactionCallback, userId: string) {
+    static async createAndCommit(callback: TransactionCallback, userId: string) {
         const transaction = Transaction.create(userId);
         const result = callback(transaction);
-        transaction.commit();
+        await transaction.commit();
         return result;
     }
 
@@ -29,21 +28,78 @@ export class Transaction {
     isLocal = true;
     canUndo = true;
 
+    committed = false;
+
     operations: Operation[] = [];
     stores: RecordStore[] = [];
+    snapshot:{[key: string]: any} = {};
+
+    preSubmitActions:any[] = [];
+    postSubmitActions:any[] = [];
+    postSubmitCallbacks:any[] = [];
 
     private constructor(userId: string) {
         this.userId = userId;
     }
 
+    done(args?) {
+        for (const callback of this.postSubmitCallbacks){
+            callback(args)
+        }
+        console.debug(`[${this.id}] done.`)
+    }
+
     commit() {
-        console.log("operations:", this.operations);
+        if (this.committed) {
+            console.debug(`commit on a committed transaction [${this.id}].`)
+            return;
+        }
+
+        return new Promise<void>((resolve, reject) => {
+            if (0 == this.operations.length) {
+                this.done();
+                resolve();
+                return;
+            }
+
+            // Trigger preSubmitAction
+            for (const preSubmitAction of this.preSubmitActions) {
+                preSubmitAction();
+            };
+
+            // Trigger postSubmitAction
+            for (const postSubmitAction of this.postSubmitActions) {
+                postSubmitAction();
+            };
+            this.committed = true;
+            this.done();
+            resolve();
+
+        });
+    }
+
+    private flush(store:RecordStore) {
+        let record = this.snapshot[store.id];
+        const role = store.getRecordStoreAtRootPath().getRole();
+
+        if (record) {
+            //console.log("flush", record);
+            RecordCacheStore.Default.setRecord({
+                pointer: store.pointer,
+                userId: store.userId
+            }, {
+                value: record,
+                role: role || Role.Editor
+            });
+        }
     }
 
     addOperation(store:RecordStore, operation: Operation ) {
-        let record = store.getRecordStoreAtRootPath().getValue();
-        record = CommandFacade.execute(operation, record);
+        console.log(operation);
+        let record = this.snapshot[store.id] || store.getRecordStoreAtRootPath().getValue();
         const role = store.getRecordStoreAtRootPath().getRole();
+        record = CommandFacade.execute(operation, record);
+        this.snapshot[store.id] = record;
 
         RecordCacheStore.Default.setRecord({
             pointer: store.pointer,
@@ -52,7 +108,7 @@ export class Transaction {
             value: record,
             role: role || Role.Editor
         });
-
+        
         this.operations.push(operation);
         this.stores.push(store);
     }
