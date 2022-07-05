@@ -58,9 +58,10 @@ export class EditableContainer extends Disposable {
     }
 
     private handleStoreChange = (currentBlockStore: BlockStore) => {
-        console.log(this.blockStore?.id, currentBlockStore.id);
         if (this.blockStore && this.blockStore.id == currentBlockStore?.id) {
-            
+            if ( this.editable.element == document.activeElement) {
+                return;
+            }
             const rangeFromElement = Range.create(this.editable.element, this.editorStateService.getEditorState().selectionState.selection);
             Range.set(rangeFromElement);
             this.editable.element.focus();

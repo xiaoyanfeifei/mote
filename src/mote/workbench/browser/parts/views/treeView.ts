@@ -61,6 +61,11 @@ export class TreeView extends Disposable {
 		DOM.append(container, this.domNode);
 	}
 
+    refresh() {
+        DOM.clearNode(this.treeContainer);
+        this.createTree();
+    }
+
     private create() {
         this.domNode = DOM.$('.tree-explorer-viewlet-tree-view');
         this.treeContainer = DOM.append(this.domNode, DOM.$('.customview-tree'));

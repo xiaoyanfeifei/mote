@@ -95,11 +95,9 @@ export class Transaction {
     }
 
     addOperation(store:RecordStore, operation: Operation ) {
-        console.log(operation);
-        let record = this.snapshot[store.id] || store.getRecordStoreAtRootPath().getValue();
+        let record = store.getRecordStoreAtRootPath().getValue();
         const role = store.getRecordStoreAtRootPath().getRole();
         record = CommandFacade.execute(operation, record);
-        this.snapshot[store.id] = record;
 
         RecordCacheStore.Default.setRecord({
             pointer: store.pointer,
