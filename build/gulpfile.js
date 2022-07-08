@@ -1,15 +1,8 @@
 const gulp = require("gulp");
 const path = require("path");
 
-function createProject(src) {
-	const ts = require("gulp-typescript");
-    const projectPath = path.join(__dirname, '../', src, 'tsconfig.json');
-    const tsProject = ts.createProject(projectPath, {
-        allowJs: true,
-        isolatedModules: true
-    });
-    return tsProject;
-}
+const { compileTask } = require("./lib/compilation");
+
 gulp.task("rimraf", function (cb) {
     const rimraf = require("rimraf");
     rimraf("out", cb);
@@ -24,14 +17,17 @@ gulp.task("copyFile", function () {
 });
 
 gulp.task("compile", function () {
-    const tsProject = createProject("src");
-    return gulp.src("src/**/*.ts*", {since: gulp.lastRun("compile")})
-        .pipe(tsProject())
-        .pipe(gulp.dest("out"));
+    return compileTask("src", "out");
 });
 
 gulp.task("build", gulp.series("rimraf", "copyFile", "compile"));
 
 gulp.task("watch", function() {
     gulp.watch("src/**/*", {ignoreInitial: false}, gulp.series("copyFile","compile"))
-})
+});
+
+
+// Load all the gulpfiles only if running tasks other than the editor tasks
+require('glob').sync('gulpfile.*.js', { cwd: __dirname })
+	.forEach(f => require(`./${f}`));
+    
