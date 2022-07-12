@@ -10,11 +10,13 @@ import { Layout } from "./layout";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IViewsService, ViewContainerLocation } from "../common/views";
 import { ViewsService } from "./parts/views/viewsService";
-import { EXPLORER_VIEW_CONTAINER } from "../contrib/files/browser/explorerViewlet";
+import { EXPLORER_VIEW_CONTAINER } from "../contrib/pages/browser/explorerViewlet";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { MockThemeService } from "mote/platform/theme/common/mockThemeService";
 import { BrowserStorageService } from "vs/platform/storage/browser/storageService";
 import { IStorageService } from "vs/platform/storage/common/storage";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IWorkbenchContributionsRegistry,  Extensions as WorkbenchExtensions } from "../common/contribution";
 
 export class Workbench extends Layout {
 
@@ -41,12 +43,20 @@ export class Workbench extends Layout {
 				// Layout
 				this.initLayout(accessor);
 
-				const viewsService = accessor.get(IViewsService) as ViewsService;
-				viewsService.registerPaneComposite(EXPLORER_VIEW_CONTAINER, ViewContainerLocation.Sidebar);
+				// Registries
+				Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).start(accessor);
 
+				const viewsService = accessor.get(IViewsService) as ViewsService;
+				//viewsService.registerPaneComposite(EXPLORER_VIEW_CONTAINER, ViewContainerLocation.Sidebar);
+
+				// Render Workbench
 				this.renderWorkbench(instantiationService);
 
+				// Workbench Layout
 				this.createWorkbenchLayout();
+
+				// Layout
+				this.layout();
 
 				// Restore
 				this.restore();

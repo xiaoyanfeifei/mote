@@ -1,5 +1,6 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
+import { Dimension } from "vs/base/browser/dom";
 import { Emitter } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -77,6 +78,11 @@ export abstract class Composite extends Component {
 	 focus(): void {
 		// Subclasses can implement
 	}
+
+	/**
+	 * Layout the contents of this composite using the provided dimensions.
+	 */
+	 abstract layout(dimension: Dimension): void;
 }
 
 /**

@@ -7,7 +7,7 @@ import { IThemeService } from "mote/platform/theme/common/themeService";
 import { TreeRender, TreeView } from "mote/workbench/browser/parts/views/treeView";
 import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneContainer";
 import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
-import { Extensions, IViewContainersRegistry, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
+import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
 import SpaceStore from "mote/editor/common/store/spaceStore";
 import { append , $} from "vs/base/browser/dom";
@@ -22,6 +22,10 @@ import { ICommandService } from "mote/platform/commands/common/commands";
 import BlockStore from "mote/editor/common/store/blockStore";
 import { Transaction } from "mote/editor/common/core/transaction";
 import { EditOperation } from "mote/editor/common/core/editOperation";
+import { Disposable } from "vs/base/common/lifecycle";
+import { IWorkbenchContribution } from "mote/workbench/common/contribution";
+import { EmptyView } from "./views/emptyView";
+import { ExplorerView } from "./views/explorerView";
 
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
@@ -33,19 +37,20 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
         @IInstantiationService instantiationService: IInstantiationService,
         @IThemeService themeService: IThemeService,
         @ICommandService private readonly commandService: ICommandService,
+        @IViewDescriptorService viewDescriptorService: IViewDescriptorService,
     ) {
-        super(FILES_VIEWLET_ID, layoutService, logService, instantiationService, themeService);
+        super(FILES_VIEWLET_ID, {mergeViewWithContainerWhenSingleView: true}, layoutService, logService, instantiationService, themeService, viewDescriptorService);
     }
 
     override create(parent: HTMLElement): void {
 		super.create(parent);
 		parent.classList.add('explorer-viewlet');
         parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
-        const body = append(parent, $('.pane-body'));
-        this.renderBody(body);
+        //const body = append(parent, $('.pane-body'));
+        //this.renderBody(body);
 	}
 
-    renderBody(container: HTMLElement) {
+    renderXX(container: HTMLElement) {
         const that = this;
         container.style.paddingTop = "14px";
         const spaceStore = new SpaceStore({
@@ -122,9 +127,65 @@ export class ExplorerViewlet {
 
 }
 
-export class ExplorerViewletViewsContribution {
+export class ExplorerViewletViewsContribution extends Disposable implements IWorkbenchContribution {
 
+    constructor() {
+        super();
+        this.registerView();
+    }
+
+    private registerView() {
+
+        const viewDescriptors = viewsRegistry.getViews(EXPLORER_VIEW_CONTAINER);
+
+		const viewDescriptorsToRegister: IViewDescriptor[] = [];
+		const viewDescriptorsToDeregister: IViewDescriptor[] = [];
+
+        const explorerViewDescriptor = this.createExplorerViewDescriptor();
+		const registeredExplorerViewDescriptor = viewDescriptors.find(v => v.id === explorerViewDescriptor.id);
+        const emptyViewDescriptor = this.createEmptyViewDescriptor();
+		const registeredEmptyViewDescriptor = viewDescriptors.find(v => v.id === emptyViewDescriptor.id);
+
+        // for empty state
+        if (registeredExplorerViewDescriptor) {
+            viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
+        }
+        if (!registeredEmptyViewDescriptor) {
+            viewDescriptorsToRegister.push(emptyViewDescriptor);
+        }
+
+        if (viewDescriptorsToRegister.length) {
+			viewsRegistry.registerViews(viewDescriptorsToRegister, EXPLORER_VIEW_CONTAINER);
+		}
+		if (viewDescriptorsToDeregister.length) {
+			viewsRegistry.deregisterViews(viewDescriptorsToDeregister, EXPLORER_VIEW_CONTAINER);
+		}
+    }
+
+    private createEmptyViewDescriptor(): IViewDescriptor {
+		return {
+			id: EmptyView.ID,
+			name: "No Folder Opened", //EmptyView.NAME,
+			//containerIcon: explorerViewIcon,
+			ctorDescriptor: new SyncDescriptor(EmptyView),
+			order: 1,
+			canToggleVisibility: true,
+		};
+	}
+
+    private createExplorerViewDescriptor(): IViewDescriptor {
+		return {
+			id: ExplorerView.ID,
+			name: localize('folders', "Folders"),
+			//containerIcon: explorerViewIcon,
+			ctorDescriptor: new SyncDescriptor(ExplorerView),
+			order: 1,
+			canToggleVisibility: false,
+		};
+	}
 }
+
+
 
 /**
  * Explorer viewlet container.

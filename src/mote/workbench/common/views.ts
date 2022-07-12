@@ -1,6 +1,7 @@
 import { flatten } from "vs/base/common/arrays";
+import { SetMap } from "vs/base/common/collections";
 import { Emitter, Event } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
+import { Disposable, IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { getOrSet } from "vs/base/common/map";
 import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
@@ -260,10 +261,284 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 	
 }
 
+export interface IViewContentDescriptor {
+	readonly content: string;
+	//readonly when?: ContextKeyExpression | 'default';
+	readonly group?: string;
+	readonly order?: number;
+	//readonly precondition?: ContextKeyExpression | undefined;
+}
+
+export interface IViewDescriptor {
+
+	readonly type?: string;
+
+	readonly id: string;
+
+	readonly name: string;
+
+	readonly ctorDescriptor: SyncDescriptor<IView>;
+
+	//readonly when?: ContextKeyExpression;
+
+	readonly order?: number;
+
+	readonly weight?: number;
+
+	readonly collapsed?: boolean;
+
+	readonly canToggleVisibility?: boolean;
+
+	readonly canMoveView?: boolean;
+
+	//readonly containerIcon?: ThemeIcon | URI;
+
+	readonly containerTitle?: string;
+
+	// Applies only to newly created views
+	readonly hideByDefault?: boolean;
+
+	readonly workspace?: boolean;
+
+	//readonly focusCommand?: { id: string; keybindings?: IKeybindings };
+
+	// For contributed remote explorer views
+	readonly group?: string;
+
+	readonly remoteAuthority?: string | string[];
+
+	readonly openCommandActionDescriptor?: OpenCommandActionDescriptor;
+}
+
 
 export interface IViewsRegistry {
 
+	getViews(viewContainer: ViewContainer): IViewDescriptor[];
+
+	getView(id: string): IViewDescriptor | null;
+
+	registerViews(views: IViewDescriptor[], viewContainer: ViewContainer): void;
+
+	deregisterViews(views: IViewDescriptor[], viewContainer: ViewContainer): void;
+
+	getViewContainer(id: string): ViewContainer | null;
+
+	readonly onDidChangeViewWelcomeContent: Event<string>;
+	registerViewWelcomeContent(id: string, viewContent: IViewContentDescriptor): IDisposable;
+	registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable>;
+	getViewWelcomeContent(id: string): IViewContentDescriptor[];
 }
+
+export interface IViewDescriptorRef {
+	viewDescriptor: IViewDescriptor;
+	index: number;
+}
+
+export interface IAddedViewDescriptorRef extends IViewDescriptorRef {
+	collapsed: boolean;
+	size?: number;
+}
+
+export interface IAddedViewDescriptorState {
+	viewDescriptor: IViewDescriptor;
+	collapsed?: boolean;
+	visible?: boolean;
+}
+
+export interface IViewContainerModel {
+
+	readonly viewContainer: ViewContainer;
+
+	readonly title: string;
+	//readonly icon: ThemeIcon | URI | undefined;
+	readonly keybindingId: string | undefined;
+	readonly onDidChangeContainerInfo: Event<{ title?: boolean; icon?: boolean; keybindingId?: boolean }>;
+
+	readonly allViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly onDidChangeAllViewDescriptors: Event<{ added: ReadonlyArray<IViewDescriptor>; removed: ReadonlyArray<IViewDescriptor> }>;
+
+	readonly activeViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly onDidChangeActiveViewDescriptors: Event<{ added: ReadonlyArray<IViewDescriptor>; removed: ReadonlyArray<IViewDescriptor> }>;
+
+	readonly visibleViewDescriptors: ReadonlyArray<IViewDescriptor>;
+	readonly onDidAddVisibleViewDescriptors: Event<IAddedViewDescriptorRef[]>;
+	readonly onDidRemoveVisibleViewDescriptors: Event<IViewDescriptorRef[]>;
+	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>;
+
+	isVisible(id: string): boolean;
+	setVisible(id: string, visible: boolean): void;
+
+	isCollapsed(id: string): boolean;
+	setCollapsed(id: string, collapsed: boolean): void;
+
+	getSize(id: string): number | undefined;
+	setSizes(newSizes: readonly { id: string; size: number }[]): void;
+
+	move(from: string, to: string): void;
+}
+
+export enum ViewContentGroups {
+	Open = '2_open',
+	Debug = '4_debug',
+	SCM = '5_scm',
+	More = '9_more'
+}
+
+function compareViewContentDescriptors(a: IViewContentDescriptor, b: IViewContentDescriptor): number {
+	const aGroup = a.group ?? ViewContentGroups.More;
+	const bGroup = b.group ?? ViewContentGroups.More;
+	if (aGroup !== bGroup) {
+		return aGroup.localeCompare(bGroup);
+	}
+	return (a.order ?? 5) - (b.order ?? 5);
+}
+
+class ViewsRegistry extends Disposable implements IViewsRegistry {
+
+	private readonly _onViewsRegistered = this._register(new Emitter<{ views: IViewDescriptor[]; viewContainer: ViewContainer }[]>());
+	readonly onViewsRegistered = this._onViewsRegistered.event;
+
+	private readonly _onViewsDeregistered: Emitter<{ views: IViewDescriptor[]; viewContainer: ViewContainer }> = this._register(new Emitter<{ views: IViewDescriptor[]; viewContainer: ViewContainer }>());
+	readonly onViewsDeregistered: Event<{ views: IViewDescriptor[]; viewContainer: ViewContainer }> = this._onViewsDeregistered.event;
+
+	private readonly _onDidChangeContainer: Emitter<{ views: IViewDescriptor[]; from: ViewContainer; to: ViewContainer }> = this._register(new Emitter<{ views: IViewDescriptor[]; from: ViewContainer; to: ViewContainer }>());
+	readonly onDidChangeContainer: Event<{ views: IViewDescriptor[]; from: ViewContainer; to: ViewContainer }> = this._onDidChangeContainer.event;
+
+	private readonly _onDidChangeViewWelcomeContent: Emitter<string> = this._register(new Emitter<string>());
+	readonly onDidChangeViewWelcomeContent: Event<string> = this._onDidChangeViewWelcomeContent.event;
+
+
+	private _viewContainers: ViewContainer[] = [];
+	private _views: Map<ViewContainer, IViewDescriptor[]> = new Map<ViewContainer, IViewDescriptor[]>();
+	private _viewWelcomeContents = new SetMap<string, IViewContentDescriptor>();
+
+	registerViews(views: IViewDescriptor[], viewContainer: ViewContainer): void {
+		this.registerViews2([{ views, viewContainer }]);
+	}
+
+	registerViews2(views: { views: IViewDescriptor[]; viewContainer: ViewContainer }[]): void {
+		views.forEach(({ views, viewContainer }) => this.addViews(views, viewContainer));
+		this._onViewsRegistered.fire(views);
+	}
+
+	deregisterViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): void {
+		const views = this.removeViews(viewDescriptors, viewContainer);
+		if (views.length) {
+			this._onViewsDeregistered.fire({ views, viewContainer });
+		}
+	}
+
+	moveViews(viewsToMove: IViewDescriptor[], viewContainer: ViewContainer): void {
+		for (const container of this._views.keys()) {
+			if (container !== viewContainer) {
+				const views = this.removeViews(viewsToMove, container);
+				if (views.length) {
+					this.addViews(views, viewContainer);
+					this._onDidChangeContainer.fire({ views, from: container, to: viewContainer });
+				}
+			}
+		}
+	}
+
+	getViews(loc: ViewContainer): IViewDescriptor[] {
+		return this._views.get(loc) || [];
+	}
+
+	getView(id: string): IViewDescriptor | null {
+		for (const viewContainer of this._viewContainers) {
+			const viewDescriptor = (this._views.get(viewContainer) || []).filter(v => v.id === id)[0];
+			if (viewDescriptor) {
+				return viewDescriptor;
+			}
+		}
+		return null;
+	}
+
+	getViewContainer(viewId: string): ViewContainer | null {
+		for (const viewContainer of this._viewContainers) {
+			const viewDescriptor = (this._views.get(viewContainer) || []).filter(v => v.id === viewId)[0];
+			if (viewDescriptor) {
+				return viewContainer;
+			}
+		}
+		return null;
+	}
+
+	registerViewWelcomeContent(id: string, viewContent: IViewContentDescriptor): IDisposable {
+		this._viewWelcomeContents.add(id, viewContent);
+		this._onDidChangeViewWelcomeContent.fire(id);
+
+		return toDisposable(() => {
+			this._viewWelcomeContents.delete(id, viewContent);
+			this._onDidChangeViewWelcomeContent.fire(id);
+		});
+	}
+
+	registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable> {
+		const disposables = new Map<TKey, IDisposable>();
+
+		for (const [key, content] of viewContentMap) {
+			this._viewWelcomeContents.add(id, content);
+
+			disposables.set(key, toDisposable(() => {
+				this._viewWelcomeContents.delete(id, content);
+				this._onDidChangeViewWelcomeContent.fire(id);
+			}));
+		}
+		this._onDidChangeViewWelcomeContent.fire(id);
+
+		return disposables;
+	}
+
+	getViewWelcomeContent(id: string): IViewContentDescriptor[] {
+		const result: IViewContentDescriptor[] = [];
+		this._viewWelcomeContents.forEach(id, descriptor => result.push(descriptor));
+		return result.sort(compareViewContentDescriptors);
+	}
+
+	private addViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): void {
+		let views = this._views.get(viewContainer);
+		if (!views) {
+			views = [];
+			this._views.set(viewContainer, views);
+			this._viewContainers.push(viewContainer);
+		}
+		for (const viewDescriptor of viewDescriptors) {
+			if (this.getView(viewDescriptor.id) !== null) {
+				//throw new Error(localize('duplicateId', "A view with id '{0}' is already registered", viewDescriptor.id));
+			}
+			views.push(viewDescriptor);
+		}
+	}
+
+	private removeViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): IViewDescriptor[] {
+		const views = this._views.get(viewContainer);
+		if (!views) {
+			return [];
+		}
+		const viewsToDeregister: IViewDescriptor[] = [];
+		const remaningViews: IViewDescriptor[] = [];
+		for (const view of views) {
+			if (!viewDescriptors.includes(view)) {
+				remaningViews.push(view);
+			} else {
+				viewsToDeregister.push(view);
+			}
+		}
+		if (viewsToDeregister.length) {
+			if (remaningViews.length) {
+				this._views.set(viewContainer, remaningViews);
+			} else {
+				this._views.delete(viewContainer);
+				this._viewContainers.splice(this._viewContainers.indexOf(viewContainer), 1);
+			}
+		}
+		return viewsToDeregister;
+	}
+}
+
+
+Registry.add(Extensions.ViewsRegistry, new ViewsRegistry());
 
 export const IViewDescriptorService = createDecorator<IViewDescriptorService>('viewDescriptorService');
 
@@ -272,6 +547,11 @@ export interface IViewDescriptorService {
 
 	// ViewContainers
 	readonly viewContainers: ReadonlyArray<ViewContainer>;
+
+	getDefaultViewContainer(location: ViewContainerLocation): ViewContainer | undefined;
+	getViewContainerById(id: string): ViewContainer | null;
+	getViewContainerLocation(viewContainer: ViewContainer): ViewContainerLocation | null;
+	getViewContainerModel(viewContainer: ViewContainer): IViewContainerModel;
 }
 
 Registry.add(Extensions.ViewContainersRegistry, new ViewContainersRegistryImpl());

@@ -1,15 +1,15 @@
 import { Disposable } from "vs/base/common/lifecycle";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
-import { IDimension } from "vs/base/browser/dom";
+import { Dimension, getClientArea, IDimension, position, size } from "vs/base/browser/dom";
 import { Part } from "./part";
 import { Emitter, Event } from "vs/base/common/event";
 import { ILogService } from "vs/platform/log/common/log";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { IPaneCompositePartService } from "../services/panecomposite/browser/panecomposite";
 import { DeferredPromise, Promises } from "vs/base/common/async";
-import { ViewContainerLocation } from "../common/views";
-import { FILES_VIEWLET_ID } from "../contrib/files/common/files";
-import { ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
+import { IViewDescriptorService, ViewContainerLocation } from "../common/views";
+import { FILES_VIEWLET_ID } from "../contrib/pages/common/files";
+import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
 import { IEditorService } from "../services/editor/common/editorService";
 import { mark } from "vs/base/common/performance";
 import { IThemeService } from "mote/platform/theme/common/themeService";
@@ -35,10 +35,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
     private readonly parts = new Map<string, Part>();
 
+	private initialized = false;
+	private workbenchGrid!: SerializableGrid<ISerializableView>;
+
 	protected logService!: ILogService;
 
+	//#region workbench services
 	private paneCompositeService!: IPaneCompositePartService;
 	private editorService!: IEditorService;
+	private viewDescriptorService!: IViewDescriptorService;
+
+	//#endregion
+
+	private disposed = false;
 
     constructor(
 		protected readonly parent: HTMLElement
@@ -61,6 +70,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.editorService = accessor.get(IEditorService);
+		this.viewDescriptorService = accessor.get(IViewDescriptorService);
 	}
 
   
@@ -98,10 +108,33 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 			{ proportionalLayout: false }
 		);
 
-        this.container.append(sideBar.element);
-		this.container.append(editorPart.element);
+        //this.container.append(sideBar.element);
+		//this.container.append(editorPart.element);
+		this.container.prepend(workbenchGrid.element);
 		this.container.setAttribute('role', 'application');
+		this.workbenchGrid = workbenchGrid;
     }
+
+	private getClientArea(): Dimension {
+		return getClientArea(this.parent);
+	}
+
+	layout(): void {
+		if (!this.disposed) {
+			this._dimension = this.getClientArea();
+			this.logService.trace(`Layout#layout, height: ${this._dimension.height}, width: ${this._dimension.width}`);
+
+			position(this.container, 0, 0, 0, 0, 'relative');
+			size(this.container, this._dimension.width, this._dimension.height);
+
+			// Layout the grid widget
+			this.workbenchGrid.layout(this._dimension.width, this._dimension.height);
+			this.initialized = true;
+
+			// Emit as event
+			this._onDidLayout.fire(this._dimension);
+		}
+	}
 
 	private readonly whenReadyPromise = new DeferredPromise<void>();
 	protected readonly whenReady = this.whenReadyPromise.p;
@@ -130,9 +163,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		// Restore Sidebar
 		layoutReadyPromises.push((async () => {
-			const viewlet = await this.paneCompositeService.openPaneComposite(FILES_VIEWLET_ID, ViewContainerLocation.Sidebar);
+			const viewlet = null;// await this.paneCompositeService.openPaneComposite(FILES_VIEWLET_ID, ViewContainerLocation.Sidebar);
 			if (!viewlet) {
-				//await this.paneCompositeService.openPaneComposite(this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar); // fallback to default viewlet as needed
+				await this.paneCompositeService.openPaneComposite(
+					this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar); // fallback to default viewlet as needed
 			}
 
 			this.logService.debug("[Layout] did restore SideBar viewlet")

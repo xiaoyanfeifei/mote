@@ -1,6 +1,7 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
+import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
-import { IView, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
+import { IView, IViewDescriptorService, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
 import { Disposable, DisposableStore, toDisposable } from "vs/base/common/lifecycle";
@@ -21,7 +22,7 @@ export class ViewsService extends Disposable implements IViewsService {
 	private readonly viewPaneContainers: Map<string, ViewPaneContainer>;
 
     constructor(
-		//@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
+		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
 		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
 		//@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService
@@ -29,7 +30,27 @@ export class ViewsService extends Disposable implements IViewsService {
 		super();
 
         this.viewPaneContainers = new Map<string, ViewPaneContainer>();
+
+		this.viewDescriptorService.viewContainers.forEach(viewContainer => 
+			this.onDidRegisterViewContainer(
+				viewContainer, this.viewDescriptorService.getViewContainerLocation(viewContainer)!
+			)
+		);
+		
     }
+
+	private onDidRegisterViewContainer(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
+		this.registerPaneComposite(viewContainer, viewContainerLocation);
+		/*
+		const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
+		this.onViewDescriptorsAdded(viewContainerModel.allViewDescriptors, viewContainer);
+		this._register(viewContainerModel.onDidChangeAllViewDescriptors(({ added, removed }) => {
+			this.onViewDescriptorsAdded(added, viewContainer);
+			this.onViewDescriptorsRemoved(removed);
+		}));
+		this._register(this.registerOpenViewContainerAction(viewContainer));
+		*/
+	}
 
     private async openComposite(compositeId: string, location: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
 		return this.paneCompositeService.openPaneComposite(compositeId, location, focus);
@@ -64,7 +85,7 @@ export class ViewsService extends Disposable implements IViewsService {
 			constructor(
 				@ILogService logService: ILogService,
 				//@ITelemetryService telemetryService: ITelemetryService,
-				//@IWorkspaceContextService contextService: IWorkspaceContextService,
+				@IWorkspaceContextService contextService: IWorkspaceContextService,
 				//@IStorageService storageService: IStorageService,
 				@IInstantiationService instantiationService: IInstantiationService,
 				@IThemeService themeService: IThemeService,

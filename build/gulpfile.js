@@ -1,7 +1,7 @@
 const gulp = require("gulp");
 const path = require("path");
 
-const { compileTask } = require("./lib/compilation");
+const { compileTask } = require("./compilation");
 
 gulp.task("rimraf", function (cb) {
     const rimraf = require("rimraf");

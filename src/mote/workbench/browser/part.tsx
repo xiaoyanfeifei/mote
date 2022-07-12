@@ -1,19 +1,51 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import { Dimension } from "vs/base/browser/dom";
+import { Dimension, IDimension, size } from "vs/base/browser/dom";
 import { ISerializableView, IViewSize } from "vs/base/browser/ui/grid/grid";
 import { Emitter, Event } from "vs/base/common/event";
+import { assertIsDefined } from "vs/base/common/types";
 
 export interface IPartOptions {
 	hasTitle?: boolean;
 	borderWidth?: () => number;
 }
 
+export interface ILayoutContentResult {
+	titleSize: IDimension;
+	contentSize: IDimension;
+}
+
 class PartLayout {
     private static readonly TITLE_HEIGHT = 35;
 
     constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
+
+	layout(width: number, height: number): ILayoutContentResult {
+
+		// Title Size: Width (Fill), Height (Variable)
+		let titleSize: Dimension;
+		if (this.options.hasTitle) {
+			titleSize = new Dimension(width, Math.min(height, PartLayout.TITLE_HEIGHT));
+		} else {
+			titleSize = Dimension.None;
+		}
+
+		let contentWidth = width;
+		if (this.options && typeof this.options.borderWidth === 'function') {
+			contentWidth -= this.options.borderWidth(); // adjust for border size
+		}
+
+		// Content Size: Width (Fill), Height (Variable)
+		const contentSize = new Dimension(contentWidth, height - titleSize.height);
+
+		// Content
+		if (this.contentArea) {
+			size(this.contentArea, contentSize.width, contentSize.height);
+		}
+
+		return { titleSize, contentSize };
+	}
 }
 
 export abstract class Part extends Component implements ISerializableView {
@@ -101,6 +133,15 @@ export abstract class Part extends Component implements ISerializableView {
 
 	layout(width: number, height: number, _top: number, _left: number): void {
 		this._dimension = new Dimension(width, height);
+	}
+
+	/**
+	 * Layout title and content area in the given dimension.
+	 */
+	 protected layoutContents(width: number, height: number): ILayoutContentResult {
+		const partLayout = assertIsDefined(this.partLayout);
+
+		return partLayout.layout(width, height);
 	}
 
 	//#region ISerializableView

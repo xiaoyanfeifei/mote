@@ -9,8 +9,8 @@ import 'mote/workbench/browser/parts/views/viewsService';
 //#region --- workbench contributions
 
 // Explorer
-import 'mote/workbench/contrib/files/browser/explorerViewlet';
-import 'mote/workbench/contrib/files/browser/files.contribution';
+import 'mote/workbench/contrib/pages/browser/explorerViewlet';
+import 'mote/workbench/contrib/pages/browser/pages.contribution';
 
 //#endregion
 
@@ -20,6 +20,7 @@ import 'mote/workbench/services/hover/browser/hoverService';
 import 'mote/workbench/services/commands/common/commandService';
 import 'mote/workbench/services/editor/browser/editorService';
 import 'mote/workbench/services/quickmenu/browser/quickmenuService';
+import 'mote/workbench/services/views/browser/viewDescriptorService';
 
 //#endregion
 

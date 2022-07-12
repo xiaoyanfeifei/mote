@@ -8,10 +8,7 @@
     "test-browser": "npx playwright install && node test/unit/browser/index.js",
     "test-browser-no-install": "node test/unit/browser/index.js",
     "watch": "npx gulp watch",
-    "devstart": "npx electron . ",
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "devstart": "npx electron . "
   },
   "author": "",
   "license": "GPL",

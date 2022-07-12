@@ -21,3 +21,10 @@ import 'mote/workbench/workbench.common.main';
 import 'mote/workbench/electron-sandbox/desktop.main';
 
 //#endregion
+
+//#region --- workbench services
+
+import 'mote/workbench/services/lifecycle/browser/lifecycleService';
+//import 'mote/workbench/services/host/electron-sandbox/nativeHostService';
+
+//#endregion

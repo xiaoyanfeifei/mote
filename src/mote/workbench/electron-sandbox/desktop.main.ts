@@ -16,6 +16,8 @@ import { NativeLogService } from "mote/workbench/services/log/electron-sandbox/l
 import { BrowserStorageService } from "vs/platform/storage/browser/storageService";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IStorageService } from "vs/platform/storage/common/storage";
+import { WorkspaceService } from "mote/workbench/services/workspace/browser/workspaceService";
+import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 
 export class DesktopMain extends Disposable {
 	constructor(
@@ -77,6 +79,9 @@ export class DesktopMain extends Disposable {
 		// Storage
 		serviceCollection.set(IStorageService, storageService);
 
+		const workspaceService = await this.createWorkspaceService();
+		serviceCollection.set(IWorkspaceContextService, workspaceService);
+
         return {serviceCollection};
     }
 
@@ -93,6 +98,12 @@ export class DesktopMain extends Disposable {
 		}
 
 		return storageService;
+	}
+
+	private async createWorkspaceService() {
+		const workspaceService = new WorkspaceService();
+		await workspaceService.initialize();
+		return workspaceService;
 	}
 
 }

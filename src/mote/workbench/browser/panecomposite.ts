@@ -1,4 +1,5 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
+import { Dimension } from "vs/base/browser/dom";
 import { URI } from "vs/base/common/uri";
 import { BrandedService, IConstructorSignature, IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
@@ -25,6 +26,10 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		this.viewPaneContainer = this._register(this.createViewPaneContainer(parent));
 		//this._register(this.viewPaneContainer.onTitleAreaUpdate(() => this.updateTitleArea()));
 		this.viewPaneContainer.create(parent);
+	}
+
+	layout(dimension: Dimension): void {
+		this.viewPaneContainer?.layout(dimension);
 	}
 
 	getOptimalWidth(): number | undefined {

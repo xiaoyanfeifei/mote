@@ -278,8 +278,18 @@ export abstract class CompositePart<T extends Composite> extends Part {
 
 		// Make sure the composite is layed out
 		if (this.contentAreaSize) {
-			//composite.layout(this.contentAreaSize);
+			composite.layout(this.contentAreaSize);
 		}
+	}
+
+	override layout(width: number, height: number, top: number, left: number): void {
+		super.layout(width, height, top, left);
+
+		// Layout contents
+		this.contentAreaSize = Dimension.lift(super.layoutContents(width, height).contentSize);
+
+		// Layout composite
+		this.activeComposite?.layout(this.contentAreaSize);
 	}
 
 	protected removeComposite(compositeId: string): boolean {
