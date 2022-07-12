@@ -19,7 +19,7 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
     declare readonly _serviceBrand: undefined;
 
 
-    readonly minimumWidth: number = 170;
+    readonly minimumWidth: number = 250;
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
 	readonly minimumHeight: number = 0;
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
@@ -58,9 +58,6 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 
 		// Part container
 		const container = assertIsDefined(this.getContainer());
-
-		container.style.width = "260px";
-		container.style.height = "100%";
 		container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 		container.style.position = "absolute";
 

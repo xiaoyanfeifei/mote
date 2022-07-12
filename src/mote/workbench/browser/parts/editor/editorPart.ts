@@ -31,7 +31,7 @@ export class EditorPart extends Part implements IEditorService {
     declare readonly _serviceBrand: undefined;
 
     get minimumWidth(): number { 
-        return 0;
+        return 800;
     }
 
     get maximumWidth(): number { 
@@ -39,7 +39,7 @@ export class EditorPart extends Part implements IEditorService {
     }
 
     get minimumHeight(): number { 
-        return 0;
+        return 400;
     }
 
     get maximumHeight(): number { 
@@ -76,6 +76,7 @@ export class EditorPart extends Part implements IEditorService {
         RecordCacheStore.Default.logService = logService;
         CommandsRegistry.registerCommand("openPage", this.openPage);
     }
+
 
     openPage = (accessor: ServicesAccessor, payload) => {
         this.logService.debug("[EditorPart] Open page with payload", payload);

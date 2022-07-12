@@ -108,8 +108,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 			{ proportionalLayout: false }
 		);
 
-        //this.container.append(sideBar.element);
-		//this.container.append(editorPart.element);
 		this.container.prepend(workbenchGrid.element);
 		this.container.setAttribute('role', 'application');
 		this.workbenchGrid = workbenchGrid;
@@ -122,7 +120,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	layout(): void {
 		if (!this.disposed) {
 			this._dimension = this.getClientArea();
-			this.logService.trace(`Layout#layout, height: ${this._dimension.height}, width: ${this._dimension.width}`);
+			this.logService.debug(`Layout#layout, height: ${this._dimension.height}, width: ${this._dimension.width}`);
 
 			position(this.container, 0, 0, 0, 0, 'relative');
 			size(this.container, this._dimension.width, this._dimension.height);
@@ -188,6 +186,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		const width = 1080;
 		const height = 800;
+		const sideBarSize = 200;
+		const panelSize = 300;
 
 		const titleBarHeight = 48;
 		const middleSectionHeight = height - titleBarHeight;
@@ -195,18 +195,19 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBarNode: ISerializedLeafNode = {
 			type: 'leaf',
 			data: { type: Parts.SIDEBAR_PART },
-			size: 250,
+			size: sideBarSize,
 			visible: true
 		};
 
 		const editorNode: ISerializedLeafNode = {
 			type: 'leaf',
 			data: { type: Parts.EDITOR_PART },
-			size: 0, // Update based on sibling sizes
+			size: 1200, // Update based on sibling sizes
 			visible: true
 		};
 
-		const middleSection: ISerializedNode[] = [editorNode, sideBarNode];
+
+		const middleSection: ISerializedNode[] = [sideBarNode, editorNode];
 
 		const result: ISerializedGrid = {
 			root: {
