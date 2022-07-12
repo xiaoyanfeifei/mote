@@ -24,6 +24,19 @@ img, svg {
     content: attr(placeholder);
 }
 
+.part > .content {
+    font-size: 15px;
+}
 .part>.content>.composite {
     height: 100%;
+}
+.pane-body .welcome-view-content {
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 1em 20px;
+    box-sizing: border-box;
+    align-items: center;
+}
+.pane-body .welcome-view-content > p {
+    width: 100%;
 }

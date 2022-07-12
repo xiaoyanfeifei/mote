@@ -20,7 +20,7 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 
 
     readonly minimumWidth: number = 250;
-	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+	readonly maximumWidth: number = 450;
 	readonly minimumHeight: number = 0;
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
 
