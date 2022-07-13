@@ -79,7 +79,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
     }
 
     registerPart(part: Part): void {
-		console.log("[Layout] registerPart", part);
 		this.parts.set(part.getId(), part);
 	}
 

@@ -174,7 +174,6 @@ export class ViewContainerModel extends Disposable implements IViewContainerMode
 	}
 
 	private broadCastAddedVisibleViewDescriptors(added: IAddedViewDescriptorRef[]): void {
-		console.log("broadCastAddedVisibleViewDescriptors")
 		if (added.length) {
 			this._onDidAddVisibleViewDescriptors.fire(added.sort((a, b) => a.index - b.index));
 		}

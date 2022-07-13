@@ -79,7 +79,6 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 	}
 
 	private getViewsByContainer(viewContainer: ViewContainer): IViewDescriptor[] {
-		console.log("getViewsByContainer", this.viewsRegistry.getViews(viewContainer));
 		const result = this.viewsRegistry.getViews(viewContainer).filter(viewDescriptor => {
 			const cachedContainer = this.cachedViewInfo.get(viewDescriptor.id)?.containerId || viewContainer.id;
 			return cachedContainer === viewContainer.id;
@@ -119,7 +118,6 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 			const viewsToRegister = this.getViewsByContainer(viewContainer)
 				.filter(view => {
 					const container = this.getDefaultContainerById(view.id);
-					console.log("container", container);
 					return container == viewContainer
 				});
 			if (viewsToRegister.length) {

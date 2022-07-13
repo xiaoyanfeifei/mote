@@ -87,7 +87,6 @@ export class Workbench extends Layout {
 		// All Contributed Services which register by registerSingleton
 		const contributedServices = getSingletonServiceDescriptors();
 		for (let [id, descriptor] of contributedServices) {
-			console.log(`set contribution ${id}`);
 			serviceCollection.set(id, descriptor);
 		}
 

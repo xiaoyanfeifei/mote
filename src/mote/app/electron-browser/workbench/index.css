@@ -40,3 +40,6 @@ img, svg {
 .pane-body .welcome-view-content > p {
     width: 100%;
 }
+.pane>.pane-body:not(.welcome)>.welcome-view {
+    display: none;
+}

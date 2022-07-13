@@ -110,7 +110,6 @@ export class AppWindow extends Disposable implements IAppWindow {
 
             this._win = new BrowserWindow(options);
             this._id = this._win.id;
-			this._win.webContents.openDevTools();
         }
     }
 

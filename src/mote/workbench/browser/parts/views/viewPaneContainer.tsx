@@ -73,7 +73,6 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
         this.viewContainer = container;
         this.viewContainerModel = this.viewDescriptorService.getViewContainerModel(container);
-		console.log("viewContainerModel", this.viewContainerModel);
     }
 
     create(parent: HTMLElement): void {
