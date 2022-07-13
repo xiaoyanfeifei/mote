@@ -188,7 +188,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBarSize = 200;
 		const panelSize = 300;
 
-		const titleBarHeight = 48;
+		const titleBarHeight = 0;
 		const middleSectionHeight = height - titleBarHeight;
 
 		const sideBarNode: ISerializedLeafNode = {

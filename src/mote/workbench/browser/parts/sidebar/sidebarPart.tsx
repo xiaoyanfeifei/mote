@@ -41,7 +41,7 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
             instantiationService,
             Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
             "sideBar",
-            Parts.SIDEBAR_PART, {hasTitle: true}
+            Parts.SIDEBAR_PART, {hasTitle: false}
         )
     }
 

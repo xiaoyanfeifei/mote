@@ -61,6 +61,8 @@ export class Workbench extends Layout {
 				// Restore
 				this.restore();
             })
+
+			return instantiationService;
         } catch (error) {
 			throw error; // rethrow because this is a critical issue we cannot handle properly here
         }

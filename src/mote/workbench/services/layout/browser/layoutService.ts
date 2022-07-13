@@ -25,6 +25,11 @@ export const IWorkbenchLayoutService = refineServiceDecorator<ILayoutService, IW
 export interface IWorkbenchLayoutService extends ILayoutService {
 
 	/**
+	 * Run a layout of the workbench.
+	 */
+	layout(): void;
+
+	/**
 	 * Returns if the part is visible.
 	 */
 	isVisible(part: Parts): boolean;

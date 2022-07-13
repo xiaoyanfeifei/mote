@@ -111,7 +111,14 @@ export class AppWindow extends Disposable implements IAppWindow {
             this._win = new BrowserWindow(options);
             this._id = this._win.id;
         }
+
+		// Eventing
+		this.registerListeners();
     }
+
+	private registerListeners() {
+
+	}
 
 	get isFullScreen(): boolean { return this._win.isFullScreen() || this._win.isSimpleFullScreen(); }
 

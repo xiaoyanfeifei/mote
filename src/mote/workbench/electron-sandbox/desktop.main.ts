@@ -18,6 +18,7 @@ import { onUnexpectedError } from "vs/base/common/errors";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { WorkspaceService } from "mote/workbench/services/workspace/browser/workspaceService";
 import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
+import { NativeWindow } from "./window";
 
 export class DesktopMain extends Disposable {
 	constructor(
@@ -42,6 +43,9 @@ export class DesktopMain extends Disposable {
 
 		// Startup
 		const instantiationService = workbench.startup();
+
+		// Window
+		this._register(instantiationService.createInstance(NativeWindow));
 	}
 
     private async initServices() {
