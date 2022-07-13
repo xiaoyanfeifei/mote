@@ -62,8 +62,6 @@ export class Editable extends Widget {
             const rangeFromDocument = Range.get();
             if (!Range.ensureRange(rangeFromDocument, rangeFromElement)){
                 Range.set(rangeFromElement);
-                console.log(rangeFromElement);
-                console.log(rangeFromElement.endContainer);
             }
         }
     }

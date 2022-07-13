@@ -53,15 +53,12 @@ export class EditableContainer extends Disposable {
     }
 
     focus() {
-        console.log(this.editable.element);
         this.editable.element.focus();
-        window["block"] = this.editable.element;
     }
 
     activate() {
         const currentId = this.editorStateService.getEditorState().blockStore?.id;
         if (this.blockStore && this.blockStore.id == currentId) {
-            console.log("activate", currentId);
             return true;
         }
         return false;

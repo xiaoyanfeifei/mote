@@ -61,7 +61,6 @@ export class EditorState extends Disposable implements IEditorState {
             needStoreFire = true;
         }
         this._selectionState = Object.assign({}, this._selectionState, newState);
-        console.log("Update state,", this._selectionState);
         this._onDidSelectionChange.fire(this._selectionState);
         if (needStoreFire) {
             this._onDidStoreChange.fire(this.blockStore!);

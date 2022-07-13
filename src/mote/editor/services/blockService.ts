@@ -112,8 +112,7 @@ export class BlockService extends Disposable {
         if (selection.startIndex != selection.endIndex) {
             const storeValue = store.getValue();
             const newRecord = segmentUtils.remove(storeValue, selection.startIndex, selection.endIndex);
-            console.log(`transaction[${transaction.id}] record after delete `, storeValue, selection, newRecord);
-
+            
             const newSelection: TextSelection = {
                 startIndex: selection.startIndex,
                 endIndex: selection.startIndex
