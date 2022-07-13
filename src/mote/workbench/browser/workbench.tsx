@@ -1,5 +1,4 @@
 
-import { createElement } from "mote/base/jsx/createElement";
 import { getSingletonServiceDescriptors } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";

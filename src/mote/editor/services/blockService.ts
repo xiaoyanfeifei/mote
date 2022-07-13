@@ -1,5 +1,5 @@
 import { Disposable } from "vs/base/common/lifecycle";
-import { TextSelection, TextSelectionMode } from "mote/editor/common/core/selection";
+import { getSelectionFromRange, TextSelection, TextSelectionMode } from "mote/editor/common/core/selection";
 import { textChange } from "mote/editor/common/core/textChange";
 import BlockStore from "mote/editor/common/store/blockStore";
 import * as segmentUtils from "mote/editor/common/segmentUtils";
@@ -22,8 +22,9 @@ export class BlockService extends Disposable {
         this.state = state;
     }
     
-    public onChange(store, transaction, selection:TextSelection, oldValue: ISegment[], newValue: string) {
-        const content = segmentUtils.collectValueFromSegment(oldValue);
+    public onChange(store: BlockStore, transaction, selection:TextSelection, newValue: string) {
+        const oldRecord = store.getValue();
+        const content = segmentUtils.collectValueFromSegment(oldRecord);
         const diffResult = textChange(selection, content, newValue);
 
         let needChange = false;
@@ -66,6 +67,14 @@ export class BlockService extends Disposable {
             }
         }
 
+        if (needChange) {
+            const selection = getSelectionFromRange();
+            if (selection) {
+                this.state.updateSelection({
+                    selection: selection?.selection
+                })
+            }
+        }
     }
 
     public insert(content: string, transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
@@ -103,7 +112,7 @@ export class BlockService extends Disposable {
         if (selection.startIndex != selection.endIndex) {
             const storeValue = store.getValue();
             const newRecord = segmentUtils.remove(storeValue, selection.startIndex, selection.endIndex);
-            console.debug(`transaction[${transaction.id}] record after delete `, storeValue, selection, newRecord);
+            console.log(`transaction[${transaction.id}] record after delete `, storeValue, selection, newRecord);
 
             const newSelection: TextSelection = {
                 startIndex: selection.startIndex,
@@ -124,7 +133,10 @@ export class BlockService extends Disposable {
 
             
         } else {
-            // Update selection
+            this.state.updateSelection({
+                store: store,
+                selection: selection
+            });
         }
     }
 

@@ -44,10 +44,9 @@ export class DocumentEditor extends Disposable {
     public create = () => {
         this.container.innerHTML = "";
         const pageIds:string[] = this.contentStore.getValue() || [];
-        const fragment = document.createDocumentFragment();
         const elements = pageIds.map((pageId)=>this.createElement(pageId))
-        fragment.append(...elements);
-        this.container.append(fragment);
+        //fragment.append(...elements);
+        this.container.append(...elements);
     }
 
     private createElement(id: string): HTMLElement {

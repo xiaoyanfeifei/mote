@@ -78,9 +78,12 @@ export default class RecordCacheStore extends Disposable {
             }
             this.state.cache.set(key, record);
             this.storageService.store(key, JSON.stringify(record), StorageScope.WORKSPACE, StorageTarget.USER);
-            this._onDidChange.fire(key);
         } else
             this.deleteRecord(keyProps)
+    }
+
+    fire(key: string) {
+        this._onDidChange.fire(key);
     }
     deleteRecord(e:CacheKeyProps) {
         this.state.cache.delete(RecordCacheStore.generateCacheKey(e))

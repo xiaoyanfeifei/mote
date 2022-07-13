@@ -5,7 +5,7 @@ import { IEditorStateService } from "mote/workbench/services/editor/common/edito
 import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { EditOperation } from "../common/core/editOperation";
-import { TextSelection } from "../common/core/selection";
+import { TextSelection, TextSelectionMode } from "../common/core/selection";
 import { Transaction } from "../common/core/transaction";
 import { collectValueFromSegment, ISegment } from "../common/segmentUtils";
 import { segmentsToElement } from "../common/textSerialize";
@@ -19,6 +19,8 @@ interface EditableContainerOptions {
     placeHolderStyle?: CSSProperties;
 
     placeholder?: string;
+
+    autoFocus?: boolean;
 }
 
 export class EditableContainer extends Disposable {
@@ -50,6 +52,21 @@ export class EditableContainer extends Disposable {
         this.registerListener();
     }
 
+    focus() {
+        console.log(this.editable.element);
+        this.editable.element.focus();
+        window["block"] = this.editable.element;
+    }
+
+    activate() {
+        const currentId = this.editorStateService.getEditorState().blockStore?.id;
+        if (this.blockStore && this.blockStore.id == currentId) {
+            console.log("activate", currentId);
+            return true;
+        }
+        return false;
+    }
+
     private registerListener() {
         this.operationHandler.onDidEnter(this.handleEnter);
         this.operationHandler.onDidDelete(this.handleBackspace);
@@ -57,14 +74,9 @@ export class EditableContainer extends Disposable {
         this.editorStateService.getEditorState().onDidStoreChange(this.handleStoreChange);
     }
 
-    private handleStoreChange = (currentBlockStore: BlockStore) => {
-        if (this.blockStore && this.blockStore.id == currentBlockStore?.id) {
-            if ( this.editable.element == document.activeElement) {
-                return;
-            }
-            const rangeFromElement = Range.create(this.editable.element, this.editorStateService.getEditorState().selectionState.selection);
-            Range.set(rangeFromElement);
-            this.editable.element.focus();
+    private handleStoreChange = () => {
+        if (this.activate() && this.options.autoFocus != false) {
+            this.focus()
         }
     }
 
@@ -72,12 +84,25 @@ export class EditableContainer extends Disposable {
         const that = this;
         const editorState = this.editorStateService.getEditorState();
         Transaction.createAndCommit((transcation)=>{
-            that.blockService.onChange(that.blockStore, transcation, editorState.selectionState.selection, that.getTextValue(), value);
+            that.blockService.onChange(
+                that.blockStore!, 
+                transcation, 
+                editorState.selectionState.selection,
+                value
+            );
             that.applyStyles()
         }, this.blockStore?.userId!);
     }
 
     isEditing() {
+        const editorState = this.editorStateService.getEditorState();
+        const textSelection = editorState.selectionState;
+        if (this.blockStore?.identify != textSelection.store?.identify) {
+            return false;
+        }
+        if (TextSelectionMode.Editing != textSelection.mode) {
+            return false;
+        }
         return true;
     }
 
@@ -124,6 +149,7 @@ export class EditableContainer extends Disposable {
         this._register(this.blockStore.onDidChange(()=>this.update()));
         this.operationHandler.store = value;
         this.update();
+        this.handleStoreChange();
     }
 
     public update() {

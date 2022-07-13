@@ -30,6 +30,7 @@ export class Editable extends Widget {
         this.input = $("");
         this.input.contentEditable = "true";
         this.input.setAttribute("data-root", "");
+        this.input.tabIndex = 0;
         if (options.placeholder) {
             this.input.setAttribute("placeholder", options.placeholder);
         }
@@ -61,6 +62,8 @@ export class Editable extends Widget {
             const rangeFromDocument = Range.get();
             if (!Range.ensureRange(rangeFromDocument, rangeFromElement)){
                 Range.set(rangeFromElement);
+                console.log(rangeFromElement);
+                console.log(rangeFromElement.endContainer);
             }
         }
     }

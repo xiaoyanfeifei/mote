@@ -67,6 +67,10 @@ export class Transaction {
                 preSubmitAction();
             };
 
+            for (const store of this.stores) {
+                RecordCacheStore.Default.fire(store.identify);
+            }
+
             // Trigger postSubmitAction
             for (const postSubmitAction of this.postSubmitActions) {
                 postSubmitAction();
@@ -106,6 +110,8 @@ export class Transaction {
             value: record,
             role: role || Role.Editor
         });
+
+        store.sync();
         
         this.operations.push(operation);
         this.stores.push(store);

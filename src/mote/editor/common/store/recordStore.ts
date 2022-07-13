@@ -96,7 +96,11 @@ export default class RecordStore<T = any> extends Disposable {
         return this.instanceState;
     }
 
-    private sync() {
+    public fire() {
+        this._onDidChange.fire();
+    }
+
+    public sync() {
         const cachedRecord = RecordCacheStore.Default.getRecord({pointer: this.pointer, userId: this.userId});
         if (cachedRecord) {
             if ( this.path && this.path.length > 0) {

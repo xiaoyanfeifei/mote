@@ -145,7 +145,8 @@ export class EditorPart extends Part implements IEditorService {
         this.titleContainer.style.width = "100%";
 
         this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
-            placeholder: "Untitled"
+            placeholder: "Untitled",
+            autoFocus: false,
         });
 
         titleDomNode.append(this.titleContainer);

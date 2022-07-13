@@ -22,7 +22,7 @@
     "@vscode/iconv-lite-umd": "^0.7.0",
     "csstype": "^3.0.11",
     "debounce": "^1.2.1",
-    "electron": "^18.2.3",
+    "electron": "^19.0.8",
     "esbuild": "^0.14.48",
     "event-stream": "^4.0.1",
     "gulp": "^4.0.2",
