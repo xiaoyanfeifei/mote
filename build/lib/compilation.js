@@ -10,7 +10,6 @@ const fs = require("fs");
 const gulp = require("gulp");
 const path = require("path");
 const monacodts = require("./monaco-api");
-const nls = require("./nls");
 const reporter_1 = require("./reporter");
 const util = require("./util");
 const fancyLog = require("fancy-log");
@@ -54,10 +53,10 @@ function createCompile(src, build, emitError, transpileOnly) {
             .pipe(bom()) // this is required to preserve BOM in test files that loose it otherwise
             .pipe(utf8Filter.restore)
             .pipe(tsFilter)
-            .pipe(util.loadSourcemaps())
+            //.pipe(util.loadSourcemaps())
             .pipe(compilation(token))
             .pipe(noDeclarationsFilter)
-            .pipe(build ? nls.nls() : es.through())
+            //.pipe(es.through())
             .pipe(noDeclarationsFilter.restore)
             .pipe(transpileOnly ? es.through() : sourcemaps.write('.', {
             addComment: false,
@@ -88,7 +87,7 @@ function compileTask(src, out, build) {
         if (os.totalmem() < 4000000000) {
             throw new Error('compilation requires 4GB of RAM');
         }
-        const compile = createCompile(src, build, true, false);
+        const compile = createCompile(src, build, false, false);
         const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
         const generator = new MonacoGenerator(false);
         if (src === 'src') {

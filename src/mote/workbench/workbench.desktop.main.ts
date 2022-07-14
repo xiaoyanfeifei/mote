@@ -18,8 +18,6 @@
 
 //#region --- workbench common & sandbox
 
-console.log("Load workbench desktop main");
-
 import 'mote/workbench/workbench.sandbox.main';
 
 //#endregion

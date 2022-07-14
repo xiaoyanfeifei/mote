@@ -13,7 +13,7 @@ import { safeStringify } from "vs/base/common/objects";
 import { IMainProcessService } from "vs/platform/ipc/electron-sandbox/services";
 import { ElectronIPCMainProcessService } from "vs/platform/ipc/electron-sandbox/mainProcessService";
 import { NativeLogService } from "mote/workbench/services/log/electron-sandbox/logService";
-import { BrowserStorageService } from "vs/platform/storage/browser/storageService";
+import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService';
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { WorkspaceService } from "mote/workbench/services/workspace/browser/workspaceService";
@@ -28,11 +28,11 @@ export class DesktopMain extends Disposable {
 		this.init();
 	}
 
-    private init(): void {
-        
-    }
+	private init(): void {
 
-    async open(): Promise<void> {
+	}
+
+	async open(): Promise<void> {
 		console.log("Open desktop");
 
 		// Init services and wait for DOM to be ready in parallel
@@ -48,7 +48,7 @@ export class DesktopMain extends Disposable {
 		this._register(instantiationService.createInstance(NativeWindow));
 	}
 
-    private async initServices() {
+	private async initServices() {
 		const serviceCollection = new ServiceCollection();
 
 		// Main Process
@@ -86,11 +86,11 @@ export class DesktopMain extends Disposable {
 		const workspaceService = await this.createWorkspaceService();
 		serviceCollection.set(IWorkspaceContextService, workspaceService);
 
-        return {serviceCollection};
-    }
+		return { serviceCollection };
+	}
 
 	private async createStorageService(logService: ILogService) {
-		const storageService = new BrowserStorageService({}, logService);
+		const storageService = new BrowserStorageService({ id: 'mote' }, { currentProfile: '' } as any, logService);
 
 		try {
 			await storageService.initialize();

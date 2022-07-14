@@ -26,7 +26,7 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 
 	constructor(
 		@INativeEnvironmentService environmentService: INativeEnvironmentService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

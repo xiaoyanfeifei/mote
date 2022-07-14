@@ -125,9 +125,6 @@
 					return value;
 				}
 				throw new Error(`Invalid script url: ${value}`);
-			},
-			createHTML(value) {
-				return value;
 			}
 		});
 

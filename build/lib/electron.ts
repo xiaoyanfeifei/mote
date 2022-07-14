@@ -94,7 +94,7 @@ export const config = {
 	productAppName: product.nameLong,
 	companyName: 'Microsoft Corporation',
 	copyright: 'Copyright (C) 2022 Microsoft. All rights reserved',
-	darwinIcon: 'resources/darwin/code.icns',
+	darwinIcon: 'resources/darwin/mote.icns',
 	darwinBundleIdentifier: product.darwinBundleIdentifier,
 	darwinApplicationCategoryType: 'public.app-category.developer-tools',
 	darwinHelpBookFolder: 'VS Code HelpBook',

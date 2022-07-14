@@ -27,9 +27,10 @@ export function loaderConfig() {
 	const result: any = {
 		paths: {
 			'vs': 'out-build/vs',
+			'mote': 'out-build/mote',
 			'vscode': 'empty:'
 		},
-		amdModulesPattern: /^vs\//
+		amdModulesPattern: /(^vs\/|^mote\/)/
 	};
 
 	result['vs/css'] = { inlineResources: true };

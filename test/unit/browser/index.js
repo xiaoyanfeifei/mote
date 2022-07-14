@@ -65,11 +65,6 @@ function ensureIsArray(a) {
 	return Array.isArray(a) ? a : [a];
 }
 
-const excludeGlobs = [
-	'**/{node,electron-sandbox,electron-browser,electron-main}/**/*.test.js',
-	'**/vs/**/*',
-]
-
 const testModules = (async function () {
 
 	const excludeGlob = '**/{node,electron-sandbox,electron-browser,electron-main}/**/*.test.js';
@@ -82,7 +77,6 @@ const testModules = (async function () {
 		promise = Promise.resolve(ensureIsArray(argv.run).map(file => {
 			file = file.replace(/^src/, 'out');
 			file = file.replace(/\.ts$/, '.js');
-			file = file.replace(/\.tsx$/, '.js');
 			return path.relative(out, file);
 		}));
 
@@ -105,8 +99,8 @@ const testModules = (async function () {
 
 	return promise.then(files => {
 		const modules = [];
-		for (let file of files) {
-			if (!excludeGlobs.some(excludeGlob => minimatch(file, excludeGlob))) {
+		for (const file of files) {
+			if (!minimatch(file, excludeGlob)) {
 				modules.push(file.replace(/\.js$/, ''));
 
 			} else if (!isDefaultModules) {
@@ -153,18 +147,22 @@ async function runTestsInBrowser(testModules, browserType) {
 	withReporter(browserType, new EchoRunner(emitter, browserType.toUpperCase()));
 
 	// collection failures for console printing
-	const fails = [];
+	const failingModuleIds = [];
+	const failingTests = [];
 	emitter.on('fail', (test, err) => {
 		if (err.stack) {
 			const regex = /(vs\/.*\.test)\.js/;
-			for (let line of String(err.stack).split('\n')) {
+			for (const line of String(err.stack).split('\n')) {
 				const match = regex.exec(line);
 				if (match) {
-					fails.push(match[1]);
-					break;
+					failingModuleIds.push(match[1]);
+					return;
 				}
 			}
 		}
+
+		// We could not determine the module id
+		failingTests.push(test.fullTitle);
 	});
 
 	try {
@@ -178,8 +176,11 @@ async function runTestsInBrowser(testModules, browserType) {
 	}
 	await browser.close();
 
-	if (fails.length > 0) {
-		return `to DEBUG, open ${browserType.toUpperCase()} and navigate to ${target.href}?${fails.map(module => `m=${module}`).join('&')}`;
+	if (failingModuleIds.length > 0) {
+		return `to DEBUG, open ${browserType.toUpperCase()} and navigate to ${target.href}?${failingModuleIds.map(module => `m=${module}`).join('&')}`;
+	}
+	if (failingTests.length > 0) {
+		return `The followings tests are failing:\n - ${failingTests.join('\n - ')}`;
 	}
 }
 
@@ -261,7 +262,7 @@ testModules.then(async modules => {
 	}
 
 	// aftermath
-	for (let msg of messages) {
+	for (const msg of messages) {
 		if (msg) {
 			didFail = true;
 			console.log(msg);

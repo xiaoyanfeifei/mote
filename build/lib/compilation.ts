@@ -8,7 +8,6 @@ import * as fs from 'fs';
 import * as gulp from 'gulp';
 import * as path from 'path';
 import * as monacodts from './monaco-api';
-import * as nls from './nls';
 import { createReporter } from './reporter';
 import * as util from './util';
 import * as fancyLog from 'fancy-log';
@@ -63,10 +62,10 @@ function createCompile(src: string, build: boolean, emitError: boolean, transpil
 			.pipe(bom()) // this is required to preserve BOM in test files that loose it otherwise
 			.pipe(utf8Filter.restore)
 			.pipe(tsFilter)
-			.pipe(util.loadSourcemaps())
+			//.pipe(util.loadSourcemaps())
 			.pipe(compilation(token))
 			.pipe(noDeclarationsFilter)
-			.pipe(build ? nls.nls() : es.through())
+			//.pipe(es.through())
 			.pipe(noDeclarationsFilter.restore)
 			.pipe(transpileOnly ? es.through() : sourcemaps.write('.', {
 				addComment: false,
@@ -105,7 +104,7 @@ export function compileTask(src: string, out: string, build: boolean): () => Nod
 			throw new Error('compilation requires 4GB of RAM');
 		}
 
-		const compile = createCompile(src, build, true, false);
+		const compile = createCompile(src, build, false, false);
 		const srcPipe = gulp.src(`${src}/**`, { base: `${src}` });
 		const generator = new MonacoGenerator(false);
 		if (src === 'src') {

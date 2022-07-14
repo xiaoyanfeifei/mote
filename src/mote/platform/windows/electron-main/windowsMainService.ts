@@ -13,39 +13,39 @@ import { AppWindow } from "./window";
 import { IOpenConfiguration, IWindowsMainService } from "./windows";
 
 interface IOpenBrowserWindowOptions {
-    readonly userEnv?: IProcessEnvironment;
+	readonly userEnv?: IProcessEnvironment;
 	readonly cli?: NativeParsedArgs;
 }
 
 export class WindowsMainService extends Disposable implements IWindowsMainService {
-    constructor(
-        @ILogService private readonly logService: ILogService,
-        @IInstantiationService private readonly instantiationService: IInstantiationService,
-        @IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
-    ) {
-        super();
-    }
+	constructor(
+		@ILogService private readonly logService: ILogService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+	) {
+		super();
+	}
 
-    open(openConfig: IOpenConfiguration): IAppWindow[] {
-        
-        const { windows: usedWindows } = this.doOpen(openConfig);
+	open(openConfig: IOpenConfiguration): IAppWindow[] {
 
-        // Make sure to pass focus to the most relevant of the windows if we open multiple
+		const { windows: usedWindows } = this.doOpen(openConfig);
+
+		// Make sure to pass focus to the most relevant of the windows if we open multiple
 		if (usedWindows.length > 1) {
 
-        }
-        return usedWindows;
-    }
+		}
+		return usedWindows;
+	}
 
-    private doOpen(
+	private doOpen(
 		openConfig: IOpenConfiguration
-    ) {
+	) {
 
-        // Keep track of used windows and remember
+		// Keep track of used windows and remember
 		// if files have been opened in one of them
 		const usedWindows: IAppWindow[] = [];
-        let filesOpenedInWindow: IAppWindow | undefined = undefined;
-        function addUsedWindow(window: IAppWindow, openedFiles?: boolean): void {
+		let filesOpenedInWindow: IAppWindow | undefined = undefined;
+		function addUsedWindow(window: IAppWindow, openedFiles?: boolean): void {
 			usedWindows.push(window);
 
 			if (openedFiles) {
@@ -54,51 +54,52 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			}
 		}
 
-        addUsedWindow(this.openInBrowserWindow({}));
+		addUsedWindow(this.openInBrowserWindow({}));
 
-        return { windows: distinct(usedWindows)}
-    }
+		return { windows: distinct(usedWindows) }
+	}
 
-    private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
+	private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
+		console.log("this.environmentMainService.userHome", this.environmentMainService.tmpDir.fsPath);
 
-        // Build up the window configuration from provided options, config and environment
+		// Build up the window configuration from provided options, config and environment
 		const configuration: INativeWindowConfiguration = {
-            // Inherit CLI arguments from environment and/or
-            // the specific properties from this launch if provided
-            ...this.environmentMainService.args,
-            ...options.cli,
-            windowId: -1,
+			// Inherit CLI arguments from environment and/or
+			// the specific properties from this launch if provided
+			...this.environmentMainService.args,
+			...options.cli,
+			windowId: -1,
 
-            homeDir: this.environmentMainService.userHome.fsPath,
+			homeDir: this.environmentMainService.userHome.fsPath,
 			tmpDir: this.environmentMainService.tmpDir.fsPath,
 			userDataDir: this.environmentMainService.userDataPath,
 
-            mainPid: process.pid,
-            appRoot: this.environmentMainService.appRoot,
-            //perfMarks: [],
-            userEnv: { ...options.userEnv},
+			mainPid: process.pid,
+			appRoot: this.environmentMainService.appRoot,
+			//perfMarks: [],
+			userEnv: { ...options.userEnv },
 
-            product,
-            //os: { release: release(), hostname: hostname() },
-            colorScheme: {
+			product,
+			//os: { release: release(), hostname: hostname() },
+			colorScheme: {
 				dark: nativeTheme.shouldUseDarkColors,
 				highContrast: nativeTheme.shouldUseInvertedColorScheme || nativeTheme.shouldUseHighContrastColors
 			}
-        };
-        
-        let window: IAppWindow | undefined;
+		};
 
-        if (!window) {
-            const createdWindow = window = this.instantiationService.createInstance(AppWindow);
-        }
+		let window: IAppWindow | undefined;
 
-        this.doOpenInBrowserWindow(window!, configuration, options);
+		if (!window) {
+			const createdWindow = window = this.instantiationService.createInstance(AppWindow);
+		}
 
-        return window;
-    }
+		this.doOpenInBrowserWindow(window!, configuration, options);
 
-    private doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
-        // Load it
+		return window;
+	}
+
+	private doOpenInBrowserWindow(window: IAppWindow, configuration: INativeWindowConfiguration, options: IOpenBrowserWindowOptions) {
+		// Load it
 		window.load(configuration);
-    }
+	}
 }

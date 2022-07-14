@@ -6,27 +6,17 @@
 'use strict';
 
 const gulp = require('gulp');
-const { compileTask } = require("./compilation");
+const util = require('./lib/util');
+const task = require('./lib/task');
+const compilation = require('./lib/compilation');
 
 // Full compile, including nls and inline sources in sourcemaps, for build
-
-function rimrafBuild() {
-	const rimraf = require("rimraf");
-	rimraf('out-build');
-}
-
-gulp.task("compileBuildTask", function () {
-	return compileTask('src', 'out-build')
-});
-
-gulp.task("copyBuildFile", function () {
-    return gulp.src([
-        'src/**/*', //Include All files
-        '!src/**/*.ts', //It will exclude typescript files
-        '!src/**/*.tsx'        
-    ]).pipe(gulp.dest('out-build'));
-});
-
-
-gulp.task('compile-build', gulp.series(rimrafBuild, "compileBuildTask"));
-
+const compileBuildTask = task.define('compile-build',
+	task.series(
+		util.rimraf('out-build'),
+		util.buildWebNodePaths('out-build'),
+		compilation.compileTask('src', 'out-build', true)
+	)
+);
+gulp.task(compileBuildTask);
+exports.compileBuildTask = compileBuildTask;
