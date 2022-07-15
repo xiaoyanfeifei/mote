@@ -18,10 +18,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 	declare readonly _serviceBrand: undefined;
 
-    private readonly _onDidLayout = this._register(new Emitter<IDimension>());
+	private readonly _onDidLayout = this._register(new Emitter<IDimension>());
 	readonly onDidLayout = this._onDidLayout.event;
 
-    //#region Properties
+	//#region Properties
 
 	readonly hasContainer = true;
 	readonly container = document.createElement('div');
@@ -30,10 +30,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	get dimension(): IDimension { return this._dimension; }
 
 	offset?: { top: number; } | undefined;
-    
-    //#endregion
 
-    private readonly parts = new Map<string, Part>();
+	//#endregion
+
+	private readonly parts = new Map<string, Part>();
 
 	private initialized = false;
 	private workbenchGrid!: SerializableGrid<ISerializableView>;
@@ -49,7 +49,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 	private disposed = false;
 
-    constructor(
+	constructor(
 		protected readonly parent: HTMLElement
 	) {
 		super();
@@ -67,18 +67,18 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.logService.debug("[Layout] initLayout");
 		// Services
 		const themeService = accessor.get(IThemeService);
-		
+
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
 		this.editorService = accessor.get(IEditorService);
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
 	}
 
-  
-    focus(): void {
-        throw new Error("Method not implemented.");
-    }
 
-    registerPart(part: Part): void {
+	focus(): void {
+		throw new Error("Method not implemented.");
+	}
+
+	registerPart(part: Part): void {
 		this.parts.set(part.getId(), part);
 	}
 
@@ -91,8 +91,8 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		return part;
 	}
 
-    protected createWorkbenchLayout(): void {
-        const sideBar = this.getPart(Parts.SIDEBAR_PART);
+	protected createWorkbenchLayout(): void {
+		const sideBar = this.getPart(Parts.SIDEBAR_PART);
 		const editorPart = this.getPart(Parts.EDITOR_PART);
 
 		const viewMap = {
@@ -110,7 +110,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		this.container.prepend(workbenchGrid.element);
 		this.container.setAttribute('role', 'application');
 		this.workbenchGrid = workbenchGrid;
-    }
+	}
 
 	private getClientArea(): Dimension {
 		return getClientArea(this.parent);
@@ -119,7 +119,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	layout(): void {
 		if (!this.disposed) {
 			this._dimension = this.getClientArea();
-			this.logService.debug(`Layout#layout, height: ${this._dimension.height}, width: ${this._dimension.width}`);
 
 			position(this.container, 0, 0, 0, 0, 'relative');
 			size(this.container, this._dimension.width, this._dimension.height);
@@ -155,18 +154,18 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		// Restore editors
 		layoutReadyPromises.push((async () => {
 			mark('code/willRestoreEditors');
-			
+
 		})());
 
 		// Restore Sidebar
 		layoutReadyPromises.push((async () => {
-			const viewlet = null;// await this.paneCompositeService.openPaneComposite(FILES_VIEWLET_ID, ViewContainerLocation.Sidebar);
+			let viewlet = null;// await this.paneCompositeService.openPaneComposite(FILES_VIEWLET_ID, ViewContainerLocation.Sidebar);
 			if (!viewlet) {
-				await this.paneCompositeService.openPaneComposite(
+				viewlet = await this.paneCompositeService.openPaneComposite(
 					this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.Sidebar)?.id, ViewContainerLocation.Sidebar); // fallback to default viewlet as needed
 			}
 
-			this.logService.debug("[Layout] did restore SideBar viewlet")
+			this.logService.debug("[Layout] did restore SideBar viewlet", viewlet);
 		})());
 
 		// Await for promises that we recorded to update
@@ -224,7 +223,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 			width,
 			height
 		};
-		
+
 		return result;
 	}
 }

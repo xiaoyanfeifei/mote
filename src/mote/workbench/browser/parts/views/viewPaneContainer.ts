@@ -32,7 +32,7 @@ type BoundingRect = { top: number; left: number; bottom: number; right: number }
 
 export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
-    readonly viewContainer: ViewContainer;
+	readonly viewContainer: ViewContainer;
 	private lastFocusedPane: ViewPane | undefined;
 	private lastMergedCollapsedPane: ViewPane | undefined;
 	private paneItems: IViewPaneItem[] = [];
@@ -41,9 +41,9 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 	private didLayout = false;
 	private dimension: Dimension | undefined;
 
-    protected readonly viewContainerModel: IViewContainerModel;
+	protected readonly viewContainerModel: IViewContainerModel;
 
-    get panes(): ViewPane[] {
+	get panes(): ViewPane[] {
 		return this.paneItems.map(i => i.pane);
 	}
 
@@ -55,32 +55,32 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		return this.paneItems.length;
 	}
 
-    constructor(
-        id: string,
-        private options: IViewPaneContainerOptions,
-        @IWorkbenchLayoutService protected layoutService: IWorkbenchLayoutService,
+	constructor(
+		id: string,
+		private options: IViewPaneContainerOptions,
+		@IWorkbenchLayoutService protected layoutService: IWorkbenchLayoutService,
 		@ILogService protected logService: ILogService,
 		@IInstantiationService protected instantiationService: IInstantiationService,
-        @IThemeService themeService: IThemeService,
-        @IViewDescriptorService protected viewDescriptorService: IViewDescriptorService,
-    ) {
-        super(id, themeService);
+		@IThemeService themeService: IThemeService,
+		@IViewDescriptorService protected viewDescriptorService: IViewDescriptorService,
+	) {
+		super(id, themeService);
 
-        const container = this.viewDescriptorService.getViewContainerById(id);
+		const container = this.viewDescriptorService.getViewContainerById(id);
 		if (!container) {
 			throw new Error('Could not find container');
 		}
 
-        this.viewContainer = container;
-        this.viewContainerModel = this.viewDescriptorService.getViewContainerModel(container);
-    }
+		this.viewContainer = container;
+		this.viewContainerModel = this.viewDescriptorService.getViewContainerModel(container);
+	}
 
-    create(parent: HTMLElement): void {
-        this.logService.debug("[ViewPaneContainer]#create");
+	create(parent: HTMLElement): void {
+		this.logService.debug("[ViewPaneContainer]#create");
 
-        this.paneview = this._register(new PaneView(parent, this.options));
+		this.paneview = this._register(new PaneView(parent, this.options));
 
-        this._register(this.viewContainerModel.onDidAddVisibleViewDescriptors(added => this.onDidAddViewDescriptors(added)));
+		this._register(this.viewContainerModel.onDidAddVisibleViewDescriptors(added => this.onDidAddViewDescriptors(added)));
 		this._register(this.viewContainerModel.onDidRemoveVisibleViewDescriptors(removed => this.onDidRemoveViewDescriptors(removed)));
 		const addedViews: IAddedViewDescriptorRef[] = this.viewContainerModel.visibleViewDescriptors.map((viewDescriptor, index) => {
 			const size = this.viewContainerModel.getSize(viewDescriptor.id);
@@ -90,7 +90,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		if (addedViews.length) {
 			this.onDidAddViewDescriptors(addedViews);
 		}
-    }
+	}
 
 	private get orientation(): Orientation {
 		switch (this.viewDescriptorService.getViewContainerLocation(this.viewContainer)) {
@@ -98,7 +98,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 			case ViewContainerLocation.AuxiliaryBar:
 				return Orientation.VERTICAL;
 			case ViewContainerLocation.Panel:
-				//return this.layoutService.getPanelPosition() === Position.BOTTOM ? Orientation.HORIZONTAL : Orientation.VERTICAL;
+			//return this.layoutService.getPanelPosition() === Position.BOTTOM ? Orientation.HORIZONTAL : Orientation.VERTICAL;
 		}
 
 		return Orientation.VERTICAL;
@@ -130,12 +130,12 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 	}
 
-    protected createView(viewDescriptor: IViewDescriptor, options: IViewPaneOptions): ViewPane {
+	protected createView(viewDescriptor: IViewDescriptor, options: IViewPaneOptions): ViewPane {
 		return (this.instantiationService as any).createInstance(viewDescriptor.ctorDescriptor.ctor, ...(viewDescriptor.ctorDescriptor.staticArguments || []), options) as ViewPane;
 	}
 
-    protected onDidAddViewDescriptors(added: IAddedViewDescriptorRef[]): ViewPane[] {
-        const panesToAdd: { pane: ViewPane; size: number; index: number }[] = [];
+	protected onDidAddViewDescriptors(added: IAddedViewDescriptorRef[]): ViewPane[] {
+		const panesToAdd: { pane: ViewPane; size: number; index: number }[] = [];
 
 		for (const { viewDescriptor, collapsed, index, size } of added) {
 			const pane = this.createView(viewDescriptor,
@@ -148,7 +148,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 			pane.render();
 
-		    panesToAdd.push({ pane, size: size || pane.minimumSize, index });
+			panesToAdd.push({ pane, size: size || pane.minimumSize, index });
 		}
 
 		this.addPanes(panesToAdd);
@@ -160,9 +160,9 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 			panes.push(pane);
 		}
 		return panes;
-    }
+	}
 
-    private onDidRemoveViewDescriptors(removed: IViewDescriptorRef[]): void {
+	private onDidRemoveViewDescriptors(removed: IViewDescriptorRef[]): void {
 		removed = removed.sort((a, b) => b.index - a.index);
 		const panesToRemove: ViewPane[] = [];
 		for (const { index } of removed) {
@@ -177,26 +177,26 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		}
 	}
 
-    addPanes(panes: { pane: ViewPane; size: number; index?: number }[]): void {
-        for (const { pane: pane, size, index } of panes) {
+	addPanes(panes: { pane: ViewPane; size: number; index?: number }[]): void {
+		for (const { pane: pane, size, index } of panes) {
 			this.addPane(pane, size, index);
 		}
-    }
+	}
 
-    private addPane(pane: ViewPane, size: number, index = this.paneItems.length - 1) {
+	private addPane(pane: ViewPane, size: number, index = this.paneItems.length - 1) {
 
-        const disposable = combinedDisposable(pane,);
-        const paneItem: IViewPaneItem = { pane, disposable };
+		const disposable = combinedDisposable(pane,);
+		const paneItem: IViewPaneItem = { pane, disposable };
 
-        this.paneItems.splice(index, 0, paneItem);
+		this.paneItems.splice(index, 0, paneItem);
 		assertIsDefined(this.paneview).addPane(pane, size, index);
-    }
+	}
 
-    
-    getView(viewId: string): IView | undefined {
-        throw new Error("Method not implemented.");
-    }
 
-    
-    
+	getView(viewId: string): IView | undefined {
+		throw new Error("Method not implemented.");
+	}
+
+
+
 }

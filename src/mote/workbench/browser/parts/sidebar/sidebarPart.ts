@@ -11,44 +11,44 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { ILogService } from "vs/platform/log/common/log";
 import { Registry } from "vs/platform/registry/common/platform";
 
-export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneCompositePart {
+export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCompositePart {
 	toJSON(): object {
 		throw new Error("Method not implemented.");
 	}
-    
-    declare readonly _serviceBrand: undefined;
+
+	declare readonly _serviceBrand: undefined;
 
 
-    readonly minimumWidth: number = 250;
+	readonly minimumWidth: number = 250;
 	readonly maximumWidth: number = 450;
 	readonly minimumHeight: number = 0;
 	readonly maximumHeight: number = Number.POSITIVE_INFINITY;
 
-    private readonly viewletRegistry = Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets);
+	private readonly viewletRegistry = Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets);
 
-    private blockOpeningViewlet = false;
+	private blockOpeningViewlet = false;
 
-    constructor(
-        @ILogService logService: ILogService,
-        @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-        @IInstantiationService instantiationService: IInstantiationService,
+	constructor(
+		@ILogService logService: ILogService,
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
+		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-    ) {
-        super(
-            logService,
-            layoutService,
+	) {
+		super(
+			logService,
+			layoutService,
 			themeService,
-            instantiationService,
-            Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
-            "sideBar",
-            Parts.SIDEBAR_PART, {hasTitle: false}
-        )
-    }
+			instantiationService,
+			Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
+			"sideBar",
+			Parts.SIDEBAR_PART, { hasTitle: false }
+		)
+	}
 
 	override create(parent: HTMLElement, options?: object): void {
 		this.logService.debug("[SidebarPart]#create");
 		this.element = parent;
-		
+
 		super.create(parent);
 
 	}
@@ -59,25 +59,26 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 		// Part container
 		const container = assertIsDefined(this.getContainer());
 		container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
-		container.style.position = "absolute";
+		//container.style.position = "absolute";
 
 	}
 
-    async openPaneComposite(id: string | undefined, focus?: boolean): Promise<IPaneComposite | undefined> {
-        this.logService.debug(`[SidebarPart] openPaneComposite: <${id}>`)
+	async openPaneComposite(id: string | undefined, focus?: boolean): Promise<IPaneComposite | undefined> {
+		this.logService.debug(`[SidebarPart] openPaneComposite: <${id}>`);
+
 		if (typeof id === 'string' && this.getPaneComposite(id)) {
 			return this.doOpenViewlet(id, focus);
 		}
 
-        if (typeof id === 'string' && this.getPaneComposite(id)) {
+		if (typeof id === 'string' && this.getPaneComposite(id)) {
 			return this.doOpenViewlet(id, focus);
 		}
 
 		return undefined;
-    }
+	}
 
-    private doOpenViewlet(id: string, focus?: boolean): PaneComposite | undefined {
-        this.logService.debug(`[SidebarPart]#doOpenViewlet <id=${id}>`);
+	private doOpenViewlet(id: string, focus?: boolean): PaneComposite | undefined {
+		this.logService.debug(`[SidebarPart]#doOpenViewlet <id=${id}>`);
 		if (this.blockOpeningViewlet) {
 			return undefined; // Workaround against a potential race condition
 		}
@@ -95,12 +96,12 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 		return this.openComposite(id, focus) as PaneComposite;
 	}
 
-    getPaneComposite(id: string): PaneCompositeDescriptor | undefined {
-        return this.getPaneComposites().filter(viewlet => viewlet.id === id)[0];
-    }
+	getPaneComposite(id: string): PaneCompositeDescriptor | undefined {
+		return this.getPaneComposites().filter(viewlet => viewlet.id === id)[0];
+	}
 
-    getPaneComposites(): PaneCompositeDescriptor[] {
-        return this.viewletRegistry.getPaneComposites().sort((v1, v2) => {
+	getPaneComposites(): PaneCompositeDescriptor[] {
+		return this.viewletRegistry.getPaneComposites().sort((v1, v2) => {
 			if (typeof v1.order !== 'number') {
 				return -1;
 			}
@@ -111,5 +112,5 @@ export class SidebarPart extends CompositePart<PaneComposite>  implements IPaneC
 
 			return v1.order - v2.order;
 		});
-    }
+	}
 }

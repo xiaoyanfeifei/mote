@@ -37,6 +37,7 @@ export class Workbench extends Layout {
 				this.logService = accessor.get(ILogService);
 
 				const storageService = accessor.get(IStorageService);
+				accessor.get(IViewsService);
 
 				// Layout
 				this.initLayout(accessor);
@@ -83,7 +84,8 @@ export class Workbench extends Layout {
 
 		// All Contributed Services which register by registerSingleton
 		const contributedServices = getSingletonServiceDescriptors();
-		for (let [id, descriptor] of contributedServices) {
+		for (const [id, descriptor] of contributedServices) {
+			console.log('create service:', descriptor.ctor.name);
 			serviceCollection.set(id, descriptor);
 		}
 

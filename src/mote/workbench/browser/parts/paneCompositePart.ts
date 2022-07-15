@@ -11,38 +11,48 @@ import { SidebarPart } from "./sidebar/sidebarPart";
 
 export interface IPaneCompositePart {
 
-    /**
+	/**
 	 * Opens a viewlet with the given identifier and pass keyboard focus to it if specified.
 	 */
 	openPaneComposite(id: string | undefined, focus?: boolean): Promise<IPaneComposite | undefined>;
+
+	/**
+	 * Returns the viewlet by id.
+	 */
+	getPaneComposite(id: string): PaneCompositeDescriptor | undefined;
+
+	/**
+	 * Returns all enabled viewlets
+	 */
+	getPaneComposites(): PaneCompositeDescriptor[];
 }
 
 export class PaneCompositeParts extends Disposable implements IPaneCompositePartService {
-    declare readonly _serviceBrand: undefined;
+	declare readonly _serviceBrand: undefined;
 
-    private paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>();
+	private paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>();
 
-    constructor(
-        @ILogService private logService: ILogService,
-        @IInstantiationService instantiationService: IInstantiationService
-    ) {
+	constructor(
+		@ILogService private logService: ILogService,
+		@IInstantiationService instantiationService: IInstantiationService
+	) {
 		super();
 
-        const sideBarPart = instantiationService.createInstance(SidebarPart);
+		const sideBarPart = instantiationService.createInstance(SidebarPart);
 
-        this.paneCompositeParts.set(ViewContainerLocation.Sidebar, sideBarPart);
-    }
+		this.paneCompositeParts.set(ViewContainerLocation.Sidebar, sideBarPart);
+	}
 
-    openPaneComposite(id: string | undefined, viewContainerLocation: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
-        this.logService.debug(`[PaneCompositeParts]#openPaneComposite <${id}>`);
+	openPaneComposite(id: string | undefined, viewContainerLocation: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
+		this.logService.debug(`[PaneCompositeParts]#openPaneComposite <${id}>`);
 		return this.getPartByLocation(viewContainerLocation).openPaneComposite(id, focus);
-    }
+	}
 
-    getPaneComposite(id: string, viewContainerLocation: ViewContainerLocation): PaneCompositeDescriptor | undefined {
-        throw new Error("Method not implemented.");
-    }
+	getPaneComposite(id: string, viewContainerLocation: ViewContainerLocation): PaneCompositeDescriptor | undefined {
+		return this.getPartByLocation(viewContainerLocation).getPaneComposite(id);
+	}
 
-    private getPartByLocation(viewContainerLocation: ViewContainerLocation): IPaneCompositePart {
+	private getPartByLocation(viewContainerLocation: ViewContainerLocation): IPaneCompositePart {
 		const part = this.paneCompositeParts.get(viewContainerLocation);
 		if (!part) {
 			console.log("viewContainerLocation", viewContainerLocation);
@@ -50,7 +60,7 @@ export class PaneCompositeParts extends Disposable implements IPaneCompositePart
 		}
 		return assertIsDefined(part);
 	}
-    
+
 }
 
 registerSingleton(IPaneCompositePartService, PaneCompositeParts);

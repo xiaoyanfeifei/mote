@@ -1,7 +1,7 @@
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
-import { IView, IViewDescriptorService, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
+import { IView, IViewDescriptor, IViewDescriptorService, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
 import { Disposable, DisposableStore, toDisposable } from "vs/base/common/lifecycle";
@@ -14,45 +14,72 @@ import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCo
 import { ViewPaneContainer } from "./viewPaneContainer";
 
 export class ViewsService extends Disposable implements IViewsService {
-    
+
 
 	declare readonly _serviceBrand: undefined;
 
 	//private readonly viewDisposable: Map<IViewDescriptor, IDisposable>;
 	private readonly viewPaneContainers: Map<string, ViewPaneContainer>;
 
-    constructor(
+	constructor(
 		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
 		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
 		//@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@ILogService private readonly logService: ILogService,
 		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService
 	) {
 		super();
 
-        this.viewPaneContainers = new Map<string, ViewPaneContainer>();
+		this.viewPaneContainers = new Map<string, ViewPaneContainer>();
 
-		this.viewDescriptorService.viewContainers.forEach(viewContainer => 
+		this.viewDescriptorService.viewContainers.forEach(viewContainer =>
 			this.onDidRegisterViewContainer(
 				viewContainer, this.viewDescriptorService.getViewContainerLocation(viewContainer)!
 			)
 		);
-		
-    }
+		this._register(this.viewDescriptorService.onDidChangeViewContainers(({ added, removed }) => this.onDidChangeContainers(added, removed)));
+
+	}
+
+	private onDidChangeContainers(added: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>, removed: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>): void {
+		for (const { container, location } of removed) {
+			this.deregisterPaneComposite(container, location);
+		}
+		for (const { container, location } of added) {
+			this.onDidRegisterViewContainer(container, location);
+		}
+	}
 
 	private onDidRegisterViewContainer(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
 		this.registerPaneComposite(viewContainer, viewContainerLocation);
-		/*
+
 		const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
 		this.onViewDescriptorsAdded(viewContainerModel.allViewDescriptors, viewContainer);
 		this._register(viewContainerModel.onDidChangeAllViewDescriptors(({ added, removed }) => {
 			this.onViewDescriptorsAdded(added, viewContainer);
-			this.onViewDescriptorsRemoved(removed);
+			//this.onViewDescriptorsRemoved(removed);
 		}));
-		this._register(this.registerOpenViewContainerAction(viewContainer));
-		*/
+		//this._register(this.registerOpenViewContainerAction(viewContainer));
+
 	}
 
-    private async openComposite(compositeId: string, location: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
+	private onViewDescriptorsAdded(views: ReadonlyArray<IViewDescriptor>, container: ViewContainer): void {
+		const location = this.viewDescriptorService.getViewContainerLocation(container);
+		if (location === null) {
+			return;
+		}
+
+		const composite = this.getComposite(container.id, location);
+		for (const viewDescriptor of views) {
+			const disposables = new DisposableStore();
+			//disposables.add(this.registerOpenViewAction(viewDescriptor));
+			//disposables.add(this.registerFocusViewAction(viewDescriptor, composite?.name && composite.name !== composite.id ? composite.name : CATEGORIES.View));
+			//disposables.add(this.registerResetViewLocationAction(viewDescriptor));
+			//this.viewDisposable.set(viewDescriptor, disposables);
+		}
+	}
+
+	private async openComposite(compositeId: string, location: ViewContainerLocation, focus?: boolean): Promise<IPaneComposite | undefined> {
 		return this.paneCompositeService.openPaneComposite(compositeId, location, focus);
 	}
 
@@ -60,26 +87,26 @@ export class ViewsService extends Disposable implements IViewsService {
 		return this.paneCompositeService.getPaneComposite(compositeId, location);
 	}
 
-    isViewContainerVisible(id: string): boolean {
-        throw new Error("Method not implemented.");
-    }
-    openViewContainer(id: string, focus?: boolean): Promise<IPaneComposite | null> {
-        throw new Error("Method not implemented.");
-    }
-    closeViewContainer(id: string): void {
-        throw new Error("Method not implemented.");
-    }
-    isViewVisible(id: string): boolean {
-        throw new Error("Method not implemented.");
-    }
-    openView<T extends IView>(id: string, focus?: boolean): Promise<T | null> {
-        throw new Error("Method not implemented.");
-    }
-    closeView(id: string): void {
-        throw new Error("Method not implemented.");
-    }
+	isViewContainerVisible(id: string): boolean {
+		throw new Error("Method not implemented.");
+	}
+	openViewContainer(id: string, focus?: boolean): Promise<IPaneComposite | null> {
+		throw new Error("Method not implemented.");
+	}
+	closeViewContainer(id: string): void {
+		throw new Error("Method not implemented.");
+	}
+	isViewVisible(id: string): boolean {
+		throw new Error("Method not implemented.");
+	}
+	openView<T extends IView>(id: string, focus?: boolean): Promise<T | null> {
+		throw new Error("Method not implemented.");
+	}
+	closeView(id: string): void {
+		throw new Error("Method not implemented.");
+	}
 
-    public registerPaneComposite(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
+	public registerPaneComposite(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
 		const that = this;
 		class PaneContainer extends PaneComposite {
 			constructor(
@@ -121,12 +148,12 @@ export class ViewsService extends Disposable implements IViewsService {
 		Registry.as<PaneCompositeRegistry>(getPaneCompositeExtension(viewContainerLocation)).deregisterPaneComposite(viewContainer.id);
 	}
 
-    private createViewPaneContainer(element: HTMLElement, viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation, disposables: DisposableStore, instantiationService: IInstantiationService): ViewPaneContainer {
+	private createViewPaneContainer(element: HTMLElement, viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation, disposables: DisposableStore, instantiationService: IInstantiationService): ViewPaneContainer {
 		const viewPaneContainer: ViewPaneContainer = (instantiationService as any).createInstance(viewContainer.ctorDescriptor!.ctor, ...(viewContainer.ctorDescriptor!.staticArguments || []));
 
 		this.viewPaneContainers.set(viewPaneContainer.getId(), viewPaneContainer);
 		disposables.add(toDisposable(() => this.viewPaneContainers.delete(viewPaneContainer.getId())));
-        /*
+		/*
 		disposables.add(viewPaneContainer.onDidAddViews(views => this.onViewsAdded(views)));
 		disposables.add(viewPaneContainer.onDidChangeViewVisibility(view => this.onViewsVisibilityChanged(view, view.isBodyVisible())));
 		disposables.add(viewPaneContainer.onDidRemoveViews(views => this.onViewsRemoved(views)));
@@ -136,7 +163,7 @@ export class ViewsService extends Disposable implements IViewsService {
 				this.focusedViewContextKey.reset();
 			}
 		}));
-        */
+		*/
 		return viewPaneContainer;
 	}
 }

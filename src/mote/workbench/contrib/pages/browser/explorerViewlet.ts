@@ -31,21 +31,21 @@ const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
 
 export class ExplorerViewPaneContainer extends ViewPaneContainer {
-    constructor(
-        @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-        @ILogService logService: ILogService,
-        @IInstantiationService instantiationService: IInstantiationService,
-        @IThemeService themeService: IThemeService,
-        @ICommandService private readonly commandService: ICommandService,
-        @IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-    ) {
-        super(FILES_VIEWLET_ID, {mergeViewWithContainerWhenSingleView: true}, layoutService, logService, instantiationService, themeService, viewDescriptorService);
-    }
+	constructor(
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
+		@ILogService logService: ILogService,
+		@IInstantiationService instantiationService: IInstantiationService,
+		@IThemeService themeService: IThemeService,
+		@ICommandService private readonly commandService: ICommandService,
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+	) {
+		super(FILES_VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, layoutService, logService, instantiationService, themeService, viewDescriptorService);
+	}
 
-    override create(parent: HTMLElement): void {
+	override create(parent: HTMLElement): void {
 		super.create(parent);
 		parent.classList.add('explorer-viewlet');
-        parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
+		parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 	}
 
 }
@@ -56,41 +56,41 @@ export class ExplorerViewlet {
 
 export class ExplorerViewletViewsContribution extends Disposable implements IWorkbenchContribution {
 
-    constructor() {
-        super();
-        this.registerView();
-    }
+	constructor() {
+		super();
+		this.registerView();
+	}
 
-    private registerView() {
+	private registerView() {
 
-        const viewDescriptors = viewsRegistry.getViews(EXPLORER_VIEW_CONTAINER);
+		const viewDescriptors = viewsRegistry.getViews(EXPLORER_VIEW_CONTAINER);
 
 		const viewDescriptorsToRegister: IViewDescriptor[] = [];
 		const viewDescriptorsToDeregister: IViewDescriptor[] = [];
 
-        const explorerViewDescriptor = this.createExplorerViewDescriptor();
+		const explorerViewDescriptor = this.createExplorerViewDescriptor();
 		const registeredExplorerViewDescriptor = viewDescriptors.find(v => v.id === explorerViewDescriptor.id);
-        const emptyViewDescriptor = this.createEmptyViewDescriptor();
+		const emptyViewDescriptor = this.createEmptyViewDescriptor();
 		const registeredEmptyViewDescriptor = viewDescriptors.find(v => v.id === emptyViewDescriptor.id);
 
-        // for empty state
-        if (registeredExplorerViewDescriptor) {
-            viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
-        }
-        if (!registeredEmptyViewDescriptor) {
-            //viewDescriptorsToRegister.push(emptyViewDescriptor);
-            viewDescriptorsToRegister.push(explorerViewDescriptor);
-        }
+		// for empty state
+		if (registeredExplorerViewDescriptor) {
+			viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
+		}
+		if (!registeredEmptyViewDescriptor) {
+			//viewDescriptorsToRegister.push(emptyViewDescriptor);
+			viewDescriptorsToRegister.push(explorerViewDescriptor);
+		}
 
-        if (viewDescriptorsToRegister.length) {
+		if (viewDescriptorsToRegister.length) {
 			viewsRegistry.registerViews(viewDescriptorsToRegister, EXPLORER_VIEW_CONTAINER);
 		}
 		if (viewDescriptorsToDeregister.length) {
 			viewsRegistry.deregisterViews(viewDescriptorsToDeregister, EXPLORER_VIEW_CONTAINER);
 		}
-    }
+	}
 
-    private createEmptyViewDescriptor(): IViewDescriptor {
+	private createEmptyViewDescriptor(): IViewDescriptor {
 		return {
 			id: EmptyView.ID,
 			name: "No Folder Opened", //EmptyView.NAME,
@@ -101,7 +101,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		};
 	}
 
-    private createExplorerViewDescriptor(): IViewDescriptor {
+	private createExplorerViewDescriptor(): IViewDescriptor {
 		return {
 			id: ExplorerView.ID,
 			name: localize('folders', "Folders"),
@@ -119,7 +119,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
  * Explorer viewlet container.
  */
 export const EXPLORER_VIEW_CONTAINER: ViewContainer = viewContainerRegistry.registerViewContainer({
-    id: FILES_VIEWLET_ID,
-    title: localize('explore', "Explorer"),
-    ctorDescriptor: new SyncDescriptor(ExplorerViewPaneContainer),
-}, ViewContainerLocation.Sidebar, {isDefault: true});
+	id: FILES_VIEWLET_ID,
+	title: localize('explore', "Explorer"),
+	ctorDescriptor: new SyncDescriptor(ExplorerViewPaneContainer),
+}, ViewContainerLocation.Sidebar, { isDefault: true });

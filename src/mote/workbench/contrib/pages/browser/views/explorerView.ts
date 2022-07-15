@@ -1,7 +1,6 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { ListItem } from "mote/base/browser/ui/list/list";
 import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
-import { createElement } from "mote/base/jsx/createElement";
 import SVGIcon from "mote/base/ui/svgicon/svgicon";
 import { ThemedStyles } from "mote/base/ui/themes";
 import { EditOperation } from "mote/editor/common/core/editOperation";
@@ -96,7 +95,7 @@ export class ExplorerView extends ViewPane {
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
 				that.commandService.executeCommand("openPage", { id: child.id });
-				treeView.refresh();
+				transaction.postSubmitCallbacks.push(() => treeView.refresh());
 			}, spaceStore.userId);
 		});
 		container.append(domNode);

@@ -19,6 +19,14 @@ export const enum ViewContainerLocation {
 	AuxiliaryBar
 }
 
+export function ViewContainerLocationToString(viewContainerLocation: ViewContainerLocation) {
+	switch (viewContainerLocation) {
+		case ViewContainerLocation.Sidebar: return 'sidebar';
+		case ViewContainerLocation.Panel: return 'panel';
+		case ViewContainerLocation.AuxiliaryBar: return 'auxiliarybar';
+	}
+}
+
 type OpenCommandActionDescriptor = {
 	readonly id: string;
 	readonly title?: string;
@@ -97,7 +105,7 @@ export interface IViewContainersRegistry {
 	/**
 	 * An event that is triggered when a view container is registered.
 	 */
-	//readonly onDidRegister: Event<{ viewContainer: ViewContainer; viewContainerLocation: ViewContainerLocation }>;
+	readonly onDidRegister: Event<{ viewContainer: ViewContainer; viewContainerLocation: ViewContainerLocation }>;
 
 	/**
 	 * An event that is triggered when a view container is deregistered.
@@ -188,7 +196,7 @@ export interface IViewsService {
 }
 
 export interface IViewPaneContainer {
-    getView(viewId: string): IView | undefined;
+	getView(viewId: string): IView | undefined;
 }
 
 interface RelaxedViewContainer extends ViewContainer {
@@ -210,8 +218,9 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 	get all(): ViewContainer[] {
 		return flatten([...this.viewContainers.values()]);
 	}
-	
+
 	registerViewContainer(viewContainerDescriptor: IViewContainerDescriptor, viewContainerLocation: ViewContainerLocation, options?: { isDefault?: boolean | undefined; donotRegisterOpenCommand?: boolean | undefined; }): ViewContainer {
+		console.debug('[ViewContainersRegistry] registerViewContainer');
 		const existing = this.get(viewContainerDescriptor.id);
 		if (existing) {
 			return existing;
@@ -258,7 +267,7 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 	getDefaultViewContainer(location: ViewContainerLocation): ViewContainer | undefined {
 		return this.defaultViewContainers.find(viewContainer => this.getViewContainerLocation(viewContainer) === location);
 	}
-	
+
 }
 
 export interface IViewContentDescriptor {
@@ -312,6 +321,10 @@ export interface IViewDescriptor {
 
 
 export interface IViewsRegistry {
+
+	readonly onViewsRegistered: Event<{ views: IViewDescriptor[]; viewContainer: ViewContainer }[]>;
+
+	readonly onViewsDeregistered: Event<{ views: IViewDescriptor[]; viewContainer: ViewContainer }>;
 
 	getViews(viewContainer: ViewContainer): IViewDescriptor[];
 
@@ -547,6 +560,8 @@ export interface IViewDescriptorService {
 
 	// ViewContainers
 	readonly viewContainers: ReadonlyArray<ViewContainer>;
+	readonly onDidChangeViewContainers: Event<{ added: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>; removed: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }> }>;
+
 
 	getDefaultViewContainer(location: ViewContainerLocation): ViewContainer | undefined;
 	getViewContainerById(id: string): ViewContainer | null;
