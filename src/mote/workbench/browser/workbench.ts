@@ -1,4 +1,4 @@
-
+import 'mote/workbench/browser/style';
 import { getSingletonServiceDescriptors } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { InstantiationService } from "vs/platform/instantiation/common/instantiationService";
@@ -15,18 +15,23 @@ import { MockThemeService } from "mote/platform/theme/common/mockThemeService";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from "../common/contribution";
+import { IWorkbenchOptions } from 'vs/workbench/browser/workbench';
+import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
 
 export class Workbench extends Layout {
 
 	constructor(
 		parent: HTMLElement,
+		private readonly options: IWorkbenchOptions | undefined,
 		private readonly serviceCollection: ServiceCollection,
+		logService: ILogService
 	) {
 		super(parent);
+		this.logService = logService;
 	}
 
 	startup() {
-		console.log("[Workbench] startup...");
+		this.logService.info('[Workbench] startup...');
 
 		try {
 			// Services
@@ -36,7 +41,6 @@ export class Workbench extends Layout {
 				// Init the logService at first
 				this.logService = accessor.get(ILogService);
 
-				const storageService = accessor.get(IStorageService);
 				accessor.get(IViewsService);
 
 				// Layout
@@ -56,7 +60,7 @@ export class Workbench extends Layout {
 
 				// Restore
 				this.restore();
-			})
+			});
 
 			return instantiationService;
 		} catch (error) {
@@ -85,12 +89,12 @@ export class Workbench extends Layout {
 		// All Contributed Services which register by registerSingleton
 		const contributedServices = getSingletonServiceDescriptors();
 		for (const [id, descriptor] of contributedServices) {
-			console.log('create service:', descriptor.ctor.name);
+			this.logService.debug('create service:', descriptor.ctor.name);
 			serviceCollection.set(id, descriptor);
 		}
 
 		// Add mock service
-		serviceCollection.set(IThemeService, new MockThemeService());
+		//serviceCollection.set(IThemeService, new BrowserThemeService());
 
 		const instantiationService = new InstantiationService(serviceCollection, true);
 

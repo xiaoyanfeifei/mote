@@ -1,0 +1,16 @@
+.pane > .pane-body.welcome > :not(.welcome-view) {
+	display: none;
+}
+
+.pane > .pane-body .welcome-view-content {
+	display: flex;
+	flex-direction: column;
+	padding: 0 20px 1em 20px;
+	box-sizing: border-box;
+	align-items: center;
+}
+
+
+.pane>.pane-body:not(.welcome)>.welcome-view {
+    display: none;
+}

@@ -313,6 +313,18 @@
 						]
 					},
 					{
+						"target": "src/mote/platform/*/~",
+						"restrictions": [
+							"vs/base/~",
+							"vs/base/parts/*/~",
+							"vs/platform/*/~",
+							"mote/platform/*/~",
+							"tas-client-umd", // node module allowed even in /common/
+							"@microsoft/1ds-core-js",// node module allowed even in /common/
+							"@microsoft/1ds-post-js" // node module allowed even in /common/
+						]
+					},
+					{
 						"target": "src/vs/platform/*/~",
 						"restrictions": [
 							"vs/base/~",
@@ -384,6 +396,23 @@
 							"vs/editor/contrib/*/~",
 							"vs/editor/standalone/~",
 							"vs/editor/*"
+						]
+					},
+					{
+						"target": "src/mote/workbench/~",
+						"restrictions": [
+							"vs/base/~",
+							"vs/base/parts/*/~",
+							"vs/platform/*/~",
+							"vs/editor/~",
+							"vs/editor/contrib/*/~",
+							"vs/workbench/~",
+							"vs/workbench/services/*/~",
+							"assert",
+							{
+								"when": "test",
+								"pattern": "vs/workbench/contrib/*/~"
+							} // TODO@layers
 						]
 					},
 					{

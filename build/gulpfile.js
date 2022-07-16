@@ -30,6 +30,9 @@ gulp.task(compileClientTask);
 const watchClientTask = task.define('watch-client', task.series(util.rimraf('out'), util.buildWebNodePaths('out'), task.parallel(watchTask('out', false))));
 gulp.task(watchClientTask);
 
+const buildWebNodePathsTask = task.define('build-web-node-paths', util.buildWebNodePaths('out'));
+gulp.task(buildWebNodePathsTask);
+
 // All
 const _compileTask = task.define('compile', task.parallel(monacoTypecheckTask, compileClientTask, compileExtensionsTask, compileExtensionMediaTask));
 gulp.task(_compileTask);

@@ -28,7 +28,13 @@ import 'mote/workbench/services/views/browser/viewDescriptorService';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { ContextViewService } from 'mote/platform/contextview/browser/contextViewService';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
+import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
+import { BrowserHostColorSchemeService } from 'mote/platform/theme/browser/browserHostColorSchemeService';
 
 
 registerSingleton(IContextViewService, ContextViewService, true);
+registerSingleton(IThemeService, BrowserThemeService);
+registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
 

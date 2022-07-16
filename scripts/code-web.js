@@ -60,9 +60,9 @@ async function main() {
 		serverArgs.push('--port', PORT);
 	}
 	if (args['playground'] === true || (args['_'].length === 0 && !args['--folder-uri'])) {
-		serverArgs.push('--extensionPath', WEB_DEV_EXTENSIONS_ROOT);
+		//serverArgs.push('--extensionPath', WEB_DEV_EXTENSIONS_ROOT);
 		serverArgs.push('--folder-uri', 'memfs:///sample-folder');
-		await ensureWebDevExtensions(args['verbose']);
+		//await ensureWebDevExtensions(args['verbose']);
 	}
 
 	let openSystemBrowser = false;

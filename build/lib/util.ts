@@ -383,6 +383,9 @@ export function acquireWebNodePaths() {
 		const packageJSON = path.join(root, 'node_modules', key, 'package.json');
 		const packageData = JSON.parse(fs.readFileSync(packageJSON, 'utf8'));
 		let entryPoint: string = packageData.browser ?? packageData.main;
+		if (typeof entryPoint === 'object') {
+			entryPoint = packageData.main;
+		}
 
 		// On rare cases a package doesn't have an entrypoint so we assume it has a dist folder with a min.js
 		if (!entryPoint) {

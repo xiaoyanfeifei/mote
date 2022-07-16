@@ -1,5 +1,5 @@
 import { Color } from "vs/base/common/color";
-import { Emitter } from "vs/base/common/event";
+import { Emitter, Event } from "vs/base/common/event";
 import { ColorScheme } from "./theme";
 import { IColorTheme, IThemeService } from "./themeService";
 

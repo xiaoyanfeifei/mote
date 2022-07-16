@@ -11,7 +11,7 @@ function code() {
 	cd $ROOT
 
 	# Sync built-in extensions
-	yarn download-builtin-extensions
+	# yarn download-builtin-extensions
 
 	NODE=$(node build/lib/node.js)
 	if [ ! -e $NODE ];then

@@ -1,5 +1,5 @@
 import RecordStore from "mote/editor/common/store/recordStore";
-import * as uuid from "uuid";
+import { generateUuid } from 'vs/base/common/uuid';
 import { Operation } from "../operations";
 import { Role } from "../store/record";
 import RecordCacheStore from "../store/recordCacheStore";
@@ -23,7 +23,7 @@ export class Transaction {
 		return result;
 	}
 
-	id: string = uuid.v1();
+	id: string = generateUuid();
 	userId: string;
 	isLocal = true;
 	canUndo = true;

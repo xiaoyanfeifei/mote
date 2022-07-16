@@ -1,3 +1,5 @@
+import 'vs/css!./media/views';
+
 import { IView, IViewContentDescriptor, IViewsRegistry, Extensions as ViewContainerExtensions } from "mote/workbench/common/views";
 import { append, $, trackFocus } from "vs/base/browser/dom";
 import { Event, Emitter } from 'vs/base/common/event';
@@ -25,10 +27,10 @@ interface IItem {
 }
 
 class ViewWelcomeController {
-    private _onDidChange = new Emitter<void>();
+	private _onDidChange = new Emitter<void>();
 	readonly onDidChange = this._onDidChange.event;
 
-    private defaultItem: IItem | undefined;
+	private defaultItem: IItem | undefined;
 	private items: IItem[] = [];
 	get contents(): IViewContentDescriptor[] {
 		const visibleItems = this.items.filter(v => v.visible);
@@ -42,65 +44,65 @@ class ViewWelcomeController {
 
 	private disposables = new DisposableStore();
 
-    constructor(private id: string) {
-        Event.filter(viewsRegistry.onDidChangeViewWelcomeContent, id => id === this.id)(this.onDidChangeViewWelcomeContent, this, this.disposables);
+	constructor(private id: string) {
+		Event.filter(viewsRegistry.onDidChangeViewWelcomeContent, id => id === this.id)(this.onDidChangeViewWelcomeContent, this, this.disposables);
 		this.onDidChangeViewWelcomeContent();
-    }
+	}
 
-    private onDidChangeViewWelcomeContent(): void {
+	private onDidChangeViewWelcomeContent(): void {
 		const descriptors = viewsRegistry.getViewWelcomeContent(this.id);
 
 		this.items = [];
 
 		for (const descriptor of descriptors) {
-            this.defaultItem = { descriptor, visible: true };
+			this.defaultItem = { descriptor, visible: true };
 		}
 
 		this._onDidChange.fire();
 	}
 
-    dispose(): void {
+	dispose(): void {
 		this.disposables.dispose();
 	}
 }
 
 export abstract class ViewPane extends Pane implements IView {
 
-    private _onDidFocus = this._register(new Emitter<void>());
+	private _onDidFocus = this._register(new Emitter<void>());
 	readonly onDidFocus: Event<void> = this._onDidFocus.event;
 
-    private _onDidBlur = this._register(new Emitter<void>());
+	private _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur: Event<void> = this._onDidBlur.event;
 
-    protected _onDidChangeViewWelcomeState = this._register(new Emitter<void>());
+	protected _onDidChangeViewWelcomeState = this._register(new Emitter<void>());
 	readonly onDidChangeViewWelcomeState: Event<void> = this._onDidChangeViewWelcomeState.event;
 
-    private _isVisible: boolean = false;
-    readonly id: string;
+	private _isVisible: boolean = false;
+	readonly id: string;
 
-    private headerContainer?: HTMLElement;
-    private titleContainer?: HTMLElement;
+	private headerContainer?: HTMLElement;
+	private titleContainer?: HTMLElement;
 	private titleDescriptionContainer?: HTMLElement;
 	private iconContainer?: HTMLElement;
 	protected twistiesContainer?: HTMLElement;
 
-    private bodyContainer!: HTMLElement;
+	private bodyContainer!: HTMLElement;
 	private viewWelcomeContainer!: HTMLElement;
 	private viewWelcomeDisposable: IDisposable = Disposable.None;
 	private viewWelcomeController: ViewWelcomeController;
 
-    constructor(
-        options: IViewPaneOptions,
-        @ILogService protected logService: ILogService,
-    ) {
-        super(options);
+	constructor(
+		options: IViewPaneOptions,
+		@ILogService protected logService: ILogService,
+	) {
+		super(options);
 
-        this.id = options.id;
+		this.id = options.id;
 
-        this.viewWelcomeController = new ViewWelcomeController(this.id);
-    }
+		this.viewWelcomeController = new ViewWelcomeController(this.id);
+	}
 
-    override render(): void {
+	override render(): void {
 		super.render();
 
 		const focusTracker = trackFocus(this.element);
@@ -109,18 +111,18 @@ export abstract class ViewPane extends Pane implements IView {
 		this._register(focusTracker.onDidBlur(() => this._onDidBlur.fire()));
 	}
 
-    protected renderHeader(container: HTMLElement): void {
+	protected renderHeader(container: HTMLElement): void {
 		this.headerContainer = container;
-    }
+	}
 
-    private scrollableElement!: DomScrollableElement;
+	private scrollableElement!: DomScrollableElement;
 
-    protected renderBody(container: HTMLElement): void {
+	protected renderBody(container: HTMLElement): void {
 		this.bodyContainer = container;
 
 		const viewWelcomeContainer = append(container, $('.welcome-view'));
-        this.viewWelcomeContainer = $('.welcome-view-content', { tabIndex: 0 });
-        this.scrollableElement = this._register(new DomScrollableElement(this.viewWelcomeContainer, {
+		this.viewWelcomeContainer = $('.welcome-view-content', { tabIndex: 0 });
+		this.scrollableElement = this._register(new DomScrollableElement(this.viewWelcomeContainer, {
 			alwaysConsumeMouseWheel: true,
 			horizontal: ScrollbarVisibility.Hidden,
 			vertical: ScrollbarVisibility.Visible,
@@ -128,12 +130,12 @@ export abstract class ViewPane extends Pane implements IView {
 
 		append(viewWelcomeContainer, this.scrollableElement.getDomNode());
 
-        const onViewWelcomeChange = Event.any(this.viewWelcomeController.onDidChange, this.onDidChangeViewWelcomeState);
+		const onViewWelcomeChange = Event.any(this.viewWelcomeController.onDidChange, this.onDidChangeViewWelcomeState);
 		this._register(onViewWelcomeChange(this.updateViewWelcome, this));
-        this.updateViewWelcome();
-    }
+		this.updateViewWelcome();
+	}
 
-    protected layoutBody(height: number, width: number): void {
+	protected layoutBody(height: number, width: number): void {
 		this.viewWelcomeContainer.style.height = `${height}px`;
 		this.viewWelcomeContainer.style.width = `${width}px`;
 		this.viewWelcomeContainer.classList.toggle('wide', width > 640);
@@ -144,32 +146,32 @@ export abstract class ViewPane extends Pane implements IView {
 		// noop
 	}
 
-    focus(): void {
-        if (this.shouldShowWelcome()) {
+	focus(): void {
+		if (this.shouldShowWelcome()) {
 			this.viewWelcomeContainer.focus();
 		} else if (this.element) {
 			this.element.focus();
 			this._onDidFocus.fire();
 		}
-    }
-    isVisible(): boolean {
-        return this._isVisible;
-    }
-    isBodyVisible(): boolean {
-        throw new Error("Method not implemented.");
-    }
+	}
+	isVisible(): boolean {
+		return this._isVisible;
+	}
+	isBodyVisible(): boolean {
+		throw new Error("Method not implemented.");
+	}
 
-    private updateViewWelcome(): void {
-        this.viewWelcomeDisposable.dispose();
+	private updateViewWelcome(): void {
+		this.viewWelcomeDisposable.dispose();
 
-        if (!this.shouldShowWelcome()) {
+		if (!this.shouldShowWelcome()) {
 			this.bodyContainer.classList.remove('welcome');
 			this.viewWelcomeContainer.innerText = '';
 			this.scrollableElement.scanDomNode();
 			return;
 		}
 
-        const contents = this.viewWelcomeController.contents;
+		const contents = this.viewWelcomeController.contents;
 
 		if (contents.length === 0) {
 			this.bodyContainer.classList.remove('welcome');
@@ -178,11 +180,11 @@ export abstract class ViewPane extends Pane implements IView {
 			return;
 		}
 
-        const disposables = new DisposableStore();
+		const disposables = new DisposableStore();
 		this.bodyContainer.classList.add('welcome');
 		this.viewWelcomeContainer.innerText = '';
 
-        for (const { content } of contents) {
+		for (const { content } of contents) {
 			const lines = content.split('\n');
 
 			for (let line of lines) {
@@ -218,11 +220,11 @@ export abstract class ViewPane extends Pane implements IView {
 			}
 		}
 
-        this.scrollableElement.scanDomNode();
+		this.scrollableElement.scanDomNode();
 		this.viewWelcomeDisposable = disposables;
-    }
-    
-    shouldShowWelcome(): boolean {
+	}
+
+	shouldShowWelcome(): boolean {
 		return false;
 	}
 }

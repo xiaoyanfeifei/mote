@@ -23,171 +23,172 @@ import { IDisposable } from "vs/base/common/lifecycle";
 import { IEditorService } from "mote/workbench/services/editor/common/editorService";
 
 export class EditorPart extends Part implements IEditorService {
-    
-    toJSON(): object {
-        throw new Error("Method not implemented.");
-    }
 
-    declare readonly _serviceBrand: undefined;
+	toJSON(): object {
+		throw new Error("Method not implemented.");
+	}
 
-    get minimumWidth(): number { 
-        return 800;
-    }
+	declare readonly _serviceBrand: undefined;
 
-    get maximumWidth(): number { 
-        return Number.POSITIVE_INFINITY;;
-    }
+	get minimumWidth(): number {
+		return 800;
+	}
 
-    get minimumHeight(): number { 
-        return 400;
-    }
+	get maximumWidth(): number {
+		return Number.POSITIVE_INFINITY;
+	}
 
-    get maximumHeight(): number { 
-        return Number.POSITIVE_INFINITY;;
-    }
-  
-    
+	get minimumHeight(): number {
+		return 400;
+	}
 
-    //#region Events
+	get maximumHeight(): number {
+		return Number.POSITIVE_INFINITY;
+	}
+
+
+
+	//#region Events
 
 	private readonly _onDidLayout = this._register(new Emitter<Dimension>());
 	readonly onDidLayout = this._onDidLayout.event;
 
-    private container: HTMLElement | undefined;
-    private titleContainer: HTMLElement | undefined;
+	private container: HTMLElement | undefined;
+	private titleContainer: HTMLElement | undefined;
 
-    private headerContainer: EditableContainer | undefined;
+	private headerContainer: EditableContainer | undefined;
 
-    private pageStore!: BlockStore;
-    private listener!: IDisposable;
+	private pageStore!: BlockStore;
+	private listener!: IDisposable;
 
-    private editor!: DocumentEditor;
-    private emptyHolder!: EmptyHolder;
-    
-    constructor(
-        @IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-        @IThemeService themeService: IThemeService,
-        @IStorageService storageService: IStorageService,
-        @ILogService private logService: ILogService,
-        @IInstantiationService private readonly instantiationService: IInstantiationService
-    ) {
-        super(Parts.EDITOR_PART, {hasTitle: false}, themeService, layoutService);
-        RecordCacheStore.Default.storageService = storageService;
-        RecordCacheStore.Default.logService = logService;
-        CommandsRegistry.registerCommand("openPage", this.openPage);
-    }
+	private editor!: DocumentEditor;
+	private emptyHolder!: EmptyHolder;
+
+	constructor(
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
+		@IThemeService themeService: IThemeService,
+		@IStorageService storageService: IStorageService,
+		@ILogService private logService: ILogService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
+	) {
+		super(Parts.EDITOR_PART, { hasTitle: false }, themeService, layoutService);
+		RecordCacheStore.Default.storageService = storageService;
+		RecordCacheStore.Default.logService = logService;
+		CommandsRegistry.registerCommand("openPage", this.openPage);
+	}
 
 
-    openPage = (accessor: ServicesAccessor, payload) => {
-        this.logService.debug("[EditorPart] Open page with payload", payload);
-        this.pageStore = new BlockStore({id: payload.id, table:"page"},"123");
-        if (this.listener) {
-            this.listener.dispose();
-        }
-        const contentStore = this.pageStore!.getContentStore();
-        this.listener = contentStore.onDidChange(this.update);
+	openPage = (accessor: ServicesAccessor, payload) => {
+		this.logService.debug("[EditorPart] Open page with payload", payload);
+		this.pageStore = new BlockStore({ id: payload.id, table: "page" }, "123");
+		if (this.listener) {
+			this.listener.dispose();
+		}
+		const contentStore = this.pageStore!.getContentStore();
+		this.listener = contentStore.onDidChange(this.update);
 
-        this.updateTitle();
-        this.update();
-    }
+		this.updateTitle();
+		this.update();
+	};
 
-    private update = () => {
-    
-        const contentStore = this.pageStore!.getContentStore();
+	private update = () => {
 
-        if ((contentStore.getValue() || []).length == 0) {
-            this.editor.hidden();
-            this.emptyHolder.store = this.pageStore;
-            this.emptyHolder.show();
-        } else {
-            this.emptyHolder.hidden();
-            this.editor!.store = contentStore;
-            this.editor!.create();
-            this.editor.show();
-        }
-    }
+		const contentStore = this.pageStore!.getContentStore();
 
-    openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
-        throw new Error("Method not implemented.");
-    }
+		if ((contentStore.getValue() || []).length == 0) {
+			this.editor.hidden();
+			this.emptyHolder.store = this.pageStore;
+			this.emptyHolder.show();
+		} else {
+			this.emptyHolder.hidden();
+			this.editor!.store = contentStore;
+			this.editor!.create();
+			this.editor.show();
+		}
+	}
 
-    getTitleStyle(){
-        return {
-            color: ThemedStyles.regularTextColor.dark,
-            fontWeight: 700,
-            lineHeight: 1.2,
-            fontSize: "40px",
-            cursor: "text",
-            display: "flex",
-            alignItems: "center"
-        }
-    }
+	openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
+		throw new Error("Method not implemented.");
+	}
 
-    getSafePaddingLeftCSS(padding: number) {
-        return `calc(${padding}px + env(safe-area-inset-left))`
-    }
+	getTitleStyle() {
+		return {
+			color: ThemedStyles.regularTextColor.dark,
+			fontWeight: 700,
+			lineHeight: 1.2,
+			fontSize: "40px",
+			cursor: "text",
+			display: "flex",
+			alignItems: "center"
+		}
+	}
 
-    getSafePaddingRightCSS(padding: number) {
-        return `calc(${padding}px + env(safe-area-inset-right))`
-    }
+	getSafePaddingLeftCSS(padding: number) {
+		return `calc(${padding}px + env(safe-area-inset-left))`;
+	}
 
-    updateTitle() {
-        this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
-    }
+	getSafePaddingRightCSS(padding: number) {
+		return `calc(${padding}px + env(safe-area-inset-right))`;
+	}
 
-    override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
-        this.createCover(parent);
-        const titleDomNode = $(".editor-header");
-        this.titleContainer = $("");
+	updateTitle() {
+		this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
+	}
 
-        this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-        this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
-        this.titleContainer.style.width = "100%";
+	override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
+		this.createCover(parent);
+		const titleDomNode = $(".editor-header");
+		this.titleContainer = $("");
 
-        this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
-            placeholder: "Untitled",
-            autoFocus: false,
-        });
+		this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+		this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
+		this.titleContainer.style.width = "100%";
 
-        titleDomNode.append(this.titleContainer);
-        setStyles(titleDomNode, this.getTitleStyle());
-        parent.append(titleDomNode);
-        return titleDomNode;
-    }
+		this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
+			placeholder: "Untitled",
+			autoFocus: false,
+		});
 
-    override createContentArea(parent: HTMLElement) {
-        // Container
+		titleDomNode.append(this.titleContainer);
+		setStyles(titleDomNode, this.getTitleStyle());
+		parent.append(titleDomNode);
+		return titleDomNode;
+	}
+
+	override createContentArea(parent: HTMLElement) {
+		// Container
 		this.element = parent;
+		this.element.style.backgroundColor = "#303030";
 		this.container = document.createElement('div');
 		this.container.classList.add('content');
-        this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-        this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
-        this.container.style.paddingTop = "25px";
+		this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+		this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
+		this.container.style.paddingTop = "25px";
 		parent.appendChild(this.container);
 
-        this.editor = this.instantiationService.createInstance(DocumentEditor, this.container!);
-        this.emptyHolder = new EmptyHolder(this.container!);
+		this.editor = this.instantiationService.createInstance(DocumentEditor, this.container!);
+		this.emptyHolder = new EmptyHolder(this.container!);
 
-        return this.container;
-    }
+		return this.container;
+	}
 
-    createCover(parent: HTMLElement) {
-        const coverDomNode = $("");
-        coverDomNode.style.height = "100px";
-        parent.append(coverDomNode)
-    }
+	createCover(parent: HTMLElement) {
+		const coverDomNode = $("");
+		coverDomNode.style.height = "100px";
+		parent.append(coverDomNode)
+	}
 
-    override updateStyles(): void {
-        // Part container
+	override updateStyles(): void {
+		// Part container
 		const container = assertIsDefined(this.getContainer());
 
-		container.style.left = "260px";
-        container.style.width = "760px";
+		//container.style.left = "260px";
+		//container.style.width = "760px";
 		container.style.height = "100%";
-        //container.style.left 
+		//container.style.left
 		//container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
-		container.style.position = "absolute";
-    }
+		//container.style.position = "absolute";
+	}
 }
 
 registerSingleton(IEditorService, EditorPart);

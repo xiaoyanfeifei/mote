@@ -1,0 +1,7 @@
+.part > .content > .composite {
+	height: 100%;
+}
+
+.part > .composite.title {
+	display: flex;
+}

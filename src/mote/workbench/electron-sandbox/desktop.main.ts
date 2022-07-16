@@ -33,13 +33,13 @@ export class DesktopMain extends Disposable {
 	}
 
 	async open(): Promise<void> {
-		console.log("Open desktop");
+		console.log('Open desktop');
 
 		// Init services and wait for DOM to be ready in parallel
 		const [services] = await Promise.all([this.initServices(), domContentLoaded()]);
 
 		// Create Workbench
-		const workbench = new Workbench(document.body, services.serviceCollection);
+		const workbench = new Workbench(document.body, undefined, services.serviceCollection, services.logService);
 
 		// Startup
 		const instantiationService = workbench.startup();
@@ -86,7 +86,7 @@ export class DesktopMain extends Disposable {
 		const workspaceService = await this.createWorkspaceService();
 		serviceCollection.set(IWorkspaceContextService, workspaceService);
 
-		return { serviceCollection };
+		return { serviceCollection, logService };
 	}
 
 	private async createStorageService(logService: ILogService) {

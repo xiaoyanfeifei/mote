@@ -53,11 +53,6 @@ export interface IColorTheme {
 	//getTokenStyleMetadata(type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined;
 
 	/**
-	 * List of all colors used with tokens. <code>getTokenStyleMetadata</code> references the colors by index into this list.
-	 */
-	readonly tokenColorMap: string[];
-
-	/**
 	 * Defines whether semantic highlighting should be enabled for the theme.
 	 */
 	readonly semanticHighlighting: boolean;
@@ -70,20 +65,34 @@ export interface IThemeService {
 
 	readonly onDidColorThemeChange: Event<IColorTheme>;
 
-	//etFileIconTheme(): IFileIconTheme;
-
-	//readonly onDidFileIconThemeChange: Event<IFileIconTheme>;
-
-	//getProductIconTheme(): IProductIconTheme;
-
-	//readonly onDidProductIconThemeChange: Event<IProductIconTheme>;
-
 }
+
+export class ColorTheme implements IColorTheme {
+	constructor(
+		public label: string,
+		private colors: { [id: string]: string } = {},
+		public type = ColorScheme.DARK,
+		public readonly semanticHighlighting = false
+	) { }
+
+	getColor(color: string, useDefault?: boolean): Color | undefined {
+		const value = this.colors[color];
+		if (value) {
+			return Color.fromHex(value);
+		}
+		return undefined;
+	}
+
+	defines(color: string): boolean {
+		throw new Error('Method not implemented.');
+	}
+}
+
 
 /**
  * Utility base class for all themable components.
  */
- export class Themable extends Disposable {
+export class Themable extends Disposable {
 	protected theme: IColorTheme;
 
 	constructor(

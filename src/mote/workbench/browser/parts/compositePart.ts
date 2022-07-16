@@ -1,3 +1,5 @@
+import 'vs/css!./media/compositepart';
+
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Composite, CompositeRegistry } from "mote/workbench/browser/composite";
 import { IPartOptions, Part } from "mote/workbench/browser/part";
@@ -19,10 +21,10 @@ interface CompositeItem {
 
 export abstract class CompositePart<T extends Composite> extends Part {
 
-    protected readonly onDidCompositeOpen = this._register(new Emitter<{ composite: IComposite; focus: boolean }>());
+	protected readonly onDidCompositeOpen = this._register(new Emitter<{ composite: IComposite; focus: boolean }>());
 	protected readonly onDidCompositeClose = this._register(new Emitter<IComposite>());
 
-    private readonly mapCompositeToCompositeContainer = new Map<string, HTMLElement>();
+	private readonly mapCompositeToCompositeContainer = new Map<string, HTMLElement>();
 	private readonly mapActionsBindingToComposite = new Map<string, () => void>();
 	private activeComposite: Composite | undefined;
 	private lastActiveCompositeId: string;
@@ -32,20 +34,20 @@ export abstract class CompositePart<T extends Composite> extends Part {
 	private contentAreaSize: Dimension | undefined;
 	//private readonly telemetryActionsListener = this._register(new MutableDisposable());
 	private currentCompositeOpenToken: string | undefined;
-    
-    constructor(
+
+	constructor(
 		protected readonly logService: ILogService,
-        layoutService: IWorkbenchLayoutService,
+		layoutService: IWorkbenchLayoutService,
 		themeService: IThemeService,
-        protected readonly instantiationService: IInstantiationService,
-        protected readonly registry: CompositeRegistry<T>,
-        private readonly defaultCompositeId: string,
-        id: string,
+		protected readonly instantiationService: IInstantiationService,
+		protected readonly registry: CompositeRegistry<T>,
+		private readonly defaultCompositeId: string,
+		id: string,
 		options: IPartOptions
-    ) {
-        super(id, options, themeService, layoutService);
-        this.lastActiveCompositeId = defaultCompositeId;
-    }
+	) {
+		super(id, options, themeService, layoutService);
+		this.lastActiveCompositeId = defaultCompositeId;
+	}
 
 	override createContentArea(parent: HTMLElement): HTMLElement {
 		const contentContainer = append(parent, $('.content'));
@@ -61,7 +63,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		super.updateStyles();
 	}
 
-    protected openComposite(id: string, focus?: boolean): Composite | undefined {
+	protected openComposite(id: string, focus?: boolean): Composite | undefined {
 		this.logService.debug("[compositePart] openComposite:", id);
 		// Check if composite already visible and just focus in that case
 		if (this.activeComposite?.getId() === id) {
@@ -82,21 +84,21 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		return this.doOpenComposite(id, focus);
 	}
 
-    private doOpenComposite(id: string, focus: boolean = false): Composite | undefined {
+	private doOpenComposite(id: string, focus: boolean = false): Composite | undefined {
 		this.logService.debug("[compositePart] doOpenComposite:", id);
 		// Use a generated token to avoid race conditions from long running promises
 		const currentCompositeOpenToken = defaultGenerator.nextId();
 		this.currentCompositeOpenToken = currentCompositeOpenToken;
 
-        // Hide current
+		// Hide current
 		if (this.activeComposite) {
 			this.hideActiveComposite();
 		}
 
-        // Create composite
+		// Create composite
 		const composite = this.createComposite(id, true);
 
-        // Check if another composite opened meanwhile and return in that case
+		// Check if another composite opened meanwhile and return in that case
 		if ((this.currentCompositeOpenToken !== currentCompositeOpenToken) || (this.activeComposite && this.activeComposite.getId() !== composite.getId())) {
 			return undefined;
 		}
@@ -123,9 +125,9 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		}
 
 		return composite;
-    }
+	}
 
-    protected createComposite(id: string, isActive?: boolean): Composite {
+	protected createComposite(id: string, isActive?: boolean): Composite {
 
 		// Check if composite is already created
 		const compositeItem = this.instantiatedCompositeItems.get(id);
@@ -156,7 +158,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		throw new Error(`Unable to find composite with id ${id}`);
 	}
 
-    protected hideActiveComposite(): Composite | undefined {
+	protected hideActiveComposite(): Composite | undefined {
 		if (!this.activeComposite) {
 			return undefined; // Nothing to do
 		}
@@ -175,7 +177,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 			hide(compositeContainer);
 		}
 
-        /*
+		/*
 		// Clear any running Progress
 		if (this.progressBar) {
 			this.progressBar.stop().hide();
@@ -185,14 +187,14 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		if (this.toolBar) {
 			this.collectCompositeActions()();
 		}
-        */
+		*/
 
 		this.onDidCompositeClose.fire(composite);
 
 		return composite;
 	}
 
-    protected showComposite(composite: Composite): void {
+	protected showComposite(composite: Composite): void {
 		this.logService.debug("showComposite:", composite);
 		// Remember Composite
 		this.activeComposite = composite;
@@ -255,7 +257,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		//actionsBinding();
 
 		// Action Run Handling
-        /*
+		/*
 		this.telemetryActionsListener.value = toolBar.actionRunner.onDidRun(e => {
 
 			// Check for Error
@@ -266,7 +268,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 			// Log in telemetry
 			this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: e.action.id, from: this.nameForTelemetry });
 		});
-        */
+		*/
 
 		// Indicate to composite that it is now visible
 		composite.setVisible(true);

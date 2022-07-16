@@ -109,6 +109,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 		this.container.prepend(workbenchGrid.element);
 		this.container.setAttribute('role', 'application');
+		this.container.classList.add('workbench');
 		this.workbenchGrid = workbenchGrid;
 	}
 
@@ -200,7 +201,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const editorNode: ISerializedLeafNode = {
 			type: 'leaf',
 			data: { type: Parts.EDITOR_PART },
-			size: 1200, // Update based on sibling sizes
+			size: 1080, // Update based on sibling sizes
 			visible: true
 		};
 
