@@ -4,7 +4,7 @@
 
 ## The Repository
 
-This repository is where we (Microsoft) develop the `Mote` product together with the community.
+This repository is where we (All of the Mote author) develop the `Mote` product together with the community.
 
 ## Mote
 
