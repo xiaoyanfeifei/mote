@@ -10,14 +10,12 @@ import { assertIsDefined } from "vs/base/common/types";
 import { ThemedStyles } from "mote/base/ui/themes";
 import { setStyles } from "mote/base/jsx/createElement";
 import { EditableContainer } from "mote/editor/browser/editableContainer";
-import RecordStore from "mote/editor/common/store/recordStore";
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IStorageService } from "vs/platform/storage/common/storage";
 import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { ILogService } from "vs/platform/log/common/log";
 import { CommandsRegistry } from "mote/platform/commands/common/commands";
 import { IInstantiationService, ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { DocumentEditor } from "./documentEditor";
 import { EmptyHolder } from "./emptyHolder";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { IEditorService } from "mote/workbench/services/editor/common/editorService";
@@ -63,7 +61,6 @@ export class EditorPart extends Part implements IEditorService {
 	private pageStore!: BlockStore;
 	private listener!: IDisposable;
 
-	private editor!: DocumentEditor;
 	private emptyHolder!: EmptyHolder;
 
 	private editorPanes: EditorPanes;
@@ -174,7 +171,6 @@ export class EditorPart extends Part implements IEditorService {
 		this.container.style.paddingTop = "25px";
 		parent.appendChild(this.container);
 
-		this.editor = this.instantiationService.createInstance(DocumentEditor, this.container!);
 		this.emptyHolder = new EmptyHolder(this.container!);
 
 		return this.container;
