@@ -448,6 +448,28 @@
 						]
 					},
 					{
+						"target": "src/mote/workbench/services/*/~",
+						"restrictions": [
+							"vs/base/~",
+							"mote/base/~",
+							"vs/base/parts/*/~",
+							"vs/platform/*/~",
+							"vs/editor/~",
+							"vs/editor/contrib/*/~",
+							"vs/workbench/~",
+							"mote/workbench/~",
+							"vs/workbench/services/*/~",
+							"mote/workbench/services/*/~",
+							{
+								"when": "test",
+								"pattern": "vs/workbench/contrib/*/~"
+							}, // TODO@layers
+							"tas-client-umd", // node module allowed even in /common/
+							"vscode-textmate", // node module allowed even in /common/
+							"@vscode/vscode-languagedetection" // node module allowed even in /common/
+						]
+					},
+					{
 						"target": "src/vs/workbench/services/*/~",
 						"restrictions": [
 							"vs/base/~",

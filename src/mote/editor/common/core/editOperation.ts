@@ -4,13 +4,14 @@ import { Transaction } from "./transaction";
 import { Command } from "mote/editor/common/operations";
 import RecordCacheStore from "../store/recordCacheStore";
 import { generateUuid } from 'vs/base/common/uuid';
+import { BlockType } from 'mote/editor/common/store/record';
 
 export class EditOperation {
 
 	public static createBlockStore(type: string, transaction: Transaction) {
 		const id = generateUuid();
 		const blockStore = new BlockStore({
-			table: "block",
+			table: 'block',
 			id: id
 		}, transaction.userId);
 		this.addSetOperationForStore(blockStore, {
@@ -19,10 +20,10 @@ export class EditOperation {
 		return blockStore;
 	}
 
-	public static turnInto(store: BlockStore, blockType: string, transcation: Transaction) {
+	public static turnInto(store: BlockStore, blockType: BlockType, transcation: Transaction) {
 		const record = store.getValue();
-		if (record && record.type != blockType) {
-			console.log("execute turn into", blockType)
+		if (record && record.type !== blockType) {
+			console.log("execute turn into", blockType);
 			this.addUpdateOperationForStore(
 				store,
 				{
@@ -43,7 +44,7 @@ export class EditOperation {
 		return {
 			parent: parent,
 			child: prepend.cloneWithNewParent(parent)
-		}
+		};
 	}
 
 	public static removeChild(parent: RecordStore, remove: RecordStore, transaction: Transaction, shouldGarbageCollect?: boolean) {

@@ -11,6 +11,7 @@ import { Transaction } from "../common/core/transaction";
 import { getParentBlockStore } from "../common/storeUtils";
 import blockTypes, { contentTypes, pureTextTypes, textBasedTypes } from "../common/blockTypes";
 import { Lodash } from "mote/base/common/lodash";
+import { Markdown } from 'mote/editor/common/markdown';
 
 
 
@@ -22,7 +23,7 @@ export class BlockService extends Disposable {
 		this.state = state;
 	}
 
-	public onChange(store: BlockStore, transaction, selection: TextSelection, newValue: string) {
+	public onChange(store: BlockStore, transaction: Transaction, selection: TextSelection, newValue: string) {
 		const oldRecord = store.getValue();
 		const content = segmentUtils.collectValueFromSegment(oldRecord);
 		const diffResult = textChange(selection, content, newValue);
@@ -61,7 +62,7 @@ export class BlockService extends Disposable {
 					);
 					break;
 				default:
-					if (DIFF_EQUAL == op) {
+					if (DIFF_EQUAL === op) {
 						startIndex += txt.length;
 					}
 			}
@@ -72,13 +73,14 @@ export class BlockService extends Disposable {
 			if (selection) {
 				this.state.updateSelection({
 					selection: selection?.selection
-				})
+				});
 			}
 		}
 	}
 
-	public insert(content: string, transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
-		if (TextSelectionMode.Editing != selectionMode) {
+	public insert(content: string, transaction: Transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+		const userId = transaction.userId;
+		if (TextSelectionMode.Editing !== selectionMode) {
 			return;
 		}
 
@@ -92,24 +94,29 @@ export class BlockService extends Disposable {
 			const newSelection: TextSelection = {
 				startIndex: selection.startIndex + content.length,
 				endIndex: selection.endIndex + content.length
-			}
+			};
 
 			this.state.updateSelection({
 				store: store,
 				selection: newSelection
-			})
+			});
 
 			EditOperation.addSetOperationForStore(
 				store,
 				segmentUtils.merge(storeValue, [segment], selection.startIndex),
 				transaction
-			)
+			);
 
+			transaction.postSubmitActions.push(() => {
+				const transaction = Transaction.create(userId);
+				Markdown.parse(store, { selection, mode: selectionMode }, transaction);
+				transaction.commit();
+			});
 		}
 	}
 
 	public delete(transaction: Transaction, store: BlockStore, selection: TextSelection, selectionMode: TextSelectionMode) {
-		if (selection.startIndex != selection.endIndex) {
+		if (selection.startIndex !== selection.endIndex) {
 			const storeValue = store.getValue();
 			const newRecord = segmentUtils.remove(storeValue, selection.startIndex, selection.endIndex);
 

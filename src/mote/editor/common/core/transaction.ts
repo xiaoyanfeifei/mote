@@ -42,21 +42,21 @@ export class Transaction {
 		this.userId = userId;
 	}
 
-	done(args?) {
+	done(args?: any) {
 		for (const callback of this.postSubmitCallbacks) {
-			callback(args)
+			callback(args);
 		}
-		console.debug(`[${this.id}] done.`)
+		console.debug(`[${this.id}] done.`);
 	}
 
 	commit() {
 		if (this.committed) {
-			console.debug(`commit on a committed transaction [${this.id}].`)
+			console.debug(`commit on a committed transaction [${this.id}].`);
 			return;
 		}
 
 		return new Promise<void>((resolve, reject) => {
-			if (0 == this.operations.length) {
+			if (0 === this.operations.length) {
 				this.done();
 				resolve();
 				return;
@@ -65,7 +65,7 @@ export class Transaction {
 			// Trigger preSubmitAction
 			for (const preSubmitAction of this.preSubmitActions) {
 				preSubmitAction();
-			};
+			}
 
 			for (const store of this.stores) {
 				RecordCacheStore.Default.fire(store.identify);
@@ -74,7 +74,7 @@ export class Transaction {
 			// Trigger postSubmitAction
 			for (const postSubmitAction of this.postSubmitActions) {
 				postSubmitAction();
-			};
+			}
 			this.committed = true;
 			this.done();
 			resolve();
