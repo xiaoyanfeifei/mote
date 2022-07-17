@@ -15,165 +15,165 @@ import { OperationWrapper } from "./operationWrapper";
 import { Range } from "mote/editor/common/core/range";
 
 interface EditableContainerOptions {
-    style?: CSSProperties;
-    placeHolderStyle?: CSSProperties;
+	style?: CSSProperties;
+	placeHolderStyle?: CSSProperties;
 
-    placeholder?: string;
+	placeholder?: string;
 
-    autoFocus?: boolean;
+	autoFocus?: boolean;
 }
 
 export class EditableContainer extends Disposable {
 
-    private editable: Editable;
-    private options: EditableContainerOptions;
-    private blockStore?: BlockStore;
+	private editable: Editable;
+	private options: EditableContainerOptions;
+	private blockStore?: BlockStore;
 
-    private blockService: BlockService;
-    private operationHandler: OperationWrapper;
+	private blockService: BlockService;
+	private operationHandler: OperationWrapper;
 
-    constructor(
-        container: HTMLElement, 
-        options: EditableContainerOptions,
-        @IInstantiationService private readonly instantiationService: IInstantiationService,
-        @IEditorStateService private readonly editorStateService: IEditorStateService,
-    ) {
-        super();
-        this.options = options;
-        this.editable = new Editable(container, {
-            placeholder: options.placeholder || "Untitled",
-            getSelection: () => this.getContainerSelection()
-        });
-        this.blockService = new BlockService(this.editorStateService.getEditorState());
-        
-        this.operationHandler = this.instantiationService.createInstance(OperationWrapper, this.editable.element);
-        this.applyStyles();
+	constructor(
+		container: HTMLElement,
+		options: EditableContainerOptions,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorStateService private readonly editorStateService: IEditorStateService,
+	) {
+		super();
+		this.options = options;
+		this.editable = new Editable(container, {
+			placeholder: options.placeholder || 'Untitled',
+			getSelection: () => this.getContainerSelection()
+		});
+		this.blockService = new BlockService(this.editorStateService.getEditorState());
 
-        this.registerListener();
-    }
+		this.operationHandler = this.instantiationService.createInstance(OperationWrapper, this.editable.element);
+		this.applyStyles();
 
-    focus() {
-        this.editable.element.focus();
-    }
+		this.registerListener();
+	}
 
-    activate() {
-        const currentId = this.editorStateService.getEditorState().blockStore?.id;
-        if (this.blockStore && this.blockStore.id == currentId) {
-            return true;
-        }
-        return false;
-    }
+	focus() {
+		this.editable.element.focus();
+	}
 
-    private registerListener() {
-        this.operationHandler.onDidEnter(this.handleEnter);
-        this.operationHandler.onDidDelete(this.handleBackspace);
-        this.editable.onDidChange(this.handleChange);
-        this.editorStateService.getEditorState().onDidStoreChange(this.handleStoreChange);
-    }
+	activate() {
+		const currentId = this.editorStateService.getEditorState().blockStore?.id;
+		if (this.blockStore && this.blockStore.id === currentId) {
+			return true;
+		}
+		return false;
+	}
 
-    private handleStoreChange = () => {
-        if (this.activate() && this.options.autoFocus != false) {
-            this.focus()
-        }
-    }
+	private registerListener() {
+		this.operationHandler.onDidEnter(this.handleEnter);
+		this.operationHandler.onDidDelete(this.handleBackspace);
+		this.editable.onDidChange(this.handleChange);
+		this.editorStateService.getEditorState().onDidStoreChange(this.handleStoreChange);
+	}
 
-    private handleChange = (value: string) => {
-        const that = this;
-        const editorState = this.editorStateService.getEditorState();
-        Transaction.createAndCommit((transcation)=>{
-            that.blockService.onChange(
-                that.blockStore!, 
-                transcation, 
-                editorState.selectionState.selection,
-                value
-            );
-            that.applyStyles()
-        }, this.blockStore?.userId!);
-    }
+	private handleStoreChange = () => {
+		if (this.activate() && this.options.autoFocus !== false) {
+			this.focus();
+		}
+	};
 
-    isEditing() {
-        const editorState = this.editorStateService.getEditorState();
-        const textSelection = editorState.selectionState;
-        if (this.blockStore?.identify != textSelection.store?.identify) {
-            return false;
-        }
-        if (TextSelectionMode.Editing != textSelection.mode) {
-            return false;
-        }
-        return true;
-    }
+	private handleChange = (value: string) => {
+		const that = this;
+		const editorState = this.editorStateService.getEditorState();
+		Transaction.createAndCommit((transcation) => {
+			that.blockService.onChange(
+				that.blockStore!,
+				transcation,
+				editorState.selectionState.selection,
+				value
+			);
+			that.applyStyles();
+		}, this.blockStore?.userId!);
+	};
 
-    getContainerSelection = (): TextSelection|undefined => {
-        const isEditingState = this.isEditing();
-        if (isEditingState) {
-            const editorState = this.editorStateService.getEditorState();
-            const selection = editorState.selectionState.selection;
-            const length = collectValueFromSegment(this.getTextValue()).length;
-            return {
-                startIndex: Math.min(selection.startIndex, length),
-                endIndex: Math.min(selection.endIndex, length)
-            }
-        }
-        return undefined;
-    }
+	isEditing() {
+		const editorState = this.editorStateService.getEditorState();
+		const textSelection = editorState.selectionState;
+		if (this.blockStore?.identify !== textSelection.store?.identify) {
+			return false;
+		}
+		if (TextSelectionMode.Editing !== textSelection.mode) {
+			return false;
+		}
+		return true;
+	}
+
+	getContainerSelection = (): TextSelection | undefined => {
+		const isEditingState = this.isEditing();
+		if (isEditingState) {
+			const editorState = this.editorStateService.getEditorState();
+			const selection = editorState.selectionState.selection;
+			const length = collectValueFromSegment(this.getTextValue()).length;
+			return {
+				startIndex: Math.min(selection.startIndex, length),
+				endIndex: Math.min(selection.endIndex, length)
+			};
+		}
+		return undefined;
+	};
 
 
-    applyStyles() {
-        const editableStyle = this.getEditableStyle();
-        this.editable.style(editableStyle);
-    }
+	applyStyles() {
+		const editableStyle = this.getEditableStyle();
+		this.editable.style(editableStyle);
+	}
 
-    getEditableStyle = () => {
-        let style = Object.assign({
-            maxWidth: "100%",
-            width: "100%",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-        }, this.options.style);
+	getEditableStyle = () => {
+		let style = Object.assign({
+			maxWidth: "100%",
+			width: "100%",
+			whiteSpace: "pre-wrap",
+			wordBreak: "break-word",
+		}, this.options.style);
 
-        if(this.isEmpty()){
-            style.minHeight = "1em";
-            style = Object.assign({}, style, {
-                color: ThemedStyles.regularTextColor.dark,
-                WebkitTextFillColor: ThemedStyles.lightTextColor.dark
-            }, this.options.placeHolderStyle);
-        }
-        return style;
-    }
+		if (this.isEmpty()) {
+			style.minHeight = "1em";
+			style = Object.assign({}, style, {
+				color: ThemedStyles.regularTextColor.dark,
+				WebkitTextFillColor: ThemedStyles.lightTextColor.dark
+			}, this.options.placeHolderStyle);
+		}
+		return style;
+	};
 
-    set store(value: BlockStore) {
-        this.blockStore = value;
-        this._register(this.blockStore.onDidChange(()=>this.update()));
-        this.operationHandler.store = value;
-        this.update();
-        this.handleStoreChange();
-    }
+	set store(value: BlockStore) {
+		this.blockStore = value;
+		this._register(this.blockStore.onDidChange(() => this.update()));
+		this.operationHandler.store = value;
+		this.update();
+		this.handleStoreChange();
+	}
 
-    public update() {
-        this.editable.value = segmentsToElement(this.getTextValue()).join("");
-        this.applyStyles()
-    }
+	public update() {
+		this.editable.value = segmentsToElement(this.getTextValue()).join('');
+		this.applyStyles();
+	}
 
-    isEmpty() {
-        const value = this.getTextValue() || [];
-        return 0 === value.length;
-    }
+	isEmpty() {
+		const value = this.getTextValue() || [];
+		return 0 === value.length;
+	}
 
-    getTextValue(): ISegment[] {
-        return this.blockStore?.getValue() || "";
-    }
+	getTextValue(): ISegment[] {
+		return this.blockStore?.getValue() || '';
+	}
 
-    handleEnter = (e: Event) => {
-        e.preventDefault();
-        Transaction.createAndCommit((transaction)=>{
-            this.blockService.newLine(transaction, this.blockStore!);
-        }, this.blockStore?.userId!);
-    }
+	handleEnter = (e: Event) => {
+		e.preventDefault();
+		Transaction.createAndCommit((transaction) => {
+			this.blockService.newLine(transaction, this.blockStore!);
+		}, this.blockStore?.userId!);
+	};
 
-    handleBackspace = (e) => {
-        e.preventDefault();
-        Transaction.createAndCommit((transaction)=>{
-            this.blockService.backspace(transaction, this.blockStore!, false, e);
-        }, this.blockStore?.userId!);
-    }
+	handleBackspace = (e: any) => {
+		e.preventDefault();
+		Transaction.createAndCommit((transaction) => {
+			this.blockService.backspace(transaction, this.blockStore!, false, e);
+		}, this.blockStore?.userId!);
+	};
 }

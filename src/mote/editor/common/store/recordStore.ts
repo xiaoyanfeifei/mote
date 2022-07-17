@@ -81,11 +81,8 @@ export default class RecordStore<T = any> extends Disposable {
 		this.sync();
 		RecordCacheStore.Default.onDidChange((e) => {
 			if (this.identify === e) {
-				const prevValue = this.instanceState?.value;
 				this.sync();
-				if (prevValue !== this.instanceState.value) {
-					this._onDidChange.fire();
-				}
+				this._onDidChange.fire();
 			}
 		});
 	}
