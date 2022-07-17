@@ -1,10 +1,9 @@
-import { CSSProperties } from "mote/base/jsx";
-import { ThemedStyles } from "mote/base/ui/themes";
+import { CSSProperties } from 'mote/base/jsx';
+import { ThemedStyles } from 'mote/base/ui/themes';
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { EditOperation } from "../common/core/editOperation";
 import { TextSelection, TextSelectionMode } from "../common/core/selection";
 import { Transaction } from "../common/core/transaction";
 import { collectValueFromSegment, ISegment } from "../common/segmentUtils";
@@ -12,7 +11,6 @@ import { segmentsToElement } from "../common/textSerialize";
 import { BlockService } from "../services/blockService";
 import { Editable } from "./editable";
 import { OperationWrapper } from "./operationWrapper";
-import { Range } from "mote/editor/common/core/range";
 
 interface EditableContainerOptions {
 	style?: CSSProperties;
@@ -125,14 +123,14 @@ export class EditableContainer extends Disposable {
 
 	getEditableStyle = () => {
 		let style = Object.assign({
-			maxWidth: "100%",
-			width: "100%",
-			whiteSpace: "pre-wrap",
-			wordBreak: "break-word",
+			maxWidth: '100%',
+			width: '100%',
+			whiteSpace: 'pre-wrap',
+			wordBreak: 'break-word',
 		}, this.options.style);
 
 		if (this.isEmpty()) {
-			style.minHeight = "1em";
+			style.minHeight = '1em';
 			style = Object.assign({}, style, {
 				color: ThemedStyles.regularTextColor.dark,
 				WebkitTextFillColor: ThemedStyles.lightTextColor.dark
