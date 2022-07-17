@@ -12,6 +12,9 @@ import 'mote/workbench/browser/parts/views/viewsService';
 import 'mote/workbench/contrib/pages/browser/explorerViewlet';
 import 'mote/workbench/contrib/pages/browser/pages.contribution';
 
+// DocumentEditor
+import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contribution';
+
 //#endregion
 
 //#region --- workbench services

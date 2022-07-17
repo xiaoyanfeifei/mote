@@ -646,6 +646,34 @@ export class ListView<T> implements ISpliceable<T>, IDisposable {
 		this._rerender(this.lastRenderTop, this.lastRenderHeight);
 	}
 
+	rerenderElement(index: number) {
+		const item = this.items[index];
+
+
+		const renderer = this.renderers.get(item.templateId);
+
+		if (!renderer) {
+			throw new Error(`No renderer found for template id ${item.templateId}`);
+		}
+
+		renderer?.renderElement(item.element, index, item.row!.templateData, item.size);
+
+		this.updateElementHeight(index, undefined, null);
+
+		const uri = this.dnd.getDragURI(item.element);
+		item.dragStartDisposable.dispose();
+		item.row!.domNode.draggable = !!uri;
+
+		if (uri) {
+			item.dragStartDisposable = addDisposableListener(item.row!.domNode, 'dragstart', event => this.onDragStart(item.element, uri, event));
+		}
+
+		if (this.horizontalScrolling) {
+			this.measureItemWidth(item);
+			this.eventuallyUpdateScrollWidth();
+		}
+	}
+
 	get length(): number {
 		return this.items.length;
 	}

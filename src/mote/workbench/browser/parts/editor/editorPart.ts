@@ -21,6 +21,8 @@ import { DocumentEditor } from "./documentEditor";
 import { EmptyHolder } from "./emptyHolder";
 import { IDisposable } from "vs/base/common/lifecycle";
 import { IEditorService } from "mote/workbench/services/editor/common/editorService";
+import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
+import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
 
 export class EditorPart extends Part implements IEditorService {
 
@@ -64,6 +66,8 @@ export class EditorPart extends Part implements IEditorService {
 	private editor!: DocumentEditor;
 	private emptyHolder!: EmptyHolder;
 
+	private editorPanes: EditorPanes;
+
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IThemeService themeService: IThemeService,
@@ -75,6 +79,8 @@ export class EditorPart extends Part implements IEditorService {
 		RecordCacheStore.Default.storageService = storageService;
 		RecordCacheStore.Default.logService = logService;
 		CommandsRegistry.registerCommand("openPage", this.openPage);
+		this.container = document.createElement('div');
+		this.editorPanes = this._register(this.instantiationService.createInstance(EditorPanes, this.container));
 	}
 
 
@@ -85,7 +91,7 @@ export class EditorPart extends Part implements IEditorService {
 			this.listener.dispose();
 		}
 		const contentStore = this.pageStore!.getContentStore();
-		this.listener = contentStore.onDidChange(this.update);
+		//this.listener = contentStore.onDidChange(this.update);
 
 		this.updateTitle();
 		this.update();
@@ -94,7 +100,8 @@ export class EditorPart extends Part implements IEditorService {
 	private update = () => {
 
 		const contentStore = this.pageStore!.getContentStore();
-
+		this.editorPanes.openEditor(new DocumentEditorInput(contentStore), {});
+		/*
 		if ((contentStore.getValue() || []).length == 0) {
 			this.editor.hidden();
 			this.emptyHolder.store = this.pageStore;
@@ -105,6 +112,7 @@ export class EditorPart extends Part implements IEditorService {
 			this.editor!.create();
 			this.editor.show();
 		}
+		*/
 	}
 
 	openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
@@ -159,7 +167,7 @@ export class EditorPart extends Part implements IEditorService {
 		// Container
 		this.element = parent;
 		this.element.style.backgroundColor = "#303030";
-		this.container = document.createElement('div');
+
 		this.container.classList.add('content');
 		this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
@@ -175,7 +183,7 @@ export class EditorPart extends Part implements IEditorService {
 	createCover(parent: HTMLElement) {
 		const coverDomNode = $("");
 		coverDomNode.style.height = "100px";
-		parent.append(coverDomNode)
+		parent.append(coverDomNode);
 	}
 
 	override updateStyles(): void {
@@ -188,6 +196,19 @@ export class EditorPart extends Part implements IEditorService {
 		//container.style.left
 		//container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 		//container.style.position = "absolute";
+	}
+
+	override layout(width: number, height: number, top: number, left: number): void {
+
+		// Layout contents
+		const contentAreaSize = super.layoutContents(width, height).contentSize;
+
+		// Layout editor container
+		this.doLayout(Dimension.lift(contentAreaSize), top, left);
+	}
+
+	private doLayout(dimension: Dimension, top: number, left: number): void {
+		this.editorPanes.layout(dimension);
 	}
 }
 

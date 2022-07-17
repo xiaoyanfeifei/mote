@@ -51,7 +51,7 @@ export class EditableContainer extends Disposable {
 	}
 
 	focus() {
-		this.editable.element.focus();
+		//this.editable.element.focus();
 	}
 
 	activate() {
