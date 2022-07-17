@@ -9,7 +9,7 @@ This repository is where we (All of the Mote author) develop the `Mote` product 
 ## Mote
 
 <p align="center">
-  <img alt="Mote in action" src="https://user-images.githubusercontent.com/35271042/118224532-3842c400-b438-11eb-923d-a5f66fa6785a.png">
+  <img alt="Mote in action" src="https://user-images.githubusercontent.com/19513850/179396187-fee21f6c-71c1-4b87-a24a-1421ffafcc9a.png" />
 </p>
 
 
