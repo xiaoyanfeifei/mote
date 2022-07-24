@@ -1,7 +1,7 @@
 import { Lodash } from 'mote/base/common/lodash';
 import blockTypes from 'mote/editor/common/blockTypes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { TextSelectionMode } from 'mote/editor/common/core/selection';
+import { TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { TextSelectionState } from 'mote/editor/common/editorState';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';

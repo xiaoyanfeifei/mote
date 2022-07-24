@@ -1,4 +1,4 @@
-import { TextSelection, TextSelectionMode } from "mote/editor/common/core/selection";
+import { TextSelection, TextSelectionMode } from "mote/editor/common/core/selectionUtils";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import BlockStore from "mote/editor/common/store/blockStore";
@@ -37,17 +37,17 @@ export class EditorState extends Disposable implements IEditorState {
     private _selectionState: TextSelectionState = initialState;
 
     private _onDidSelectionChange = this._register(new Emitter<TextSelectionState>());
-	public readonly onDidSelectionChange: Event<TextSelectionState> = this._onDidSelectionChange.event;
+    public readonly onDidSelectionChange: Event<TextSelectionState> = this._onDidSelectionChange.event;
 
     private _onDidStoreChange = this._register(new Emitter<BlockStore>());
-	public readonly onDidStoreChange: Event<BlockStore> = this._onDidStoreChange.event;
+    public readonly onDidStoreChange: Event<BlockStore> = this._onDidStoreChange.event;
 
     //#region properties
 
-    public get selectionState () {
+    public get selectionState() {
         return this._selectionState;
     }
-    
+
     public get blockStore() {
         return this._selectionState.store;
     }
@@ -75,24 +75,24 @@ function selectionEqual(s1: TextSelection, s2: TextSelection) {
     return false;
 }
 
-function updateTextSelection(textSelectionState:TextSelectionState, payload: TextSelectionUpdatePayload): Partial<TextSelectionState> {
-    const {readOnly, store, selection} = payload;
+function updateTextSelection(textSelectionState: TextSelectionState, payload: TextSelectionUpdatePayload): Partial<TextSelectionState> {
+    const { readOnly, store, selection } = payload;
     if (store && selection) {
         const isEmpty = TextSelectionMode.Empty === textSelectionState.mode;
         const isReadOnly = (readOnly && TextSelectionMode.ReadOnly !== textSelectionState.mode) || (!readOnly && TextSelectionMode.ReadOnly === textSelectionState.mode)
         const storeUnmatch = textSelectionState.store == store;
         const selectionNotEq = !selectionEqual(textSelectionState.selection, selection);
-        
-        if( isEmpty || isReadOnly || storeUnmatch || selectionNotEq ){
-            if(readOnly){
+
+        if (isEmpty || isReadOnly || storeUnmatch || selectionNotEq) {
+            if (readOnly) {
                 return ({
                     mode: TextSelectionMode.ReadOnly,
                     store: store,
                     selection: selection,
                     //savedSelectionXPosition: TextSelectionMode.Empty !== textSelectionState.mode ? textSelectionState.savedSelectionXPosition : void 0
-                }) 
+                })
             } else {
-                return({
+                return ({
                     mode: TextSelectionMode.Editing,
                     store: store,
                     selection: selection,
@@ -102,9 +102,9 @@ function updateTextSelection(textSelectionState:TextSelectionState, payload: Tex
             }
         }
     } else {
-        if(store && !selection){
-            if(readOnly){
-                return({
+        if (store && !selection) {
+            if (readOnly) {
+                return ({
                     mode: TextSelectionMode.ReadOnly,
                     store: store,
                     selection: {
@@ -114,7 +114,7 @@ function updateTextSelection(textSelectionState:TextSelectionState, payload: Tex
                     //savedSelectionXPosition: 0
                 })
             } else {
-                return({
+                return ({
                     mode: TextSelectionMode.Editing,
                     store: store,
                     selection: {
@@ -126,12 +126,12 @@ function updateTextSelection(textSelectionState:TextSelectionState, payload: Tex
                 })
             }
         } else {
-            return({
+            return ({
                 store: store,
                 mode: TextSelectionMode.Empty
             })
         }
     }
-    return {store: store};
+    return { store: store };
 }
 

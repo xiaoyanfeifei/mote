@@ -7,7 +7,7 @@ import { IResourceEditorInput } from "mote/platform/editor/common/editor";
 import { IEditorPane } from "mote/workbench/common/editor";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { assertIsDefined } from "vs/base/common/types";
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 import { setStyles } from "mote/base/browser/jsx/createElement";
 import { EditableContainer } from "mote/editor/browser/editableContainer";
 import BlockStore from "mote/editor/common/store/blockStore";

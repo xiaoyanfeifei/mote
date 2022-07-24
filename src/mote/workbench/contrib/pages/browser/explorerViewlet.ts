@@ -2,7 +2,7 @@ import { ListItem } from "mote/base/browser/ui/list/list";
 import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
 import { createElement } from "mote/base/browser/jsx/createElement";
 import SVGIcon from "mote/base/ui/svgicon/svgicon";
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { TreeRender, TreeView } from "mote/workbench/browser/parts/views/treeView";
 import { ViewPaneContainer } from "mote/workbench/browser/parts/views/viewPaneContainer";

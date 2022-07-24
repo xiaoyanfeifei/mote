@@ -1,10 +1,10 @@
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 
 class EditorHeader {
 
-    
 
-    getTitleStyle(){
+
+    getTitleStyle() {
         return {
             color: ThemedStyles.regularTextColor.dark,
             fontWeight: 700,

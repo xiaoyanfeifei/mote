@@ -1,5 +1,5 @@
 import { Disposable } from "vs/base/common/lifecycle";
-import { getSelectionFromRange, TextSelection, TextSelectionMode } from "mote/editor/common/core/selection";
+import { getSelectionFromRange, TextSelection, TextSelectionMode } from "mote/editor/common/core/selectionUtils";
 import { textChange } from "mote/editor/common/core/textChange";
 import BlockStore from "mote/editor/common/store/blockStore";
 import * as segmentUtils from "mote/editor/common/segmentUtils";

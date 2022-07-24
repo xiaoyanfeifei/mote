@@ -1,4 +1,4 @@
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "mote/workbench/browser/panecomposite";

@@ -1,10 +1,10 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
-import { ThemedStyles } from 'mote/base/ui/themes';
+import { ThemedStyles } from 'mote/base/browser/ui/themes';
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { TextSelection, TextSelectionMode } from "../common/core/selection";
+import { TextSelection, TextSelectionMode } from "../common/core/selectionUtils";
 import { Transaction } from "../common/core/transaction";
 import { collectValueFromSegment, ISegment } from "../common/segmentUtils";
 import { segmentsToElement } from "../common/textSerialize";

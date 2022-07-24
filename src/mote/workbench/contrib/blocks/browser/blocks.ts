@@ -1,6 +1,6 @@
 import { CSSProperties } from "mote/base/browser/jsx";
 import { setStyles } from "mote/base/browser/jsx/createElement";
-import fonts from "mote/base/ui/fonts";
+import fonts from "mote/base/browser/ui/fonts";
 import { EditableContainer } from "mote/editor/browser/editableContainer";
 import blockTypes from 'mote/editor/common/blockTypes';
 import BlockStore from "mote/editor/common/store/blockStore";

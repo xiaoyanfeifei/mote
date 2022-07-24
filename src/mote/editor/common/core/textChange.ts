@@ -5,7 +5,7 @@ import {
 	DIFF_DELETE,
 	DIFF_INSERT
 } from 'mote/editor/common/diffMatchPatch';
-import { TextSelection } from "./selection";
+import { TextSelection } from "./selectionUtils";
 
 const diffMatchPatch = new diff_match_patch();
 

@@ -5,8 +5,8 @@ import { setStyles } from "mote/base/browser/jsx/createElement";
 import { Widget } from "vs/base/browser/ui/widget";
 import { nodeToString } from "../common/textSerialize";
 import { Emitter, Event } from "vs/base/common/event";
-import { TextSelection } from "../common/core/selection";
-import { Range } from 'mote/editor/common/core/range';
+import { TextSelection } from "../common/core/selectionUtils";
+import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
 
 interface EditableOptions {
 	getSelection?(): TextSelection | undefined;
@@ -58,10 +58,10 @@ export class Editable extends Widget {
 			this.selection = this.options.getSelection();
 		}
 		if (this.selection) {
-			const rangeFromElement = Range.create(this.input, this.selection);
-			const rangeFromDocument = Range.get();
-			if (!Range.ensureRange(rangeFromDocument, rangeFromElement)) {
-				Range.set(rangeFromElement);
+			const rangeFromElement = RangeUtils.create(this.input, this.selection);
+			const rangeFromDocument = RangeUtils.get();
+			if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
+				RangeUtils.set(rangeFromElement);
 			}
 		}
 	}

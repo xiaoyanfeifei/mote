@@ -7,8 +7,8 @@ import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 import { Emitter, Event as BaseEvent } from "vs/base/common/event";
 import { KeyCode, KeyCodeUtils } from "vs/base/common/keyCodes";
 import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import { Range } from "../common/core/range";
-import { getSelectionFromRange, TextSelectionMode } from "../common/core/selection";
+import { RangeUtils } from "../common/core/rangeUtils";
+import { getSelectionFromRange, TextSelectionMode } from "../common/core/selectionUtils";
 import { EditorState } from "../common/editorState";
 import BlockStore from "../common/store/blockStore";
 
@@ -26,13 +26,13 @@ export class OperationWrapper extends Disposable {
     private blockstore?: BlockStore;
 
     private _onDidDelete = this._register(new Emitter<Event>());
-	get onDidDelete(): BaseEvent<Event> { return this._onDidDelete.event; }
+    get onDidDelete(): BaseEvent<Event> { return this._onDidDelete.event; }
 
     private _onDidEnter = this._register(new Emitter<Event>());
-	get onDidEnter(): BaseEvent<Event> { return this._onDidEnter.event; }
+    get onDidEnter(): BaseEvent<Event> { return this._onDidEnter.event; }
 
     constructor(
-        element: HTMLElement, 
+        element: HTMLElement,
         //options: OperationWrapperOptions,
         @IQuickMenuService private quickMenuService: IQuickMenuService,
         @IEditorStateService private editorStateService: IEditorStateService,
@@ -40,18 +40,18 @@ export class OperationWrapper extends Disposable {
         super();
         this.element = element;
 
-        this._register(addDisposableListener(element, EventType.MOUSE_UP, ()=>this.handleSelect()))
-        this._register(addDisposableListener(element, EventType.CLICK, ()=>this.handleSelect()))
-        this._register(addDisposableListener(this.element, EventType.KEY_DOWN, (e)=>{
-            if(e.code == KeyCodeUtils.toString(KeyCode.Enter)) {
+        this._register(addDisposableListener(element, EventType.MOUSE_UP, () => this.handleSelect()))
+        this._register(addDisposableListener(element, EventType.CLICK, () => this.handleSelect()))
+        this._register(addDisposableListener(this.element, EventType.KEY_DOWN, (e) => {
+            if (e.code == KeyCodeUtils.toString(KeyCode.Enter)) {
                 this._onDidEnter.fire(e);
             }
-            if((e.code == KeyCodeUtils.toString(KeyCode.Backspace)) ||
+            if ((e.code == KeyCodeUtils.toString(KeyCode.Backspace)) ||
                 (e.code == KeyCodeUtils.toString(KeyCode.Delete))) {
                 this._onDidDelete.fire(e);
             }
         }));
-      
+
     }
 
     set store(value: BlockStore) {
@@ -71,7 +71,7 @@ export class OperationWrapper extends Disposable {
         }
         if (textSelection && textSelection.selection.endIndex > textSelection.selection.startIndex) {
             const isNotEmpty = TextSelectionMode.Empty != textSelectionState.mode;
-            console.log("handle selection:", getSelectionFromRange(), Range.get());
+            console.log("handle selection:", getSelectionFromRange(), RangeUtils.get());
             this.editorStateService.getEditorState
             this.quickMenuService.showQuickMenu({
                 state: {
@@ -83,7 +83,7 @@ export class OperationWrapper extends Disposable {
         }
     }
 
-    private saveSerializedTextSelection(){
-        
+    private saveSerializedTextSelection() {
+
     }
 }

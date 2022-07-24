@@ -1,6 +1,6 @@
 import { Registry } from 'vs/platform/registry/common/platform';
 import { ColorExtensions, IColorRegistry } from 'mote/platform/theme/common/colorRegistry';
-import { ThemedStyles } from 'mote/base/ui/themes';
+import { ThemedStyles } from 'mote/base/browser/ui/themes';
 
 const colorRegistry = Registry.as<IColorRegistry>(ColorExtensions.ColorContribution);
 

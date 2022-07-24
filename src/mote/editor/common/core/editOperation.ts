@@ -35,8 +35,12 @@ export class EditOperation {
 	}
 
 	public static createChild(parent: BlockStore, transaction: Transaction) {
-		const child = this.createBlockStore("text", transaction);
+		const child = this.createBlockStore('text', transaction);
 		this.appendToParent(parent.getContentStore(), child, transaction);
+		return {
+			parent: parent,
+			child: child
+		};
 	}
 
 	public static prependChild(parent: RecordStore, prepend: RecordStore, transaction: Transaction) {
@@ -58,7 +62,7 @@ export class EditOperation {
 		return {
 			parent: parent,
 			child: append.cloneWithNewParent(parent)
-		}
+		};
 	}
 
 	public static insertChildAfterTarget(parent: RecordStore, insert: RecordStore, after: RecordStore, transaction: Transaction) {
@@ -66,7 +70,7 @@ export class EditOperation {
 		return {
 			parent: parent,
 			child: insert.cloneWithNewParent(parent)
-		}
+		};
 	}
 
 	public static insertChildBeforeTarget(parent: RecordStore, insert: RecordStore, before: RecordStore, transaction: Transaction) {

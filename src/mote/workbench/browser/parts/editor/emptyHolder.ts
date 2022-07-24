@@ -1,6 +1,6 @@
 import { CSSProperties } from "mote/base/browser/jsx";
 import { setStyles } from "mote/base/browser/jsx/createElement";
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 import { $, addDisposableListener } from "vs/base/browser/dom";
 import { Disposable } from "vs/base/common/lifecycle";
 import * as DOM from 'vs/base/browser/dom';

@@ -5,18 +5,30 @@ import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { ViewController } from 'mote/editor/browser/view/viewController';
+import { ViewContext } from 'mote/editor/browser/view/viewContext';
+import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyCode } from 'vs/base/common/keyCodes';
+
+interface EditableHandlerOptions {
+	placeholder?: string;
+}
 
 export class EditableHandler extends ViewPart {
 
-	private editable: FastDomNode<HTMLDivElement>;
+	public readonly editable: FastDomNode<HTMLDivElement>;
 	private editableInput: EditableInput;
+	private editableWrapper: EditableWrapper;
 
 	constructor(
+		private readonly lineNumber: number,
+		context: ViewContext,
 		private readonly viewController: ViewController,
+		private readonly options: EditableHandlerOptions,
 	) {
-		super();
+		super(context);
 		this.editable = createFastDomNode(document.createElement('div'));
-
+		this.editable.setAttribute('contenteditable', '');
 
 		const editableInputHost: IEditableInputHost = {
 			getDataToCopy: (): ClipboardDataToCopy => {
@@ -24,10 +36,19 @@ export class EditableHandler extends ViewPart {
 			}
 		};
 
-		const editableWrapper = this._register(new EditableWrapper(this.editable.domNode));
-		this.editableInput = this._register(new EditableInput(editableInputHost, editableWrapper, platform.OS, browser, {}));
+		this.editableWrapper = this._register(new EditableWrapper(this.editable.domNode));
+		this.editableInput = this._register(new EditableInput(editableInputHost, this.editableWrapper, platform.OS, browser, {}));
 
 		this.registerListener();
+	}
+
+	public setValue(value: string) {
+		this.editableWrapper.setValue('', value);
+	}
+
+	private isEmpty() {
+		const value = this.editableWrapper.getValue() || '';
+		return value.length === 0;
 	}
 
 	private registerListener() {
@@ -35,14 +56,40 @@ export class EditableHandler extends ViewPart {
 			if (e.replacePrevCharCnt || e.replaceNextCharCnt || e.positionDelta) {
 				// must be handled through the new command
 				if (_debugComposition) {
-					console.log(` => compositionType: <<${e.text}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
+					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
 				this.viewController.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
-					console.log(` => type: <<${e.text}>>`);
+					console.log(` => type: <<${e.type}>>`);
 				}
 				this.viewController.type(e.text);
+			}
+			if (!this.isEmpty() && this.options.placeholder) {
+				// remove placeholder text style
+				this.editable.domNode.style.webkitTextFillColor = '';
+			}
+		}));
+		this._register(this.editableInput.onKeyDown((e) => {
+			const event = e as StandardKeyboardEvent;
+			if (event.equals(KeyCode.Enter)) {
+				this.viewController.enter();
+			}
+		}));
+		this._register(this.editableInput.onSelectionChange((e) => {
+			e.lineNumber = this.lineNumber;
+			this.viewController.setSelection(e);
+		}));
+		this._register(this.editableInput.onFocus((e) => {
+			if (this.options.placeholder && this.isEmpty()) {
+				// add placeholder and placeholder text style
+				this.editable.setAttribute('placeholder', this.options.placeholder);
+				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;
+			}
+		}));
+		this._register(this.editableInput.onBlur((e) => {
+			if (this.options.placeholder) {
+				this.editable.removeAttribute('placeholder');
 			}
 		}));
 	}

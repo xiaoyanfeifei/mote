@@ -1,10 +1,12 @@
 import * as strings from 'vs/base/common/strings';
 import { Position } from 'mote/editor/common/core/position';
+import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 
-export const _debugComposition = false;
+export const _debugComposition = true;
 
 export interface ITypeData {
 	text: string;
+	type: string;
 	replacePrevCharCnt: number;
 	replaceNextCharCnt: number;
 	positionDelta: number;
@@ -14,8 +16,7 @@ export interface IEditableWrapper {
 	getValue(): string;
 	setValue(reason: string, value: string): void;
 
-	getSelectionStart(): number;
-	getSelectionEnd(): number;
+	getSelection(): TextSelection;
 	setSelectionRange(reason: string, selectionStart: number, selectionEnd: number): void;
 }
 
@@ -24,7 +25,8 @@ export class EditableState {
 	public static readonly EMPTY = new EditableState('', 0, 0, null, null);
 
 	public static readFromEditable(editable: IEditableWrapper): EditableState {
-		return new EditableState(editable.getValue(), editable.getSelectionStart(), editable.getSelectionEnd(), null, null);
+		const selection = editable.getSelection();
+		return new EditableState(editable.getValue(), selection.startIndex, selection.endIndex, null, null);
 	}
 
 	public static deduceInput(previousState: EditableState, currentState: EditableState, couldBeEmojiInput: boolean): ITypeData {
@@ -32,6 +34,7 @@ export class EditableState {
 			// This is the EMPTY state
 			return {
 				text: '',
+				type: '',
 				replacePrevCharCnt: 0,
 				replaceNextCharCnt: 0,
 				positionDelta: 0
@@ -74,7 +77,8 @@ export class EditableState {
 			}
 
 			return {
-				text: currentValue,
+				text: currentState.value,
+				type: currentValue,
 				replacePrevCharCnt: replacePreviousCharacters,
 				replaceNextCharCnt: 0,
 				positionDelta: 0
@@ -84,7 +88,8 @@ export class EditableState {
 		// there is a current selection => composition case
 		const replacePreviousCharacters = previousSelectionEnd - previousSelectionStart;
 		return {
-			text: currentValue,
+			text: currentState.value,
+			type: currentValue,
 			replacePrevCharCnt: replacePreviousCharacters,
 			replaceNextCharCnt: 0,
 			positionDelta: 0

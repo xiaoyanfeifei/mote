@@ -1,17 +1,14 @@
 import * as browser from 'vs/base/browser/browser';
 import * as dom from 'vs/base/browser/dom';
 import * as strings from 'vs/base/common/strings';
-import { CSSProperties } from 'mote/base/browser/jsx';
-import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { nodeToString } from '../../common/textSerialize';
+import { nodeToString, serializeNode } from 'mote/editor/common/textSerialize';
 import { Emitter, Event } from 'vs/base/common/event';
-import { TextSelection } from '../../common/core/selection';
-import { Range } from 'mote/editor/common/core/range';
+import { getSelectionFromRange, TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { IKeyboardEvent, StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { EditableState, IEditableWrapper, ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
-import { EditorSelection } from 'mote/editor/common/core/editorSelection';
 import { OperatingSystem } from 'vs/base/common/platform';
+import { KeyCode } from 'vs/base/common/keyCodes';
 
 interface EditableOptions {
 	getSelection?(): TextSelection | undefined;
@@ -83,6 +80,10 @@ export interface ICompositionStartEvent {
 
 export interface ICompleteEditableWrapper extends IEditableWrapper {
 	readonly onInput: Event<InputEvent>;
+	readonly onClick: Event<MouseEvent>;
+	readonly onKeyDown: Event<KeyboardEvent>;
+	readonly onFocus: Event<FocusEvent>;
+	readonly onBlur: Event<FocusEvent>;
 }
 
 export interface IBrowser {
@@ -138,17 +139,10 @@ export class EditableInput extends Disposable {
 	private _onType = this._register(new Emitter<ITypeData>());
 	public readonly onType: Event<ITypeData> = this._onType.event;
 
-	private _onSelectionChangeRequest = this._register(new Emitter<EditorSelection>());
-	public readonly onSelectionChangeRequest: Event<EditorSelection> = this._onSelectionChangeRequest.event;
+	private _onSelectionChange = this._register(new Emitter<TextSelection>());
+	public readonly onSelectionChange: Event<TextSelection> = this._onSelectionChange.event;
 
 	//#endregion
-
-	private options: EditableOptions;
-
-	private input: HTMLElement;
-	private testDiv = dom.$('div');
-
-	private selection: TextSelection | undefined;
 
 	private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
@@ -167,19 +161,13 @@ export class EditableInput extends Disposable {
 		options: EditableOptions
 	) {
 		super();
-		this.options = options;
-		this.input = dom.$('');
-		this.input.contentEditable = 'true';
-		this.input.setAttribute('data-root', '');
-		this.input.tabIndex = 0;
-		if (options.placeholder) {
-			this.input.setAttribute('placeholder', options.placeholder);
-		}
 
 		this.registerListener();
 	}
 
 	private registerListener() {
+		let lastKeyDown: IKeyboardEvent | null = null;
+
 		this._register(this.editable.onInput((e) => {
 			if (_debugComposition) {
 				console.log(`[input]`, e);
@@ -202,42 +190,108 @@ export class EditableInput extends Disposable {
 				this._onType.fire(typeInput);
 			}
 		}));
-	}
 
-	public get value(): string {
-		return nodeToString(this.input);
-	}
-
-	public get element() {
-		return this.input;
-	}
-
-	public set value(newValue: string) {
-		this.testDiv.innerHTML = newValue;
-		if (this.input.innerHTML !== this.testDiv.innerHTML) {
-			this.input.innerHTML = newValue;
-
-		}
-		if (this.options.getSelection) {
-			this.selection = this.options.getSelection();
-		}
-		if (this.selection) {
-			const rangeFromElement = Range.create(this.input, this.selection);
-			const rangeFromDocument = Range.get();
-			if (!Range.ensureRange(rangeFromDocument, rangeFromElement)) {
-				Range.set(rangeFromElement);
+		// Click to update selection
+		this._register(this.editable.onClick((e) => {
+			/*
+			const selectionWithOptions = getSelectionFromRange();
+			if (selectionWithOptions) {
+				const selection = selectionWithOptions.selection;
+				this._onSelectionChange.fire(selection);
 			}
+			*/
+		}));
+
+		this._register(this.editable.onKeyDown((e) => {
+			const event = new StandardKeyboardEvent(e);
+			/*
+			if (event.keyCode === KeyCode.KEY_IN_COMPOSITION
+				|| (this.currentComposition && event.keyCode === KeyCode.Backspace)) {
+				// Stop propagation for keyDown events if the IME is processing key input
+				event.stopPropagation();
+			}
+			*/
+			if (event.keyCode === KeyCode.Enter) {
+				// prevent the enter behavior
+				event.preventDefault();
+			}
+			if (event.equals(KeyCode.Escape)) {
+				// Prevent default always for `Esc`, otherwise it will generate a keypress
+				// See https://msdn.microsoft.com/en-us/library/ie/ms536939(v=vs.85).aspx
+				event.preventDefault();
+			}
+
+			lastKeyDown = event;
+			this._onKeyDown.fire(event);
+		}));
+
+		this._register(this.editable.onFocus(() => {
+			this.setHasFocus(true);
+		}));
+		this._register(this.editable.onBlur(() => {
+			this.setHasFocus(false);
+		}));
+	}
+
+	private installSelectionChangeListener(): IDisposable {
+		// `selectionchange` events often come multiple times for a single logical change
+		// so throttle multiple `selectionchange` events that burst in a short period of time.
+		let previousSelectionChangeEventTime = 0;
+		return dom.addDisposableListener(document, 'selectionchange', (e) => {
+			if (!this.hasFocus) {
+				return;
+			}
+
+			const now = Date.now();
+
+			const delta1 = now - previousSelectionChangeEventTime;
+			previousSelectionChangeEventTime = now;
+			if (delta1 < 5) {
+				// received another `selectionchange` event within 5ms of the previous `selectionchange` event
+				// => ignore it
+				return;
+			}
+			const selectionWithOptions = getSelectionFromRange();
+			if (selectionWithOptions) {
+				this._onSelectionChange.fire(selectionWithOptions.selection);
+			}
+		});
+	}
+
+	public isFocused(): boolean {
+		return this.hasFocus;
+	}
+
+	private setHasFocus(newHasFocus: boolean): void {
+		if (this.hasFocus === newHasFocus) {
+			// no change
+			return;
+		}
+		this.hasFocus = newHasFocus;
+
+		if (this.selectionChangeListener) {
+			this.selectionChangeListener.dispose();
+			this.selectionChangeListener = null;
+		}
+		if (this.hasFocus) {
+			this.selectionChangeListener = this.installSelectionChangeListener();
+		}
+
+		if (this.hasFocus) {
+			this._onFocus.fire();
+		} else {
+			this._onBlur.fire();
 		}
 	}
 
-	private onValueChange() {
-		this._onDidChange.fire(this.value);
+	public override dispose(): void {
+		super.dispose();
+		if (this.selectionChangeListener) {
+			this.selectionChangeListener.dispose();
+			this.selectionChangeListener = null;
+		}
 	}
 
-	style(value: CSSProperties) {
-		this.input.removeAttribute('style');
-		setStyles(this.input, value);
-	}
 }
 
 export class EditableWrapper extends Disposable implements ICompleteEditableWrapper {
@@ -256,6 +310,7 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 	public readonly onPaste = this._register(dom.createEventEmitter(this._actual, 'paste')).event;
 	public readonly onFocus = this._register(dom.createEventEmitter(this._actual, 'focus')).event;
 	public readonly onBlur = this._register(dom.createEventEmitter(this._actual, 'blur')).event;
+	public readonly onClick = this._register(dom.createEventEmitter(this._actual, 'click')).event;
 
 	//#endregion
 
@@ -265,16 +320,36 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 		super();
 	}
 	getValue(): string {
-		throw new Error('Method not implemented.');
+		return nodeToString(this._actual);
 	}
 	setValue(reason: string, value: string): void {
-		throw new Error('Method not implemented.');
+		const editable = this._actual;
+		if (editable.innerHTML === value) {
+			// No change
+			return;
+		}
+		editable.innerHTML = value;
+	}
+	getSelection(): TextSelection {
+		const selectionWithOptions = getSelectionFromRange();
+		if (selectionWithOptions) {
+			return selectionWithOptions?.selection;
+		}
+		return { startIndex: 0, endIndex: 0 };
 	}
 	getSelectionStart(): number {
-		throw new Error('Method not implemented.');
+		const selectionWithOptions = getSelectionFromRange();
+		if (selectionWithOptions) {
+			return selectionWithOptions?.selection.startIndex;
+		}
+		return 0;
 	}
 	getSelectionEnd(): number {
-		throw new Error('Method not implemented.');
+		const selectionWithOptions = getSelectionFromRange();
+		if (selectionWithOptions) {
+			return selectionWithOptions?.selection.endIndex;
+		}
+		return 0;
 	}
 	setSelectionRange(reason: string, selectionStart: number, selectionEnd: number): void {
 		throw new Error('Method not implemented.');

@@ -115,15 +115,15 @@ export class DocumentEditor extends EditorPane {
 
 		this.contentStore = input.contentStore;
 
-		const [view, hasRealView] = this.createView();
+		const [view, hasRealView] = this.createView(input.contentStore);
 		if (hasRealView) {
 			reset(this.container, view.domNode.domNode);
 		}
 
-		this.registerListener();
+		//this.registerListener();
 	}
 
-	private createView(): [EditorView, boolean] {
+	private createView(contentStore: RecordStore): [EditorView, boolean] {
 		const commandDelegate: ICommandDelegate = {
 			type: (text: string) => {
 				//this._type('keyboard', text);
@@ -133,7 +133,7 @@ export class DocumentEditor extends EditorPane {
 			},
 		};
 
-		const editorView = this.instantiationService.createInstance(EditorView, commandDelegate);
+		const editorView = this.instantiationService.createInstance(EditorView, commandDelegate, contentStore);
 		return [editorView, true];
 	}
 

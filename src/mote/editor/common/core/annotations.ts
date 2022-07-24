@@ -3,15 +3,15 @@ import { TextSelectionState } from "../editorState";
 import { Command } from "../operations";
 import { combineArray, getFirstInArray, getSecondArrayInArray, IAnnotation } from "../segmentUtils";
 import BlockStore from "../store/blockStore";
-import { TextSelection } from "./selection";
+import { TextSelection } from "./selectionUtils";
 import { Transaction } from "./transaction";
 
 export class Annotation {
 
-    private type: string;
-    private data: any;
+	private type: string;
+	private data: any;
 
-    constructor(annotation: IAnnotation) {
-        this.type = annotation[0];
-    }
+	constructor(annotation: IAnnotation) {
+		this.type = annotation[0];
+	}
 }

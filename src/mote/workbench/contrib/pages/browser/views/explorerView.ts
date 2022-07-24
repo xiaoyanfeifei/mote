@@ -2,7 +2,7 @@
 import { ListItem } from "mote/base/browser/ui/list/list";
 import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
 import SVGIcon from "mote/base/ui/svgicon/svgicon";
-import { ThemedStyles } from "mote/base/ui/themes";
+import { ThemedStyles } from "mote/base/browser/ui/themes";
 import { EditOperation } from "mote/editor/common/core/editOperation";
 import { Transaction } from "mote/editor/common/core/transaction";
 import BlockStore from "mote/editor/common/store/blockStore";

@@ -6,116 +6,120 @@ export const CLASS_IGNORE_TEXT_CONTENT = "caffeine-ignore-text-content";
 export const CLASS_TEXT_BUFFER = "caffeine-text-buffer";
 
 export function isNode(node?: Node | null) {
-    try {
-        return node && void 0 !== node.nodeType
-    } catch (_) {
-        return false;
-    }
+	try {
+		return node && void 0 !== node.nodeType
+	} catch (_) {
+		return false;
+	}
 };
 
 export function isElementNode(node?: Node) {
-    return isNode(node) && node!.nodeType === Node.ELEMENT_NODE
+	return isNode(node) && node!.nodeType === Node.ELEMENT_NODE
 }
 
-export function isTextNode(node?: Node|null) {
-    return isNode(node) && node!.nodeType == Node.TEXT_NODE;
+export function isTextNode(node?: Node | null) {
+	return isNode(node) && node!.nodeType == Node.TEXT_NODE;
 }
 
 export function isBrNode(node?: Node) {
-    if (isElementNode(node)) {
-        const element = node as Element;
-        return "br" === element.tagName.toLowerCase();
-    }
-    return false;
+	if (isElementNode(node)) {
+		const element = node as Element;
+		return "br" === element.tagName.toLowerCase();
+	}
+	return false;
 }
 
 export function isTextMentionNode(node?: Node) {
-    if (isElementNode(node)) {
-        const element = node as Element;
-        return element.classList.contains(CLASS_TEXT_MENTION_TOKEN);
-    }
-    return false;
+	if (isElementNode(node)) {
+		const element = node as Element;
+		return element.classList.contains(CLASS_TEXT_MENTION_TOKEN);
+	}
+	return false;
 }
 
 function isDataRootElement(e) {
-    return isElementNode(e) && e.hasAttribute("data-root");
+	if (isElementNode(e)) {
+		const node = e as Element;
+		return node.hasAttribute('data-root') || node.className.includes('view-line');
+	}
+	return false;
 }
 
 function isTextEquationTokenElement(e: Element) {
-    return isElementNode(e) && e.classList.contains(CLASS_TEXT_EQUATION_TOKEN);
+	return isElementNode(e) && e.classList.contains(CLASS_TEXT_EQUATION_TOKEN);
 }
 
 export function isIgnoreTextContentElement(e) {
-    return isElementNode(e) && e.classList.contains(CLASS_IGNORE_TEXT_CONTENT);
+	return isElementNode(e) && e.classList.contains(CLASS_IGNORE_TEXT_CONTENT);
 }
 
-export const isTextBufferElement = function(e) {
-    return isElementNode(e) && e.classList.contains(CLASS_TEXT_BUFFER)
-}
+export const isTextBufferElement = function (e) {
+	return isElementNode(e) && e.classList.contains(CLASS_TEXT_BUFFER)
+};
 
 export function isContentEditable(e: Node) {
-    try {
-        const t = getElementInParent(e, (e:any)=>Boolean(e.getAttribute && e.getAttribute("contenteditable")) || isDataRootElement(e));
-        return t && t['isContentEditable'];
-    } catch (t) {
-        return false;
-    }
+	try {
+		const t = getElementInParent(e, (e: any) => Boolean(e.getAttribute && e.getAttribute("contenteditable")) || isDataRootElement(e));
+		return t && t['isContentEditable'];
+	} catch (t) {
+		return false;
+	}
 }
 
 export function isTextBuffNodeContain(e: Node) {
-    if (isTextBufferElement(e)) {
-        return true;
-    }
-    try {
-        return isTextBufferElement(e.parentNode);
-    } catch (err) {
-        return false;
-    }
+	if (isTextBufferElement(e)) {
+		return true;
+	}
+	try {
+		return isTextBufferElement(e.parentNode);
+	} catch (err) {
+		return false;
+	}
 }
 
-function getElementInParent(element:Node| null, predict:(element:Node) => boolean):Node|null {
-    for (; isNode(element) && !predict(element!); ){
-        element = element && element.parentNode;
-    }
-    return element
+function getElementInParent(element: Node | null, predict: (element: Node) => boolean): Node | null {
+	for (; isNode(element) && !predict(element!);) {
+		element = element && element.parentNode;
+	}
+	return element
 }
 
-export function getDataRootInParent(container:Node) {
-    return getElementInParent(container, isDataRootElement)
+export function getDataRootInParent(container: Node) {
+	return getElementInParent(container, isDataRootElement)
 }
 
 export function getTextEquationTokenElementInParent(e) {
-    // getElement in parent, until find first TextEquationTokenNode or stop with DataRoot
-    const element = getElementInParent(e, e=>isTextMentionNode(e) || isDataRootElement(e));
-    if (element && isTextMentionNode(element))
-        return element
-    return undefined;
+	// getElement in parent, until find first TextEquationTokenNode or stop with DataRoot
+	const element = getElementInParent(e, e => isTextMentionNode(e) || isDataRootElement(e));
+	if (element && isTextMentionNode(element))
+		return element
+	return undefined;
 }
 
-export function getTextMention(container:Node) {
-    // Get TextEquationTokenElement at first
-    let element:any = getElementInParent(container, e=>isTextEquationTokenElement(e as any) || isDataRootElement(e));
-    if (element && isTextMentionNode(element)){
-        return element
-    }
-    // If we could not get TextEquationTokenElement, then try to get TextEquationTokenElement
-    element = getTextEquationTokenElementInParent(container);
-    if(element){
-        return element;
-    }
+export function getTextMention(container: Node) {
+	// Get TextEquationTokenElement at first
+	let element: any = getElementInParent(container, e => isTextEquationTokenElement(e as any) || isDataRootElement(e));
+	if (element && isTextMentionNode(element)) {
+		return element
+	}
+	// If we could not get TextEquationTokenElement, then try to get TextEquationTokenElement
+	element = getTextEquationTokenElementInParent(container);
+	if (element) {
+		return element;
+	}
 
-    // Try to get IgnoreTextContentElement
-    element = getElementInParent(container, e=>isIgnoreTextContentElement(e) || isDataRootElement(e));
-    if (element && isIgnoreTextContentElement(element)){
-        return element
-    }
+	// Try to get IgnoreTextContentElement
+	element = getElementInParent(container, e => isIgnoreTextContentElement(e) || isDataRootElement(e));
+	if (element && isIgnoreTextContentElement(element)) {
+		return element
+	}
 }
 
 export const BOM = "\ufeff";
 const BOM_REG = new RegExp(BOM, "g");
 
 export function removeBOM(e: string) {
-    return e.replace(BOM_REG, "")
+	return e.replace(BOM_REG, "")
 }
 
 
