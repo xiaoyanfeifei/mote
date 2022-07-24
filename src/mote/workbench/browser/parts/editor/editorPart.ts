@@ -8,7 +8,7 @@ import { IEditorPane } from "mote/workbench/common/editor";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { assertIsDefined } from "vs/base/common/types";
 import { ThemedStyles } from "mote/base/ui/themes";
-import { setStyles } from "mote/base/jsx/createElement";
+import { setStyles } from "mote/base/browser/jsx/createElement";
 import { EditableContainer } from "mote/editor/browser/editableContainer";
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IStorageService } from "vs/platform/storage/common/storage";
@@ -113,7 +113,7 @@ export class EditorPart extends Part implements IEditorService {
 	}
 
 	openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	getTitleStyle() {
@@ -125,7 +125,7 @@ export class EditorPart extends Part implements IEditorService {
 			cursor: "text",
 			display: "flex",
 			alignItems: "center"
-		}
+		};
 	}
 
 	getSafePaddingLeftCSS(padding: number) {
@@ -166,8 +166,8 @@ export class EditorPart extends Part implements IEditorService {
 		this.element.style.backgroundColor = "#303030";
 
 		this.container.classList.add('content');
-		this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-		this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
+		//this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+		//this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
 		this.container.style.paddingTop = "25px";
 		parent.appendChild(this.container);
 

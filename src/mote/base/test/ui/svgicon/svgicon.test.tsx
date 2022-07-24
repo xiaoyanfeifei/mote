@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { MoteSVGElement } from 'mote/base/jsx';
-import { createElement } from "mote/base/jsx/createElement"
+import { MoteSVGElement } from 'mote/base/browser/jsx';
+import { createElement } from "mote/base/browser/jsx/createElement"
 import SVGIcon from "mote/base/ui/svgicon/svgicon"
 
 suite('SVGIcon impl', () => {

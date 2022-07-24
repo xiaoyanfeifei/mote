@@ -60,9 +60,7 @@ async function main() {
 		serverArgs.push('--port', PORT);
 	}
 	if (args['playground'] === true || (args['_'].length === 0 && !args['--folder-uri'])) {
-		//serverArgs.push('--extensionPath', WEB_DEV_EXTENSIONS_ROOT);
 		serverArgs.push('--folder-uri', 'memfs:///sample-folder');
-		//await ensureWebDevExtensions(args['verbose']);
 	}
 
 	let openSystemBrowser = false;
@@ -100,50 +98,5 @@ function startServer(runnerArguments) {
 		process.exit(128 + 15); // https://nodejs.org/docs/v14.16.0/api/process.html#process_signal_events
 	});
 }
-
-async function directoryExists(path) {
-	try {
-		return (await fs.promises.stat(path)).isDirectory();
-	} catch {
-		return false;
-	}
-}
-
-async function ensureWebDevExtensions(verbose) {
-
-	// Playground (https://github.com/microsoft/vscode-web-playground)
-	const webDevPlaygroundRoot = path.join(WEB_DEV_EXTENSIONS_ROOT, 'vscode-web-playground');
-	const webDevPlaygroundExists = await directoryExists(webDevPlaygroundRoot);
-
-	let downloadPlayground = false;
-	if (webDevPlaygroundExists) {
-		try {
-			const webDevPlaygroundPackageJson = JSON.parse(((await fs.promises.readFile(path.join(webDevPlaygroundRoot, 'package.json'))).toString()));
-			if (webDevPlaygroundPackageJson.version !== WEB_PLAYGROUND_VERSION) {
-				downloadPlayground = true;
-			}
-		} catch (error) {
-			downloadPlayground = true;
-		}
-	} else {
-		downloadPlayground = true;
-	}
-
-	if (downloadPlayground) {
-		if (verbose) {
-			fancyLog(`${ansiColors.magenta('Web Development extensions')}: Downloading vscode-web-playground to ${webDevPlaygroundRoot}`);
-		}
-		await new Promise((resolve, reject) => {
-			remote(['package.json', 'dist/extension.js', 'dist/extension.js.map'], {
-				base: 'https://raw.githubusercontent.com/microsoft/vscode-web-playground/main/'
-			}).pipe(vfs.dest(webDevPlaygroundRoot)).on('end', resolve).on('error', reject);
-		});
-	} else {
-		if (verbose) {
-			fancyLog(`${ansiColors.magenta('Web Development extensions')}: Using existing vscode-web-playground in ${webDevPlaygroundRoot}`);
-		}
-	}
-}
-
 
 main();

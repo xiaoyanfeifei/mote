@@ -1,6 +1,6 @@
 import { Button } from 'mote/base/browser/ui/button/button';
-import { CSSProperties } from 'mote/base/jsx';
-import { setStyles } from 'mote/base/jsx/createElement';
+import { CSSProperties } from 'mote/base/browser/jsx';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedStyles } from 'mote/base/ui/themes';
 import { Segment } from 'mote/editor/common/core/segment';
 import { TextSelectionState } from 'mote/editor/common/editorState';

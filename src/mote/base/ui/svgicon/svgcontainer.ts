@@ -1,5 +1,5 @@
-import { createElement } from "mote/base/jsx/createElement";
-import { Fragment } from "mote/base/jsx/jsx";
+import { createElement } from "mote/base/browser/jsx/createElement";
+import { Fragment } from "mote/base/browser/jsx/jsx";
 
 
 export default {

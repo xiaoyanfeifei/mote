@@ -89,6 +89,7 @@ function initLoader(opts) {
 		baseUrl: bootstrap.fileUriFromPath(path.join(__dirname, '../../../src'), { isWindows: process.platform === 'win32' }),
 		paths: {
 			'vs': `../${outdir}/vs`,
+			'mote': `../${outdir}/mote`,
 			'lib': `../${outdir}/lib`,
 			'bootstrap-fork': `../${outdir}/bootstrap-fork`
 		}

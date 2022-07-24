@@ -1,5 +1,5 @@
-import { CSSProperties } from 'mote/base/jsx';
-import { createElement } from 'mote/base/jsx/createElement';
+import { CSSProperties } from 'mote/base/browser/jsx';
+import { createElement } from 'mote/base/browser/jsx/createElement';
 import SVGContainer from './svgcontainer';
 
 interface SVGIconProps {

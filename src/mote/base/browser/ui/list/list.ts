@@ -1,5 +1,5 @@
-import { CSSProperties } from 'mote/base/jsx';
-import { setStyles } from 'mote/base/jsx/createElement';
+import { CSSProperties } from 'mote/base/browser/jsx';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedStyles } from 'mote/base/ui/themes';
 import * as DOM from 'vs/base/browser/dom';
 import { addDisposableListener, EventType, IFocusTracker, trackFocus } from 'vs/base/browser/dom';
@@ -27,7 +27,7 @@ export class ListItem extends Disposable {
 
 
     private _onDidClick = this._register(new Emitter<Event>());
-	get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
+    get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
 
     private focusTracker: IFocusTracker;
 
@@ -35,7 +35,7 @@ export class ListItem extends Disposable {
         super();
 
         this.options = options;
-    
+
         this._element = element;
         setStyles(this._element, this.getStyle());
 
@@ -43,29 +43,29 @@ export class ListItem extends Disposable {
 
         // Click event
         [DOM.EventType.CLICK, TouchEventType.Tap].forEach(eventType => {
-			this._register(DOM.addDisposableListener(this._element, eventType, e => {
-				if (!options.enableClick) {
-					DOM.EventHelper.stop(e);
-					return;
-				}
-				this._onDidClick.fire(e);
-			}));
-		});
+            this._register(DOM.addDisposableListener(this._element, eventType, e => {
+                if (!options.enableClick) {
+                    DOM.EventHelper.stop(e);
+                    return;
+                }
+                this._onDidClick.fire(e);
+            }));
+        });
 
         this._register(addDisposableListener(this._element, EventType.MOUSE_OVER, e => {
-			if (!this._element.classList.contains('disabled')) {
-				this.updateByState(true);
-			}
-		}));
+            if (!this._element.classList.contains('disabled')) {
+                this.updateByState(true);
+            }
+        }));
 
-		this._register(addDisposableListener(this._element, EventType.MOUSE_OUT, e => {
-			this.updateByState(false); // restore standard styles
-		}));
+        this._register(addDisposableListener(this._element, EventType.MOUSE_OUT, e => {
+            this.updateByState(false); // restore standard styles
+        }));
 
         // Also set hover background when button is focused for feedback
-		this.focusTracker = this._register(trackFocus(this._element));
-		this._register(this.focusTracker.onDidFocus(() => this.updateByState(true)));
-		this._register(this.focusTracker.onDidBlur(() => this.updateByState(false))); // restore standard styles
+        this.focusTracker = this._register(trackFocus(this._element));
+        this._register(this.focusTracker.onDidFocus(() => this.updateByState(true)));
+        this._register(this.focusTracker.onDidBlur(() => this.updateByState(false))); // restore standard styles
     }
 
     public create() {
@@ -109,7 +109,7 @@ export class ListItem extends Disposable {
     }
 
     public set child(value: HTMLElement) {
-        if(!this.childContainer) {
+        if (!this.childContainer) {
             this.childContainer = DOM.$("");
         }
         this.update(this.childContainer, value);
@@ -136,13 +136,13 @@ export class ListItem extends Disposable {
 
     getStyle() {
         const style = Object.assign({}, styles.column_wrapStyle) as CSSProperties;
-        if (this.options.style?.paddingLeft && "number" == typeof(this.options.style.paddingLeft)) {
+        if (this.options.style?.paddingLeft && "number" == typeof (this.options.style.paddingLeft)) {
             style.paddingLeft = this.options.style.paddingLeft;
         }
         return Object.assign({}, style, this.options.style);
     }
 
-    getLeftStyle(){
+    getLeftStyle() {
         return {
             flexShrink: 0,
             flexGrow: 0,

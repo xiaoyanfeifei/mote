@@ -1,3 +1,5 @@
+import { EditorView } from 'mote/editor/browser/editorView';
+import { ICommandDelegate } from 'mote/editor/browser/view/viewController';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import RecordStore from 'mote/editor/common/store/recordStore';
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
@@ -6,7 +8,7 @@ import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { getBlockByStore } from 'mote/workbench/contrib/blocks/browser/blocks';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
-import { Dimension, $, clearNode } from 'vs/base/browser/dom';
+import { Dimension, $, clearNode, reset } from 'vs/base/browser/dom';
 import { IListRenderer, IListVirtualDelegate, CachedListVirtualDelegate } from 'vs/base/browser/ui/list/list';
 import { ListView } from 'vs/base/browser/ui/list/listView';
 import { BugIndicatingError } from 'vs/base/common/errors';
@@ -101,7 +103,7 @@ export class DocumentEditor extends EditorPane {
 
 	protected createEditor(parent: HTMLElement): void {
 
-		parent.append(this.container);
+		reset(parent, this.container);
 	}
 
 	override async setInput(input: EditorInput, options: IEditorOptions | undefined) {
@@ -113,7 +115,26 @@ export class DocumentEditor extends EditorPane {
 
 		this.contentStore = input.contentStore;
 
+		const [view, hasRealView] = this.createView();
+		if (hasRealView) {
+			reset(this.container, view.domNode.domNode);
+		}
+
 		this.registerListener();
+	}
+
+	private createView(): [EditorView, boolean] {
+		const commandDelegate: ICommandDelegate = {
+			type: (text: string) => {
+				//this._type('keyboard', text);
+			},
+			compositionType: (text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number) => {
+				//this._compositionType('keyboard', text, replacePrevCharCnt, replaceNextCharCnt, positionDelta);
+			},
+		};
+
+		const editorView = this.instantiationService.createInstance(EditorView, commandDelegate);
+		return [editorView, true];
 	}
 
 	private createStoreForItemId = (id: string) => {

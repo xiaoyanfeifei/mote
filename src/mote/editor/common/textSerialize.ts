@@ -1,4 +1,4 @@
-import { setStyles } from "mote/base/jsx/createElement";
+import { setStyles } from "mote/base/browser/jsx/createElement";
 import fonts from "mote/base/ui/fonts";
 import { ThemedBase, ThemedColors } from "mote/base/ui/themes";
 import { isBrNode, isTextMentionNode, isTextNode } from "./htmlElementUtils";
@@ -24,9 +24,9 @@ export function serializeNode(node: Node) {
     return result;
 }
 
-export function nodeToString(element:Node){
+export function nodeToString(element: Node) {
     let serialized = serializeNode(element);
-    if("\n" === serialized[serialized.length - 1]){
+    if ("\n" === serialized[serialized.length - 1]) {
         serialized = serialized.substring(0, serialized.length - 1)
     }
     return serialized;
@@ -36,9 +36,9 @@ export function segmentsToElement(segments: ISegment[]) {
     if (!Array.isArray(segments)) {
         segments = [];
     }
-    return segments.map(segment=>{
+    return segments.map(segment => {
         const textContent = getFirstInArray(segment) as string;
-        const annotations:string[][] = getSecondArrayInArray(segment);
+        const annotations: string[][] = getSecondArrayInArray(segment);
 
         if (annotations.length == 0) {
             return textContent;
@@ -106,7 +106,7 @@ const inlineStyles = {
     }
 }
 
-const buildStyles = (annotations:string[][])=>{
+const buildStyles = (annotations: string[][]) => {
     const styles = {};
     for (const annotation of annotations) {
         const inlineStyle = inlineStyles[annotation[0]];

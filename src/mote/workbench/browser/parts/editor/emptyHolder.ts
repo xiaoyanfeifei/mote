@@ -1,5 +1,5 @@
-import { CSSProperties } from "mote/base/jsx";
-import { setStyles } from "mote/base/jsx/createElement";
+import { CSSProperties } from "mote/base/browser/jsx";
+import { setStyles } from "mote/base/browser/jsx/createElement";
 import { ThemedStyles } from "mote/base/ui/themes";
 import { $, addDisposableListener } from "vs/base/browser/dom";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -21,9 +21,9 @@ export class EmptyHolder extends Disposable {
 
         setStyles(this.container, this.getPlaceholderStyle());
         this.container.innerText = "Click or press Enter to continue with an empty page";
-        
-        this._register(addDisposableListener(this.container, DOM.EventType.CLICK, (e)=>{
-            Transaction.createAndCommit((transaction)=>{
+
+        this._register(addDisposableListener(this.container, DOM.EventType.CLICK, (e) => {
+            Transaction.createAndCommit((transaction) => {
                 EditOperation.createChild(this.store, transaction);
             }, this.store.userId)
         }));

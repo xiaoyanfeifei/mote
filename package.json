@@ -218,10 +218,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "https://github.com/zurex/mote.git"
   },
   "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
+    "url": "https://github.com/zurex/mote/issues"
   },
   "optionalDependencies": {
     "@vscode/windows-registry": "1.0.6",

@@ -1,4 +1,4 @@
-import { CSSProperties } from 'mote/base/jsx';
+import { CSSProperties } from 'mote/base/browser/jsx';
 import { ThemedStyles } from 'mote/base/ui/themes';
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
@@ -23,7 +23,7 @@ interface EditableContainerOptions {
 
 export class EditableContainer extends Disposable {
 
-	private editable: Editable;
+	private editable: EditableInput;
 	private options: EditableContainerOptions;
 	private blockStore?: BlockStore;
 
