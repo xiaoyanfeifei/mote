@@ -5,7 +5,7 @@ import { RangeUtils } from './rangeUtils';
 export interface TextSelection {
 	startIndex: number;
 	endIndex: number;
-	lineNumber?: number;
+	lineNumber: number;
 }
 
 export enum TextSelectionMode {
@@ -83,7 +83,8 @@ export function getSelectionFromRange(range?: globalThis.Range) {
 		return {
 			selection: {
 				startIndex: startIndex,
-				endIndex: endIndex
+				endIndex: endIndex,
+				lineNumber: -1,
 			},
 			forceEmitSelectionStore: Boolean(textMentionNode)
 		};

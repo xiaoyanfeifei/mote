@@ -118,9 +118,9 @@ export class DocumentEditor extends EditorPane {
 		const [view, hasRealView] = this.createView(input.contentStore);
 		if (hasRealView) {
 			reset(this.container, view.domNode.domNode);
-		}
 
-		//this.registerListener();
+			view.render(false, false);
+		}
 	}
 
 	private createView(contentStore: RecordStore): [EditorView, boolean] {

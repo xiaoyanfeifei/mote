@@ -9,6 +9,7 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ThemedStyles } from 'mote/base/browser/ui/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
+import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
 
 interface EditableHandlerOptions {
 	placeholder?: string;
@@ -42,14 +43,28 @@ export class EditableHandler extends ViewPart {
 		this.registerListener();
 	}
 
+	public prepareRender(): void {
+		throw new Error('Method not implemented.');
+	}
+	public render(): void {
+		throw new Error('Method not implemented.');
+	}
+
+	public focusEditable(): void {
+		this.editableInput.focusEditable();
+	}
+
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
 	}
 
 	private isEmpty() {
-		const value = this.editableWrapper.getValue() || '';
-		return value.length === 0;
+		return this.viewController.isEmpty(this.lineNumber);
 	}
+
+	//#region view event handlers
+
+	//#endregion
 
 	private registerListener() {
 		this._register(this.editableInput.onType((e: ITypeData) => {
@@ -75,13 +90,31 @@ export class EditableHandler extends ViewPart {
 			if (event.equals(KeyCode.Enter)) {
 				this.viewController.enter();
 			}
+			if (event.equals(KeyCode.Backspace)) {
+				this.viewController.backspace();
+			}
 		}));
 		this._register(this.editableInput.onSelectionChange((e) => {
 			e.lineNumber = this.lineNumber;
 			this.viewController.setSelection(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
+			setTimeout(() => {
+				// force focus to set range
+				this.editable.domNode.focus();
+				const selection = this.viewController.getSelection();
+				// line number less than 0 means view controller not initialized yet
+				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
+					const rangeFromElement = RangeUtils.create(this.editable.domNode, selection);
+					const rangeFromDocument = RangeUtils.get();
+					if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
+						RangeUtils.set(rangeFromElement);
+					}
+				}
+			}, 0);
+
 			if (this.options.placeholder && this.isEmpty()) {
+				console.log('onFocus');
 				// add placeholder and placeholder text style
 				this.editable.setAttribute('placeholder', this.options.placeholder);
 				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;

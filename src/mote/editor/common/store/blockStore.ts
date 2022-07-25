@@ -24,11 +24,11 @@ export default class BlockStore extends RecordStore {
 		return undefined;
 	}
 
-	override getPropertyStore(property: string): BlockStore {
+	override getPropertyStore(property: string): RecordStore {
 		return BlockStore.createChildStore(this, this.pointer, [property]);
 	}
 
-	getTitleStore() {
+	getTitleStore(): RecordStore {
 		return this.getPropertyStore('title');
 	}
 

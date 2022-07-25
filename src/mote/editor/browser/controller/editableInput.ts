@@ -107,7 +107,8 @@ class CompositionContext {
 			text: text,
 			replacePrevCharCnt: this._lastTypeTextLength,
 			replaceNextCharCnt: 0,
-			positionDelta: 0
+			positionDelta: 0,
+			type: ''
 		};
 		this._lastTypeTextLength = text.length;
 		return typeInput;
@@ -191,26 +192,13 @@ export class EditableInput extends Disposable {
 			}
 		}));
 
-		// Click to update selection
-		this._register(this.editable.onClick((e) => {
-			/*
-			const selectionWithOptions = getSelectionFromRange();
-			if (selectionWithOptions) {
-				const selection = selectionWithOptions.selection;
-				this._onSelectionChange.fire(selection);
-			}
-			*/
-		}));
-
 		this._register(this.editable.onKeyDown((e) => {
 			const event = new StandardKeyboardEvent(e);
-			/*
 			if (event.keyCode === KeyCode.KEY_IN_COMPOSITION
 				|| (this.currentComposition && event.keyCode === KeyCode.Backspace)) {
 				// Stop propagation for keyDown events if the IME is processing key input
 				event.stopPropagation();
 			}
-			*/
 			if (event.keyCode === KeyCode.Enter) {
 				// prevent the enter behavior
 				event.preventDefault();
@@ -256,6 +244,15 @@ export class EditableInput extends Disposable {
 				this._onSelectionChange.fire(selectionWithOptions.selection);
 			}
 		});
+	}
+
+	public focusEditable(): void {
+		// Setting this.hasFocus and writing the screen reader content
+		// will result in a focus() and setSelectionRange() in the textarea
+		this.setHasFocus(true);
+
+		// If the editor is off DOM, focus cannot be really set, so let's double check that we have managed to set the focus
+		//this.refreshFocusState();
 	}
 
 	public isFocused(): boolean {
@@ -335,7 +332,7 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 		if (selectionWithOptions) {
 			return selectionWithOptions?.selection;
 		}
-		return { startIndex: 0, endIndex: 0 };
+		return { startIndex: 0, endIndex: 0, lineNumber: -1 };
 	}
 	getSelectionStart(): number {
 		const selectionWithOptions = getSelectionFromRange();

@@ -7,6 +7,7 @@ import { segmentsToElement } from 'mote/editor/common/textSerialize';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IVisibleLine } from 'mote/editor/browser/view/viewLayer';
 
 export class EmptyViewLine extends Disposable {
 
@@ -33,7 +34,7 @@ export class EmptyViewLine extends Disposable {
 	}
 }
 
-export class ViewLine {
+export class ViewLine implements IVisibleLine {
 	public static readonly CLASS_NAME = 'view-line';
 
 	private domNode: HTMLElement | null = null;
@@ -44,6 +45,14 @@ export class ViewLine {
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 
+	}
+
+	layoutLine(lineNumber: number): void {
+		throw new Error('Method not implemented.');
+	}
+
+	onContentChanged(): void {
+		throw new Error('Method not implemented.');
 	}
 
 	public getDomNode(): HTMLElement | null {
@@ -61,6 +70,8 @@ export class ViewLine {
 		this.domNode = block.getDomNode().domNode;
 		this.domNode.className = 'view-line';
 		this.domNode.style.minHeight = '1em';
+
+		return true;
 	}
 }
 
@@ -74,6 +85,9 @@ class ViewBlock {
 		viewController: ViewController
 	) {
 		this.editableHandler = new EditableHandler(lineNumber, viewContext, viewController, { placeholder: 'Type to continue' });
+		if (viewController.getSelection().lineNumber === lineNumber) {
+			this.editableHandler.focusEditable();
+		}
 	}
 
 	setValue(store: BlockStore) {

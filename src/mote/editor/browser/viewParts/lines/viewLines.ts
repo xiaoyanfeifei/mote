@@ -1,19 +1,22 @@
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
+import { IVisibleLinesHost, RenderedLinesCollection } from 'mote/editor/browser/view/viewLayer';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { EmptyViewLine, ViewLine } from 'mote/editor/browser/viewParts/lines/viewLine';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import RecordStore from 'mote/editor/common/store/recordStore';
-import { getBlockByStore } from 'mote/workbench/contrib/blocks/browser/blocks';
+import { ViewLinesDeletedEvent, ViewLinesInsertedEvent } from 'mote/editor/common/viewEvents';
+import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { clearNode } from 'vs/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-export class ViewLines extends ViewPart {
+export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
 	private domNode: FastDomNode<HTMLElement>;
 
 	private lines: ViewLine[] = [];
+	private lineCollection: RenderedLinesCollection<ViewLine>;
 
 	constructor(
 		context: ViewContext,
@@ -26,6 +29,8 @@ export class ViewLines extends ViewPart {
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-lines');
 		this.domNode.setAttribute('data-root', '');
+
+		this.lineCollection = new RenderedLinesCollection<ViewLine>(() => this.createVisibleLine());
 	}
 
 	public getDomNode(): FastDomNode<HTMLElement> {
@@ -36,7 +41,14 @@ export class ViewLines extends ViewPart {
 		return this.instantiationService.createInstance(ViewLine, this.context, this.viewController);
 	}
 
-	public renderText() {
+	public prepareRender(): void {
+
+	}
+	public render(): void {
+		throw new Error('Method not implemented.');
+	}
+
+	public renderLines(viewportData: ViewportData) {
 		const pageIds: string[] = this.context.contentStore.getValue() || [];
 		clearNode(this.domNode.domNode);
 		pageIds.forEach((pageId, idx) => {
@@ -54,6 +66,18 @@ export class ViewLines extends ViewPart {
 			this.domNode.domNode.appendChild(line.getDomNode());
 		}
 	}
+
+	//#region view events handler
+
+	public override onLinesInserted(e: ViewLinesInsertedEvent): boolean {
+		return true;
+	}
+
+	public override onLinesDeleted(e: ViewLinesDeletedEvent): boolean {
+		return true;
+	}
+
+	//#endregion
 
 	private createStoreForPageId = (id: string, contentStore: RecordStore) => {
 		return BlockStore.createChildStore(contentStore, {
