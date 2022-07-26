@@ -506,6 +506,6 @@ function doCreateUri(path: string, queryValues: Map<string, string>): URI {
 		} : undefined,
 		workspaceProvider: WorkspaceProvider.create(config),
 		urlCallbackProvider: new LocalStorageURLCallbackProvider(config.callbackRoute),
-		credentialsProvider: config.remoteAuthority ? undefined : new LocalStorageCredentialsProvider() // with a remote, we don't use a local credentials provider
+		//credentialsProvider: config.remoteAuthority ? undefined : new LocalStorageCredentialsProvider() // with a remote, we don't use a local credentials provider
 	});
 })();
