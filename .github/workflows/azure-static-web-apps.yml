@@ -21,7 +21,7 @@ jobs:
           node-version: 16
           submodules: true
       - run: yarn install
-      - run: yarn mote-web
+      - run: yarn gulp mote-web
       - run: ls
       - run: ls ../
       - run: pwd
