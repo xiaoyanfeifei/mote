@@ -1,9 +1,12 @@
-import { setStyles } from "mote/base/browser/jsx/createElement";
-import fonts from "mote/base/browser/ui/fonts";
-import { ThemedBase, ThemedColors } from "mote/base/browser/ui/themes";
-import { isBrNode, isTextMentionNode, isTextNode } from "./htmlElementUtils";
-import { getFirstInArray, getSecondArrayInArray, ISegment } from "./segmentUtils";
+import { setStyles } from 'mote/base/browser/jsx/createElement';
+import fonts from 'mote/base/browser/ui/fonts';
+import { ThemedBase, ThemedColors } from 'mote/base/browser/ui/themes';
+import { isBrNode, isTextMentionNode, isTextNode } from './htmlElementUtils';
+import { getFirstInArray, getSecondArrayInArray, ISegment } from './segmentUtils';
 
+const unescapeInfo = new Map<number, string>([
+	[160, ' '], // '&nbsp;'
+]);
 
 export function serializeNode(node: Node) {
 	let result = '';
@@ -14,7 +17,10 @@ export function serializeNode(node: Node) {
 		result += '\n';
 	}
 	else if (isTextNode(node)) {
-		result += node.textContent;
+		if (node.textContent) {
+			const text = Array.from(node.textContent).map(char => unescapeInfo.get(char.charCodeAt(0)) ?? char);
+			result += text.join('');
+		}
 	}
 	else {
 		for (const childNode of Array.from(node.childNodes)) {
@@ -26,7 +32,7 @@ export function serializeNode(node: Node) {
 
 export function nodeToString(element: Node) {
 	let serialized = serializeNode(element);
-	if ("\n" === serialized[serialized.length - 1]) {
+	if ('\n' === serialized[serialized.length - 1]) {
 		serialized = serialized.substring(0, serialized.length - 1);
 	}
 	return serialized;
@@ -45,7 +51,7 @@ export function segmentsToElement(segments: ISegment[]) {
 		}
 
 		const inlineStyle = buildStyles(annotations);
-		const node = document.createElement("span");
+		const node = document.createElement('span');
 		setStyles(node, inlineStyle);
 		node.appendChild(buildText(textContent));
 		return node.outerHTML;

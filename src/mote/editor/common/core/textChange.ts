@@ -1,13 +1,12 @@
 import {
-	diff_match_patch,
 	Diff,
 	DIFF_EQUAL,
-	DIFF_DELETE,
-	DIFF_INSERT
+	DIFF_INSERT,
+	DiffMatchPatch
 } from 'mote/editor/common/diffMatchPatch';
-import { TextSelection } from "./selectionUtils";
+import { TextSelection } from './selectionUtils';
 
-const diffMatchPatch = new diff_match_patch();
+const diffMatchPatch = new DiffMatchPatch();
 
 interface DiffCypher {
 	count: number;
@@ -16,7 +15,7 @@ interface DiffCypher {
 }
 
 function decodeText(encodedString: string, cypher: DiffCypher) {
-	return encodedString.split("").map(char => cypher.decoding[char]).join("");
+	return encodedString.split('').map(char => cypher.decoding[char]).join('');
 }
 
 function encodeText(text: string, cypher: DiffCypher) {
@@ -32,12 +31,12 @@ function encodeText(text: string, cypher: DiffCypher) {
 		return encoding;
 	});
 	if (cypher.count > 65535) {
-		throw new Error("Reached diff chat limit");
+		throw new Error('Reached diff chat limit');
 	}
 	return {
 		cypher: cypher,
-		encodedString: encodingValues.join("")
-	}
+		encodedString: encodingValues.join('')
+	};
 }
 
 /**
@@ -54,7 +53,7 @@ function diffValue(oldValue: string, newValue: string): Diff[] {
 	});
 	const oldEncodedString = oldValueEncoded.encodedString;
 	const newValuedEncoded = encodeText(newValue, oldValueEncoded.cypher);
-	const diffResult: Diff[] = diffMatchPatch.diff_main(oldEncodedString, newValuedEncoded.encodedString);
+	const diffResult: Diff[] = diffMatchPatch.diffMain(oldEncodedString, newValuedEncoded.encodedString);
 	return diffResult.map(diff => {
 		const op = diff[0];
 		const encodedStr = diff[1];
@@ -73,16 +72,16 @@ export function textChange(selection: TextSelection, oldValue: string, newValue:
 	for (let index = 0; index < diffResult.length; index++) {
 		const diff = diffResult[index];
 		const diffIndex = bias + diff[1].length;
-		if (diffIndex > selection!.startIndex) {
-			if (DIFF_EQUAL == diff[0]) {
+		if (diffIndex > selection.startIndex) {
+			if (DIFF_EQUAL === diff[0]) {
 				const prevDiff = diffResult[index - 1];
 				const nextDiff = diffResult[index + 1];
 				let beforePrevDiff = diffResult[index - 2];
 				let afterNextDiff = diffResult[index + 2];
 
-				if (nextDiff && DIFF_INSERT == nextDiff[0]) {
+				if (nextDiff && DIFF_INSERT === nextDiff[0]) {
 					if (!afterNextDiff) {
-						afterNextDiff = [DIFF_EQUAL, ""];
+						afterNextDiff = [DIFF_EQUAL, ''];
 						diffResult.push(afterNextDiff);
 					}
 					while (diffIndex > selection.startIndex && diff[1].endsWith(nextDiff[1])) {
@@ -91,9 +90,9 @@ export function textChange(selection: TextSelection, oldValue: string, newValue:
 					}
 				}
 				// Merge with prevDiff
-				else if (prevDiff && DIFF_INSERT == prevDiff[0]) {
+				else if (prevDiff && DIFF_INSERT === prevDiff[0]) {
 					if (!beforePrevDiff) {
-						beforePrevDiff = [DIFF_EQUAL, ""];
+						beforePrevDiff = [DIFF_EQUAL, ''];
 						diffResult.push(beforePrevDiff);
 					}
 					while (diffIndex > selection.startIndex && diff[1].endsWith(prevDiff[1])) {

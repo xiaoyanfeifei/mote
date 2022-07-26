@@ -8,6 +8,9 @@ import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IVisibleLine } from 'mote/editor/browser/view/viewLayer';
+import { CSSProperties } from 'mote/base/browser/jsx/style';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
+import fonts from 'mote/base/browser/ui/fonts';
 
 export class EmptyViewLine extends Disposable {
 
@@ -65,9 +68,17 @@ export class ViewLine implements IVisibleLine {
 
 	public renderLine(lineNumber: number, store: BlockStore) {
 
-		const block = new ViewBlock(lineNumber, this.viewContext, this.viewController);
-		block.setValue(store);
-		this.domNode = block.getDomNode().domNode;
+		const type = store.getType() || 'text';
+		let viewBlock: ViewBlock;
+		switch (type) {
+			case 'header':
+				viewBlock = new HeaderBlock(lineNumber, this.viewContext, this.viewController);
+				break;
+			default:
+				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
+		}
+		viewBlock.setValue(store);
+		this.domNode = viewBlock.getDomNode().domNode;
 		this.domNode.className = 'view-line';
 		this.domNode.style.minHeight = '1em';
 
@@ -88,6 +99,15 @@ class ViewBlock {
 		if (viewController.getSelection().lineNumber === lineNumber) {
 			this.editableHandler.focusEditable();
 		}
+
+		const style = this.getStyle();
+		if (style) {
+			this.editableHandler.applyStyles(style);
+		}
+	}
+
+	protected getStyle(): void | CSSProperties {
+
 	}
 
 	setValue(store: BlockStore) {
@@ -97,5 +117,17 @@ class ViewBlock {
 
 	getDomNode() {
 		return this.editableHandler.editable;
+	}
+}
+
+class HeaderBlock extends ViewBlock {
+	override getStyle() {
+		return Object.assign({
+			display: 'flex',
+			width: '100%',
+			fontWeight: fonts.fontWeight.semibold,
+			fontSize: '1.875em',
+			lineHeight: 1.3
+		}, {});
 	}
 }

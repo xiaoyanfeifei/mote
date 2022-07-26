@@ -92,6 +92,7 @@ export default class RecordStore<T = any> extends Disposable {
 	}
 
 	get state() {
+		this.sync();
 		return this.instanceState;
 	}
 

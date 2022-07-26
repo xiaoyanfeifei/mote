@@ -12,6 +12,8 @@ import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMat
 import { Lodash } from 'mote/base/common/lodash';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import blockTypes, { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
+import { Markdown } from 'mote/editor/common/markdown';
+import { BugIndicatingError } from 'vs/base/common/errors';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -24,7 +26,6 @@ export class ViewController {
 
 	constructor(
 		private readonly contentStore: RecordStore,
-		private readonly commandDelegate: ICommandDelegate,
 	) {
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -1 };
 		this.eventDispatcher = new ViewEventDispatcher();
@@ -44,7 +45,7 @@ export class ViewController {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
 				const store = this.createStoreForLineNumber(this.selection.lineNumber!);
-				this.onType(store.getTitleStore(), transaction, this.selection, text);
+				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -53,7 +54,7 @@ export class ViewController {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
 				const store = this.createStoreForLineNumber(this.selection.lineNumber!);
-				this.onType(store.getTitleStore(), transaction, this.selection, text);
+				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -92,6 +93,9 @@ export class ViewController {
 	//#endregion
 
 	public setSelection(selection: TextSelection) {
+		if (selection.lineNumber < 0) {
+			throw new BugIndicatingError('lineNumber should never be negative');
+		}
 		this.selection = Object.assign({}, this.selection);
 		this.selection.startIndex = selection.startIndex;
 		this.selection.endIndex = selection.endIndex;
@@ -131,30 +135,41 @@ export class ViewController {
 	 * @param selection
 	 */
 	private onBackspace(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection) {
-		const blockStore = getParentBlockStore(store);
-		if (blockStore) {
-			const record = blockStore.getValue();
-			if (record) {
-				if (textBasedTypes.has(record.type)) {
-					EditOperation.turnInto(blockStore, blockTypes.text as any, transaction);
-				} else if (pureTextTypes.has(record.type)) {
-					EditOperation.removeChild(this.contentStore, store, transaction);
-					const deletedLineNumber = this.selection.lineNumber;
-					const newLineNumber = this.selection.lineNumber - 1;
-					if (this.selection.lineNumber > 0) {
-						const prevStore = this.createStoreForLineNumber(newLineNumber);
-						const content = collectValueFromSegment(prevStore.getTitleStore().getValue());
-						this.setSelection({ startIndex: content.length, endIndex: content.length, lineNumber: newLineNumber });
-					} else {
-						this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: newLineNumber });
+		if (0 !== selection.startIndex || 0 !== selection.endIndex) {
+			let newSelection: TextSelection;
+			if (selection.startIndex === selection.endIndex) {
+				newSelection = { startIndex: selection.startIndex - 1, endIndex: selection.endIndex, lineNumber: selection.lineNumber };
+			} else {
+				newSelection = selection;
+			}
+			this.delete(transaction, store, newSelection);
+		} else {
+			const blockStore = getParentBlockStore(store);
+			if (blockStore) {
+				const record = blockStore.getValue();
+				if (record) {
+					if (textBasedTypes.has(record.type)) {
+						EditOperation.turnInto(blockStore, blockTypes.text as any, transaction);
+						eventsCollector.emitViewEvent(new viewEvents.ViewLinesChangedEvent(selection.lineNumber, 1));
+					} else if (pureTextTypes.has(record.type)) {
+						EditOperation.removeChild(this.contentStore, store, transaction);
+						const deletedLineNumber = this.selection.lineNumber;
+						const newLineNumber = this.selection.lineNumber - 1;
+						if (this.selection.lineNumber > 0) {
+							const prevStore = this.createStoreForLineNumber(newLineNumber);
+							const content = collectValueFromSegment(prevStore.getTitleStore().getValue());
+							this.setSelection({ startIndex: content.length, endIndex: content.length, lineNumber: newLineNumber });
+						} else {
+							this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: newLineNumber });
+						}
+						eventsCollector.emitViewEvent(new viewEvents.ViewLinesDeletedEvent(deletedLineNumber, deletedLineNumber));
 					}
-					eventsCollector.emitViewEvent(new viewEvents.ViewLinesDeletedEvent(deletedLineNumber, deletedLineNumber));
 				}
 			}
 		}
 	}
 
-	private onType(store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
+	private onType(eventsCollector: ViewEventsCollector, store: RecordStore, transaction: Transaction, selection: TextSelection, newValue: string) {
 		const oldRecord = store.getValue();
 		const content = segmentUtils.collectValueFromSegment(oldRecord);
 		const diffResult = textChange(selection, content, newValue);
@@ -168,6 +183,7 @@ export class ViewController {
 				case DIFF_INSERT:
 					needChange = true;
 					this.insert(
+						eventsCollector,
 						txt,
 						transaction,
 						store,
@@ -191,7 +207,6 @@ export class ViewController {
 							endIndex: startIndex + txt.length,
 							lineNumber: selection.lineNumber
 						},
-						TextSelectionMode.Editing
 					);
 					break;
 				default:
@@ -211,7 +226,7 @@ export class ViewController {
 			parentStore = titleStore?.recordStoreParentStore as BlockStore;
 		}
 
-		this.delete(transaction, store, this.selection, TextSelectionMode.Editing);
+		this.delete(transaction, store, this.selection);
 		let newLineStore = EditOperation.createBlockStore('text', transaction);
 
 		newLineStore = EditOperation.insertChildAfterTarget(
@@ -220,13 +235,13 @@ export class ViewController {
 		this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
 	}
 
-	public insert(content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {
 			return;
 		}
 
-		this.delete(transaction, store, selection, selectionMode);
+		this.delete(transaction, store, selection);
 
 		if (content.length > 0) {
 			const segment = segmentUtils.combineArray(content, []) as ISegment;
@@ -247,17 +262,24 @@ export class ViewController {
 				transaction
 			);
 
-			/*
 			transaction.postSubmitActions.push(() => {
 				const transaction = Transaction.create(userId);
-				Markdown.parse(store, { selection, mode: selectionMode }, transaction);
+				const contentChanged = Markdown.parse({
+					delete: this.delete.bind(this),
+					setSelection: this.setSelection.bind(this),
+					store: store,
+					transaction: transaction,
+					selection: selection
+				});
+				if (contentChanged) {
+					eventsCollector.emitViewEvent(new viewEvents.ViewLinesChangedEvent(selection.lineNumber, 1));
+				}
 				transaction.commit();
 			});
-			*/
 		}
 	}
 
-	public delete(transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private delete(transaction: Transaction, store: RecordStore, selection: TextSelection) {
 		if (selection.startIndex !== selection.endIndex) {
 			const storeValue = store.getValue();
 			const newRecord = segmentUtils.remove(storeValue, selection.startIndex, selection.endIndex);
@@ -269,12 +291,13 @@ export class ViewController {
 			};
 
 			this.setSelection(newSelection);
+			console.log('newSelection:', newSelection);
 
 
 			EditOperation.addSetOperationForStore(store, newRecord, transaction);
 
 			const rootStore = store.getRecordStoreAtRootPath();
-			if ("block" == rootStore.table) {
+			if ('block' === rootStore.table) {
 				const removedRecord = segmentUtils.slice(storeValue, selection.startIndex, selection.endIndex);
 			}
 
@@ -293,6 +316,9 @@ export class ViewController {
 	}
 
 	private createStoreForLineNumber(lineNumber: number) {
+		if (lineNumber < 0) {
+			throw new BugIndicatingError('lineNumber should never be negative when create new store');
+		}
 		const pageId = this.getPageId(lineNumber);
 		return this.createStoreForPageId(pageId, this.contentStore);
 	}

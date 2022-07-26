@@ -35,6 +35,7 @@ export type RecordMap = { [key in keyof typeof RecordTable]: Records };
 
 export const blockTypes = {
 	text: 'text',
+	header: 'header',
 	image: 'image',
 };
 export type BlockType = keyof typeof blockTypes;

@@ -1,11 +1,20 @@
 import { Lodash } from 'mote/base/common/lodash';
 import blockTypes from 'mote/editor/common/blockTypes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
+import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { TextSelectionState } from 'mote/editor/common/editorState';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
 import BlockStore from 'mote/editor/common/store/blockStore';
+import RecordStore from 'mote/editor/common/store/recordStore';
+
+export interface ICommandExecutor {
+	readonly store: RecordStore;
+	readonly selection: TextSelection;
+	readonly transaction: Transaction;
+	setSelection(selection: TextSelection): void;
+	delete(transaction: Transaction, store: RecordStore, selection: TextSelection): void;
+}
 
 
 interface MarkdownParseRule {
@@ -15,9 +24,7 @@ interface MarkdownParseRule {
 }
 
 interface ParseMarkdownBlockProps extends MarkdownParseRule {
-	store: BlockStore;
-	transaction: Transaction;
-	textSelection: TextSelectionState;
+	executor: ICommandExecutor;
 }
 
 const markdownParseRules: MarkdownParseRule[] = [];
@@ -29,33 +36,33 @@ markdownParseRules.push({
 });
 
 export class Markdown {
-	public static parse(store: BlockStore, textSelection: TextSelectionState, transaction: Transaction) {
-		const storeValue = store.getRecordStoreAtRootPath().getValue();
+	public static parse(executor: ICommandExecutor): boolean {
+		const storeValue = executor.store.getRecordStoreAtRootPath().getValue();
 		const blockType = storeValue.type;
 		if (blockType !== blockTypes.code) {
 			// Only match one markdown rule and take action
-			Lodash.find(markdownParseRules, (rule) => {
-				return this.tryParse({ ...rule, store, transaction, textSelection });
+			const ruleMatched = Lodash.find(markdownParseRules, (rule) => {
+				return this.tryParse({ ...rule, executor });
 			});
+			return ruleMatched !== undefined;
 		}
+		return false;
 	}
 
 	private static tryParse(props: ParseMarkdownBlockProps): boolean {
-		const selection = TextSelectionMode.Editing === props.textSelection.mode && props.textSelection.selection;
-		if (!selection) {
-			return false;
-		}
-
+		const { executor, toBlockType, matchRegex } = props;
+		const { selection, store, transaction } = props.executor;
+		const fullText = collectValueFromSegment(store.getValue());
 		// Get store text value based on selection
-		const text = collectValueFromSegment(props.store.getValue()).slice(0, selection.endIndex);
+		const text = fullText.slice(0, selection.endIndex);
 		// Try to get matched markdown tag
-		const markdownTag = props.matchRegex.exec(text);
+		const markdownTag = matchRegex.exec(text);
 		if (!markdownTag) {
 			return false;
 		}
 
 		// Get blockType, only text block support markdown
-		const parentStore = props.store.recordStoreParentStore;
+		const parentStore = store.recordStoreParentStore;
 		if (!(parentStore && parentStore instanceof BlockStore)) {
 			return false;
 		}
@@ -67,26 +74,21 @@ export class Markdown {
 			return false;
 		}
 
-		const blockType = props.toBlockType(markdownTag.toString());
+		const blockType = toBlockType(markdownTag.toString());
 		if (blockType && blockType !== parentStoreType) {
 			if (parentStore instanceof BlockStore) {
 
-				EditOperation.turnInto(parentStore, blockType, props.transaction);
+				EditOperation.turnInto(parentStore, blockType as any, transaction);
 			}
-			/*
-			richtextUtils.deleteBlock({
-				store: props.store,
-				selection: {
-					startIndex: 0,
-					endIndex: (markdownTag && Lodash.toArray(markdownTag[0]).length) || 0
-				},
-				transaction: props.transaction,
-				textSelection: props.textSelection
+			const endIndex = (markdownTag && markdownTag[0].length) || 0;
+			executor.delete(transaction, store, {
+				startIndex: 0,
+				endIndex: endIndex,
+				lineNumber: selection.lineNumber
 			});
-			if (props.insertTextAfter) {
-				// TODO
-			}
-			*/
+			console.log(fullText.length, endIndex);
+			const index = fullText.length - endIndex;
+			executor.setSelection({ startIndex: index, endIndex: index, lineNumber: selection.lineNumber });
 			return true;
 		}
 

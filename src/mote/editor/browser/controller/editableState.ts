@@ -2,7 +2,7 @@ import * as strings from 'vs/base/common/strings';
 import { Position } from 'mote/editor/common/core/position';
 import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 
-export const _debugComposition = true;
+export const _debugComposition = false;
 
 export interface ITypeData {
 	text: string;

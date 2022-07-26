@@ -1,8 +1,8 @@
-import RecordStore from "mote/editor/common/store/recordStore";
-import BlockStore from "../store/blockStore";
-import { Transaction } from "./transaction";
-import { Command } from "mote/editor/common/operations";
-import RecordCacheStore from "../store/recordCacheStore";
+import RecordStore from 'mote/editor/common/store/recordStore';
+import BlockStore from 'mote/editor/common/store/blockStore';
+import { Transaction } from 'mote/editor/common/core/transaction';
+import { Command } from 'mote/editor/common/operations';
+import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
 import { generateUuid } from 'vs/base/common/uuid';
 import { BlockType } from 'mote/editor/common/store/record';
 
@@ -23,7 +23,6 @@ export class EditOperation {
 	public static turnInto(store: BlockStore, blockType: BlockType, transcation: Transaction) {
 		const record = store.getValue();
 		if (record && record.type !== blockType) {
-			console.log("execute turn into", blockType);
 			this.addUpdateOperationForStore(
 				store,
 				{
@@ -54,7 +53,6 @@ export class EditOperation {
 	public static removeChild(parent: RecordStore, remove: RecordStore, transaction: Transaction, shouldGarbageCollect?: boolean) {
 		this.addOperationForStore(parent, { id: remove.id }, transaction, Command.ListRemove);
 		RecordCacheStore.Default.deleteRecord(remove);
-		//store.dispatch(recordSlice.actions.remove(remove.identity));
 	}
 
 	public static appendToParent(parent: RecordStore, append: RecordStore, transaction: Transaction) {

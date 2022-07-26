@@ -1,4 +1,5 @@
 import { getDataRootInParent, getTextMention, isTextBufferElement, isTextNode, removeBOM } from "mote/editor/common/htmlElementUtils";
+import BlockStore from 'mote/editor/common/store/blockStore';
 import { serializeNode } from 'mote/editor/common/textSerialize';
 import { RangeUtils } from './rangeUtils';
 
@@ -12,6 +13,23 @@ export enum TextSelectionMode {
 	Empty = 0,
 	Editing,
 	ReadOnly,
+}
+
+export interface TextSelectionState {
+	/**
+	 * Current mode
+	 */
+	mode: TextSelectionMode;
+
+	/**
+	 * Current selection
+	 */
+	selection: TextSelection;
+
+	/**
+	 * The selection belong to
+	 */
+	store?: BlockStore;
 }
 
 interface ContainerWithOffset {

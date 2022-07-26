@@ -5,7 +5,7 @@ import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { EmptyViewLine, ViewLine } from 'mote/editor/browser/viewParts/lines/viewLine';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import RecordStore from 'mote/editor/common/store/recordStore';
-import { ViewLinesDeletedEvent, ViewLinesInsertedEvent } from 'mote/editor/common/viewEvents';
+import { ViewLinesChangedEvent, ViewLinesDeletedEvent, ViewLinesInsertedEvent } from 'mote/editor/common/viewEvents';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { clearNode } from 'vs/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
@@ -74,6 +74,14 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	}
 
 	public override onLinesDeleted(e: ViewLinesDeletedEvent): boolean {
+		return true;
+	}
+
+	public override onLinesChanged(e: ViewLinesChangedEvent): boolean {
+		for (let i = e.fromLineNumber; i < e.fromLineNumber + e.count; i++) {
+			const viewLine = this.lines[i];
+
+		}
 		return true;
 	}
 

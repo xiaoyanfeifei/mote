@@ -82,7 +82,6 @@ export class EditorPart extends Part implements IEditorService {
 
 
 	openPage = (accessor: ServicesAccessor, payload) => {
-		this.logService.debug("[EditorPart] Open page with payload", payload);
 		this.pageStore = new BlockStore({ id: payload.id, table: "page" }, "123");
 		if (this.listener) {
 			this.listener.dispose();

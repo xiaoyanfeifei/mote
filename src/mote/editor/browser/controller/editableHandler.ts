@@ -10,6 +10,8 @@ import { ThemedStyles } from 'mote/base/browser/ui/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
+import { CSSProperties } from 'mote/base/browser/jsx/style';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
 
 interface EditableHandlerOptions {
 	placeholder?: string;
@@ -50,12 +52,20 @@ export class EditableHandler extends ViewPart {
 		throw new Error('Method not implemented.');
 	}
 
+	public applyStyles(style: CSSProperties) {
+		setStyles(this.editable.domNode, style);
+	}
+
 	public focusEditable(): void {
 		this.editableInput.focusEditable();
 	}
 
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
+		const selection = this.viewController.getSelection();
+		if (this.editableInput.isFocused() && selection.startIndex > 0) {
+			this.ensureSelection(selection);
+		}
 	}
 
 	private isEmpty() {
@@ -105,16 +115,11 @@ export class EditableHandler extends ViewPart {
 				const selection = this.viewController.getSelection();
 				// line number less than 0 means view controller not initialized yet
 				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
-					const rangeFromElement = RangeUtils.create(this.editable.domNode, selection);
-					const rangeFromDocument = RangeUtils.get();
-					if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
-						RangeUtils.set(rangeFromElement);
-					}
+					this.ensureSelection(selection);
 				}
 			}, 0);
 
 			if (this.options.placeholder && this.isEmpty()) {
-				console.log('onFocus');
 				// add placeholder and placeholder text style
 				this.editable.setAttribute('placeholder', this.options.placeholder);
 				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;
@@ -125,5 +130,13 @@ export class EditableHandler extends ViewPart {
 				this.editable.removeAttribute('placeholder');
 			}
 		}));
+	}
+
+	private ensureSelection(selection: TextSelection) {
+		const rangeFromElement = RangeUtils.create(this.editable.domNode, selection);
+		const rangeFromDocument = RangeUtils.get();
+		if (!RangeUtils.ensureRange(rangeFromDocument, rangeFromElement)) {
+			RangeUtils.set(rangeFromElement);
+		}
 	}
 }

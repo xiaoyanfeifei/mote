@@ -140,6 +140,9 @@ export class EditableInput extends Disposable {
 	private _onType = this._register(new Emitter<ITypeData>());
 	public readonly onType: Event<ITypeData> = this._onType.event;
 
+	private _onClick = this._register(new Emitter<void>());
+	public readonly onClick: Event<void> = this._onClick.event;
+
 	private _onSelectionChange = this._register(new Emitter<TextSelection>());
 	public readonly onSelectionChange: Event<TextSelection> = this._onSelectionChange.event;
 
@@ -218,6 +221,9 @@ export class EditableInput extends Disposable {
 		}));
 		this._register(this.editable.onBlur(() => {
 			this.setHasFocus(false);
+		}));
+		this._register(this.editable.onClick(() => {
+			this._onClick.fire();
 		}));
 	}
 

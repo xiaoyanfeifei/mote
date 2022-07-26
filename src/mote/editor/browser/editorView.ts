@@ -38,7 +38,7 @@ export class EditorView extends ViewEventHandler {
 		this.linesContent.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.linesContent.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
-		const viewController = new ViewController(contentStore, commandDelegate);
+		const viewController = new ViewController(contentStore);
 		this.context = new ViewContext(contentStore, viewController);
 
 		// Ensure the view is the first event handler in order to update the layout

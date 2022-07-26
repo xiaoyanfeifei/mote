@@ -87,8 +87,6 @@ export class Transaction {
 		const role = store.getRecordStoreAtRootPath().getRole();
 		record = CommandFacade.execute(operation, record);
 
-		console.log(operation);
-
 		RecordCacheStore.Default.setRecord({
 			pointer: store.pointer,
 			userId: store.userId
