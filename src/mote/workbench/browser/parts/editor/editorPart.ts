@@ -75,19 +75,17 @@ export class EditorPart extends Part implements IEditorService {
 		super(Parts.EDITOR_PART, { hasTitle: false }, themeService, layoutService);
 		RecordCacheStore.Default.storageService = storageService;
 		RecordCacheStore.Default.logService = logService;
-		CommandsRegistry.registerCommand("openPage", this.openPage);
+		CommandsRegistry.registerCommand('openPage', this.openPage);
 		this.container = document.createElement('div');
 		this.editorPanes = this._register(this.instantiationService.createInstance(EditorPanes, this.container));
 	}
 
 
-	openPage = (accessor: ServicesAccessor, payload) => {
-		this.pageStore = new BlockStore({ id: payload.id, table: "page" }, "123");
+	openPage = (accessor: ServicesAccessor, payload: any) => {
+		this.pageStore = new BlockStore({ id: payload.id, table: 'page' }, '123');
 		if (this.listener) {
 			this.listener.dispose();
 		}
-		const contentStore = this.pageStore!.getContentStore();
-		//this.listener = contentStore.onDidChange(this.update);
 
 		this.updateTitle();
 		this.update();
@@ -97,19 +95,7 @@ export class EditorPart extends Part implements IEditorService {
 
 		const contentStore = this.pageStore!.getContentStore();
 		this.editorPanes.openEditor(new DocumentEditorInput(contentStore), {});
-		/*
-		if ((contentStore.getValue() || []).length == 0) {
-			this.editor.hidden();
-			this.emptyHolder.store = this.pageStore;
-			this.emptyHolder.show();
-		} else {
-			this.emptyHolder.hidden();
-			this.editor!.store = contentStore;
-			this.editor!.create();
-			this.editor.show();
-		}
-		*/
-	}
+	};
 
 	openEditor(editor: IResourceEditorInput): Promise<IEditorPane | undefined> {
 		throw new Error('Method not implemented.');
@@ -120,10 +106,10 @@ export class EditorPart extends Part implements IEditorService {
 			color: ThemedStyles.regularTextColor.dark,
 			fontWeight: 700,
 			lineHeight: 1.2,
-			fontSize: "40px",
-			cursor: "text",
-			display: "flex",
-			alignItems: "center"
+			fontSize: '40px',
+			cursor: 'text',
+			display: 'flex',
+			alignItems: 'center'
 		};
 	}
 
@@ -141,15 +127,15 @@ export class EditorPart extends Part implements IEditorService {
 
 	override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
 		this.createCover(parent);
-		const titleDomNode = $(".editor-header");
-		this.titleContainer = $("");
+		const titleDomNode = $('.editor-header');
+		this.titleContainer = $('');
 
 		this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
-		this.titleContainer.style.width = "100%";
+		this.titleContainer.style.width = '100%';
 
 		this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
-			placeholder: "Untitled",
+			placeholder: 'Untitled',
 			autoFocus: false,
 		});
 
@@ -162,13 +148,13 @@ export class EditorPart extends Part implements IEditorService {
 	override createContentArea(parent: HTMLElement) {
 		// Container
 		this.element = parent;
-		this.element.style.backgroundColor = "#303030";
+		this.element.style.backgroundColor = '#303030';
 
-		this.container.classList.add('content');
+		this.container!.classList.add('content');
 		//this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		//this.container.style.paddingRight = this.getSafePaddingRightCSS(96);
-		this.container.style.paddingTop = "25px";
-		parent.appendChild(this.container);
+		this.container!.style.paddingTop = '25px';
+		parent.appendChild(this.container!);
 
 		this.emptyHolder = new EmptyHolder(this.container!);
 
@@ -176,8 +162,8 @@ export class EditorPart extends Part implements IEditorService {
 	}
 
 	createCover(parent: HTMLElement) {
-		const coverDomNode = $("");
-		coverDomNode.style.height = "100px";
+		const coverDomNode = $('');
+		coverDomNode.style.height = '100px';
 		parent.append(coverDomNode);
 	}
 
@@ -187,7 +173,7 @@ export class EditorPart extends Part implements IEditorService {
 
 		//container.style.left = "260px";
 		//container.style.width = "760px";
-		container.style.height = "100%";
+		container.style.height = '100%';
 		//container.style.left
 		//container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 		//container.style.position = "absolute";

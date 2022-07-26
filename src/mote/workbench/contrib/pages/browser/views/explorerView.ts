@@ -1,7 +1,7 @@
 /* eslint-disable code-no-unexternalized-strings */
 import { ListItem } from "mote/base/browser/ui/list/list";
 import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
-import SVGIcon from "mote/base/ui/svgicon/svgicon";
+import SVGIcon from 'mote/base/browser/ui/svgicon/svgicon';
 import { ThemedStyles } from "mote/base/browser/ui/themes";
 import { EditOperation } from "mote/editor/common/core/editOperation";
 import { Transaction } from "mote/editor/common/core/transaction";
@@ -14,7 +14,7 @@ import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeV
 import { append, $ } from "vs/base/browser/dom";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
-import { NameFromStore } from "./outliner";
+import { NameFromStore } from './outliner';
 
 export class ExplorerView extends ViewPane {
 

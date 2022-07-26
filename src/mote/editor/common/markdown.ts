@@ -16,26 +16,26 @@ export interface ICommandExecutor {
 }
 
 
-interface MarkdownParseRule {
+interface MarkdownBlockParseRule {
 	matchRegex: RegExp;
 	toBlockType(content: string): string;
 	insertTextAfter: boolean;
 }
 
-interface ParseMarkdownBlockProps extends MarkdownParseRule {
+interface ParseMarkdownBlockProps extends MarkdownBlockParseRule {
 	executor: ICommandExecutor;
 }
 
-const markdownParseRules: MarkdownParseRule[] = [];
+const markdownBlockParseRules: MarkdownBlockParseRule[] = [];
 // Add H1 tag
-markdownParseRules.push({
+markdownBlockParseRules.push({
 	matchRegex: /^# $/,
 	toBlockType: () => blockTypes.header,
 	insertTextAfter: false,
 });
 
 // Add Quote tag
-markdownParseRules.push({
+markdownBlockParseRules.push({
 	matchRegex: /^["“|] $/,
 	toBlockType: () => blockTypes.quote,
 	insertTextAfter: false,
@@ -46,8 +46,8 @@ export class Markdown {
 		const storeValue = executor.store.getRecordStoreAtRootPath().getValue();
 		const blockType = storeValue.type;
 		if (blockType !== blockTypes.code) {
-			// Only match one markdown rule and take action
-			const ruleMatched = Lodash.find(markdownParseRules, (rule) => {
+			// Only match one block level markdown rule and take action
+			const ruleMatched = Lodash.find(markdownBlockParseRules, (rule) => {
 				return this.tryParse({ ...rule, executor });
 			});
 			return ruleMatched !== undefined;
@@ -92,7 +92,6 @@ export class Markdown {
 				endIndex: endIndex,
 				lineNumber: selection.lineNumber
 			});
-			console.log(fullText.length, endIndex);
 			const index = fullText.length - endIndex;
 			executor.setSelection({ startIndex: index, endIndex: index, lineNumber: selection.lineNumber });
 			return true;

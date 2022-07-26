@@ -67,7 +67,7 @@ export class ViewLine implements IVisibleLine {
 	}
 
 	public renderLine(lineNumber: number, store: BlockStore) {
-
+		// TODO move this part to contrib, block should register by registry
 		const type = store.getType() || 'text';
 		let viewBlock: ViewBlock;
 		switch (type) {

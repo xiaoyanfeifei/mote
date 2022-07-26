@@ -503,6 +503,38 @@
 						]
 					},
 					{
+						"target": "src/mote/workbench/contrib/*/~",
+						"restrictions": [
+							"mote/base/~",
+							"vs/base/~",
+							"vs/base/parts/*/~",
+							"mote/platform/*/~",
+							"vs/platform/*/~",
+							"mote/editor/~",
+							"vs/editor/~",
+							"vs/editor/contrib/*/~",
+							"mote/workbench/~",
+							"vs/workbench/~",
+							"mote/workbench/services/*/~",
+							"vs/workbench/services/*/~",
+							"mote/workbench/contrib/*/~",
+							"vs/workbench/contrib/*/~",
+							"vscode-notebook-renderer", // Type only import
+							{
+								"when": "hasBrowser",
+								"pattern": "xterm"
+							}, // node module allowed even in /browser/
+							{
+								"when": "hasBrowser",
+								"pattern": "xterm-addon-*"
+							}, // node module allowed even in /browser/
+							{
+								"when": "hasBrowser",
+								"pattern": "vscode-textmate"
+							} // node module allowed even in /browser/
+						]
+					},
+					{
 						"target": "src/vs/workbench/contrib/*/~",
 						"restrictions": [
 							"vs/base/~",

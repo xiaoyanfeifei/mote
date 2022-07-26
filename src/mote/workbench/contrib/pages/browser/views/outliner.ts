@@ -1,11 +1,6 @@
 import { createElement, setStyles } from "mote/base/browser/jsx/createElement";
-import { Fragment } from "mote/base/browser/jsx/jsx";
 import fonts from "mote/base/browser/ui/fonts";
-import SVGIcon from "mote/base/ui/svgicon/svgicon";
-import { ThemedColors, ThemedStyles } from "mote/base/browser/ui/themes";
-import BlockStore from "mote/editor/common/store/blockStore";
 import RecordStore from "mote/editor/common/store/recordStore";
-import SpaceStore from "mote/editor/common/store/spaceStore";
 import { $ } from "vs/base/browser/dom";
 import { IDisposable } from "vs/base/common/lifecycle";
 
