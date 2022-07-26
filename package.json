@@ -236,5 +236,6 @@
   },
   "engines": {
     "node": ">=16.14.x <17"
-  }
+  },
+  "packageManager": "yarn@1.22.4"
 }
