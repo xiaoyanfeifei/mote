@@ -20,8 +20,7 @@ jobs:
         with:
           node-version: 16
           submodules: true
-      - run: npm ci
-      - run: npm test
+      - run: yarn install
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
