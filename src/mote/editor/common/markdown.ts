@@ -1,9 +1,8 @@
 import { Lodash } from 'mote/base/common/lodash';
 import blockTypes from 'mote/editor/common/blockTypes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
-import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
+import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
-import { TextSelectionState } from 'mote/editor/common/editorState';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import RecordStore from 'mote/editor/common/store/recordStore';
@@ -32,6 +31,13 @@ const markdownParseRules: MarkdownParseRule[] = [];
 markdownParseRules.push({
 	matchRegex: /^# $/,
 	toBlockType: () => blockTypes.header,
+	insertTextAfter: false,
+});
+
+// Add Quote tag
+markdownParseRules.push({
+	matchRegex: /^["“|] $/,
+	toBlockType: () => blockTypes.quote,
 	insertTextAfter: false,
 });
 

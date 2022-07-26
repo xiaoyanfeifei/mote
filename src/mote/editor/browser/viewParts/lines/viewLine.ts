@@ -74,20 +74,21 @@ export class ViewLine implements IVisibleLine {
 			case 'header':
 				viewBlock = new HeaderBlock(lineNumber, this.viewContext, this.viewController);
 				break;
+			case 'quote':
+				viewBlock = new QuoteBlock(lineNumber, this.viewContext, this.viewController);
+				break;
 			default:
 				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
 		}
 		viewBlock.setValue(store);
 		this.domNode = viewBlock.getDomNode().domNode;
 		this.domNode.className = 'view-line';
-		this.domNode.style.minHeight = '1em';
 
 		return true;
 	}
 }
 
-class ViewBlock {
-
+abstract class BaseBlock {
 	private editableHandler: EditableHandler;
 
 	constructor(
@@ -95,7 +96,8 @@ class ViewBlock {
 		viewContext: ViewContext,
 		viewController: ViewController
 	) {
-		this.editableHandler = new EditableHandler(lineNumber, viewContext, viewController, { placeholder: 'Type to continue' });
+		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
+		this.editableHandler.editable.domNode.style.minHeight = '1em';
 		if (viewController.getSelection().lineNumber === lineNumber) {
 			this.editableHandler.focusEditable();
 		}
@@ -105,6 +107,8 @@ class ViewBlock {
 			this.editableHandler.applyStyles(style);
 		}
 	}
+
+	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;
 
 	protected getStyle(): void | CSSProperties {
 
@@ -120,14 +124,60 @@ class ViewBlock {
 	}
 }
 
+class ViewBlock extends BaseBlock {
+
+	override renderPersisted(
+		lineNumber: number,
+		viewContext: ViewContext,
+		viewController: ViewController
+	): EditableHandler {
+		return new EditableHandler(lineNumber, viewContext, viewController, { placeholder: 'Type to continue' });
+	}
+
+	override getStyle(): CSSProperties {
+		return {
+			padding: '3px 2px',
+		};
+	}
+}
+
 class HeaderBlock extends ViewBlock {
-	override getStyle() {
+	override getStyle(): CSSProperties {
 		return Object.assign({
 			display: 'flex',
 			width: '100%',
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '1.875em',
 			lineHeight: 1.3
+		}, {});
+	}
+}
+
+class QuoteBlock extends ViewBlock {
+
+	private container!: FastDomNode<HTMLDivElement>;
+
+	override renderPersisted(
+		lineNumber: number,
+		viewContext: ViewContext,
+		viewController: ViewController
+	) {
+		const editableHandler = super.renderPersisted(lineNumber, viewContext, viewController);
+		this.container = createFastDomNode(document.createElement('div'));
+		this.container.domNode.style.padding = '3px 2px';
+		this.container.appendChild(editableHandler.editable);
+		return editableHandler;
+	}
+
+	override getDomNode() {
+		return this.container;
+	}
+
+	override getStyle() {
+		return Object.assign({
+			borderLeft: '3px solid currentColor',
+			paddingLeft: '0.9em',
+			paddingRight: '0.9em'
 		}, {});
 	}
 }

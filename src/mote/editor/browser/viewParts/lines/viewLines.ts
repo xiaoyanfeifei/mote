@@ -1,3 +1,4 @@
+import 'vs/css!./viewLines';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { IVisibleLinesHost, RenderedLinesCollection } from 'mote/editor/browser/view/viewLayer';
