@@ -27,13 +27,14 @@ jobs:
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
+        working-directory: '/home/runner/work/mote'
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_THANKFUL_POND_0913F0D10 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
           action: "upload"
           ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: '../mote-web' # App source code path
+          app_location: 'mote-web' # App source code path
           api_location: '' # Api source code path - optional
           skip_app_build: true # skip_app_build
           skip_api_build: true
