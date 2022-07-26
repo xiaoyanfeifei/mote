@@ -233,5 +233,8 @@
   "resolutions": {
     "elliptic": "^6.5.3",
     "nwmatcher": "^1.4.4"
+  },
+  "engines": {
+    "node": ">=16.14.x <17"
   }
 }
