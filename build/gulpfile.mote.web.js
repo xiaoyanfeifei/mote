@@ -170,6 +170,9 @@ function packageTask(sourceFolderName, destinationFolderName) {
 
 		const favicon = gulp.src('resources/server/favicon.ico', { base: 'resources/server' });
 		const manifest = gulp.src('resources/server/manifest.json', { base: 'resources/server' });
+		const webappConfig = gulp.src('staticwebapp.config.json', { base: '.' });
+		const indexHtml = gulp.src('src/mote/app/browser/workbench/workbench.html', { base: 'src/mote/app/browser/' })
+			.pipe(rename('index.html'));
 		const pwaicons = es.merge(
 			gulp.src('resources/server/code-192.png', { base: 'resources/server' }),
 			gulp.src('resources/server/code-512.png', { base: 'resources/server' })
@@ -182,6 +185,8 @@ function packageTask(sourceFolderName, destinationFolderName) {
 			deps,
 			favicon,
 			manifest,
+			webappConfig,
+			indexHtml,
 			pwaicons
 		);
 
