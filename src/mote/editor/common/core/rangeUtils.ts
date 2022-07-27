@@ -1,8 +1,18 @@
-import { Lodash } from "mote/base/common/lodash";
-import { getDataRootInParent, getTextEquationTokenElementInParent, getTextMention, isContentEditable, isIgnoreTextContentElement, isTextBufferElement, isTextBuffNodeContain, isTextMentionNode, removeBOM } from "../htmlElementUtils";
-import { serializeNode } from "../textSerialize";
-import { getIndex, TextSelection } from "./selectionUtils";
+import { Lodash } from 'mote/base/common/lodash';
+import { getDataRootInParent, getTextEquationTokenElementInParent, getTextMention, isContentEditable, isIgnoreTextContentElement, isTextBufferElement, isTextBuffNodeContain, isTextMentionNode, isTextNode, removeBOM } from '../htmlElementUtils';
+import { serializeNode } from '../textSerialize';
 
+interface ContainerWithOffset {
+	container: Node | null;
+	offset: number;
+}
+
+
+export interface TextSelection {
+	startIndex: number;
+	endIndex: number;
+	lineNumber: number;
+}
 
 export class RangeUtils {
 
@@ -72,7 +82,7 @@ export class RangeUtils {
 					right: clientRect.left,
 					width: 0,
 					height: clientRect.height
-				}
+				};
 			}
 		}
 		return undefined;
@@ -82,22 +92,24 @@ export class RangeUtils {
 		const range = document.createRange();
 		const containerWithStart = this.getContainerWithOffset(element, selection.startIndex);
 		const containerWithEnd = this.getContainerWithOffset(element, selection.endIndex);
-		if (containerWithStart.container)
+		if (containerWithStart.container) {
 			try {
 				range.setStart(containerWithStart.container, containerWithStart.offset)
 			} catch (s) {
-				console.info(s)
+				console.info(s);
 			}
-		if (containerWithEnd.container)
+		}
+		if (containerWithEnd.container) {
 			try {
 				range.setEnd(containerWithEnd.container, containerWithEnd.offset)
 			} catch (s) {
 				console.info(s)
 			}
-		return range
+		}
+		return range;
 	}
 
-	static getContainerWithOffset(element: Node, index: number) {
+	static getContainerWithOffset(element: Node, index: number): ContainerWithOffset {
 		if (0 === index) {
 			if (!(element.childNodes.length > 0)
 				|| isTextMentionNode(element.childNodes[0])
@@ -106,12 +118,12 @@ export class RangeUtils {
 				return {
 					container: element,
 					offset: 0
-				}
+				};
 			} else {
 				return {
 					container: element.childNodes[0],
 					offset: 0
-				}
+				};
 			}
 		}
 
@@ -132,16 +144,16 @@ export class RangeUtils {
 					return {
 						container: childNode,
 						offset: bias
-					}
+					};
 				}
 				return this.getContainerWithOffset(childNode, bias);
 			}
-			bias -= serializedLength
+			bias -= serializedLength;
 		}
 		return {
 			container: element,
 			offset: 0
-		}
+		};
 	}
 
 	static ensureRange(rangeFromDocument: globalThis.Range | undefined, rangeFromElement: globalThis.Range) {
@@ -167,10 +179,10 @@ export class RangeUtils {
 						, o = getDataRootInParent(rangeFromElement.startContainer)
 						, i = getDataRootInParent(rangeFromDocument.endContainer)
 						, a = getDataRootInParent(rangeFromElement.endContainer)
-						, s = getIndex(rangeFromDocument.startContainer, rangeFromDocument.startOffset)
-						, l = getIndex(rangeFromElement.startContainer, rangeFromElement.startOffset)
-						, c = getIndex(rangeFromDocument.endContainer, rangeFromDocument.endOffset)
-						, d = getIndex(rangeFromElement.endContainer, rangeFromElement.endOffset);
+						, s = this.getIndex(rangeFromDocument.startContainer, rangeFromDocument.startOffset)
+						, l = this.getIndex(rangeFromElement.startContainer, rangeFromElement.startOffset)
+						, c = this.getIndex(rangeFromDocument.endContainer, rangeFromDocument.endOffset)
+						, d = this.getIndex(rangeFromElement.endContainer, rangeFromElement.endOffset);
 					return r === o && i === a && s === l && c === d
 				}
 				return false;
@@ -181,7 +193,60 @@ export class RangeUtils {
 	}
 
 	static calcOffset(parent: Node | null, child: Node) {
-		return parent != null ? Lodash.findIndex(parent.childNodes, e => e === child) : -1;
+		return parent !== null ? Lodash.findIndex(parent.childNodes, e => e === child) : -1;
 	}
 
+	static getIndex(container: Node, offset: number) {
+		const dataRoot = getDataRootInParent(container);
+
+		let containerWithOffset: ContainerWithOffset;
+		// Generate containerWithOffset
+		const textMentionElement = getTextMention(container);
+		if (textMentionElement) {
+			const parentNode = textMentionElement.parentNode;
+			const textMentionElementIndex = Array.from(parentNode.childNodes).indexOf(textMentionElement);
+			containerWithOffset = {
+				container: parentNode,
+				offset: 0 === offset ? textMentionElementIndex : textMentionElementIndex + 1
+			};
+		} else {
+			if (isTextBufferElement(container) || isTextBufferElement(container.parentNode)) {
+				containerWithOffset = {
+					container: container,
+					offset: (container.textContent || ' ').length - 1
+				};
+			} else {
+				containerWithOffset = {
+					container: container,
+					offset: offset
+				};
+			}
+		}
+
+		return this.calcIndex(dataRoot, containerWithOffset);
+	}
+
+	static calcIndex(dataRoot: Node | null | undefined, containerWithOffset: ContainerWithOffset): number {
+		if (dataRoot === containerWithOffset.container) {
+			if (isTextNode(dataRoot)) {
+				const e = dataRoot && dataRoot.textContent || '';
+				return e.substring(0, containerWithOffset.offset).length;
+			}
+			{
+				const e = Array.from(dataRoot ? dataRoot.childNodes : [])
+					.slice(0, containerWithOffset.offset)
+					.map(e => removeBOM(serializeNode(e))).join('');
+				return e.length;
+			}
+		}
+
+		let i = 0;
+		for (const childNode of Array.from(dataRoot ? dataRoot.childNodes : [])) {
+			if (childNode.contains(containerWithOffset.container)) {
+				return i + this.calcIndex(childNode, containerWithOffset);
+			}
+			i += removeBOM(serializeNode(childNode)).length;
+		}
+		return i;
+	}
 }

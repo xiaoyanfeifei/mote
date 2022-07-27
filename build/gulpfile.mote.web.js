@@ -30,7 +30,7 @@ const commit = util.getVersion(REPO_ROOT);
 const quality = product.quality;
 const version = (quality && quality !== 'stable') ? `${packageJson.version}-${quality}` : packageJson.version;
 
-const vscodeWebResourceIncludes = [
+const moteWebResourceIncludes = [
 	// Workbench
 	'out-build/vs/{base,platform,editor,workbench}/**/*.{svg,png,jpg,opus}',
 	'out-build/vs/code/browser/workbench/*.html',
@@ -41,12 +41,12 @@ const vscodeWebResourceIncludes = [
 	// Web node paths (needed for integration tests)
 	'out-build/vs/webPackagePaths.js',
 ];
-exports.vscodeWebResourceIncludes = vscodeWebResourceIncludes;
+exports.moteWebResourceIncludes = moteWebResourceIncludes;
 
-const vscodeWebResources = [
+const moteWebResources = [
 
 	// Includes
-	...vscodeWebResourceIncludes,
+	...moteWebResourceIncludes,
 
 	// Excludes
 	'!out-build/vs/**/{node,electron-browser,electron-main}/**',
@@ -58,18 +58,18 @@ const vscodeWebResources = [
 
 const buildfile = require('../src/buildfile');
 
-const vscodeWebEntryPoints = _.flatten([
+const moteWebEntryPoints = _.flatten([
 	buildfile.entrypoint('mote/workbench/workbench.web.main'),
 	buildfile.workbenchWeb
 ]);
-exports.vscodeWebEntryPoints = vscodeWebEntryPoints;
+exports.moteWebEntryPoints = moteWebEntryPoints;
 
 const buildDate = new Date().toISOString();
 
 /**
  * @param {object} product The parsed product.json file contents
  */
-const createVSCodeWebProductConfigurationPatcher = (product) => {
+const createMoteWebProductConfigurationPatcher = (product) => {
 	/**
 	 * @param content {string} The contens of the file
 	 * @param path {string} The absolute file path, always using `/`, even on Windows
@@ -112,34 +112,41 @@ const combineContentPatchers = (...patchers) => {
  * @param extensionsRoot {string} The location where extension will be read from
  * @param {object} product The parsed product.json file contents
  */
-const createVSCodeWebFileContentMapper = (extensionsRoot, product) => {
+const createMoteWebFileContentMapper = (extensionsRoot, product) => {
 	return combineContentPatchers(
-		createVSCodeWebProductConfigurationPatcher(product),
+		createMoteWebProductConfigurationPatcher(product),
 		//createVSCodeWebBuiltinExtensionsPatcher(extensionsRoot)
 	);
 };
-exports.createVSCodeWebFileContentMapper = createVSCodeWebFileContentMapper;
+exports.createVSCodeWebFileContentMapper = createMoteWebFileContentMapper;
+
+const DEFAULT_FILE_HEADER = [
+	'/*!--------------------------------------------------------',
+	' * Copyright (C) Zurex. All rights reserved.',
+	' *--------------------------------------------------------*/'
+].join('\n');
 
 const optimizeMoteWebTask = task.define('optimize-mote-web', task.series(
 	util.rimraf('out-mote-web'),
 	common.optimizeTask({
 		src: 'out-build',
-		entryPoints: _.flatten(vscodeWebEntryPoints),
+		entryPoints: _.flatten(moteWebEntryPoints),
 		otherSources: [],
-		resources: vscodeWebResources,
+		resources: moteWebResources,
 		loaderConfig: common.loaderConfig(),
 		externalLoaderInfo: util.createExternalLoaderConfig(product.webEndpointUrl, commit, quality),
 		out: 'out-mote-web',
 		inlineAmdImages: true,
 		bundleInfo: undefined,
-		fileContentMapper: createVSCodeWebFileContentMapper('.build/web/extensions', product)
+		header: DEFAULT_FILE_HEADER,
+		fileContentMapper: createMoteWebFileContentMapper('.build/web/extensions', product)
 	})
 ));
 
 const minifyMoteWebTask = task.define('minify-mote-web', task.series(
 	optimizeMoteWebTask,
 	util.rimraf('out-mote-web-min'),
-	common.minifyTask('out-mote-web', `https://ticino.blob.core.windows.net/sourcemaps/${commit}/core`)
+	common.minifyTask('out-mote-web')
 ));
 gulp.task(minifyMoteWebTask);
 
@@ -201,11 +208,11 @@ function packageTask(sourceFolderName, destinationFolderName) {
 const dashed = (/** @type {string} */ str) => (str ? `-${str}` : ``);
 
 ['', 'min'].forEach(minified => {
-	const sourceFolderName = `out-build${dashed(minified)}`;
+	const sourceFolderName = `out-mote-web${dashed(minified)}`;
 	const destinationFolderName = `mote-web`;
 
 	const moteWebTaskCI = task.define(`mote-web${dashed(minified)}-ci`, task.series(
-		//minified ? minifyMoteWebTask : optimizeMoteWebTask,
+		minified ? minifyMoteWebTask : optimizeMoteWebTask,
 		util.rimraf(path.join(BUILD_ROOT, destinationFolderName)),
 		packageTask(sourceFolderName, destinationFolderName)
 	));

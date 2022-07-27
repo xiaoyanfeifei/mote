@@ -40,25 +40,26 @@ interface ContainerWithOffset {
 export function calcIndex(dataRoot: Node | null | undefined, containerWithOffset: ContainerWithOffset): number {
 	if (dataRoot === containerWithOffset.container) {
 		if (isTextNode(dataRoot)) {
-			const e = dataRoot && dataRoot.textContent || "";
-			return e.substring(0, containerWithOffset.offset).length
+			const e = dataRoot && dataRoot.textContent || '';
+			return e.substring(0, containerWithOffset.offset).length;
 		}
 		{
 			const e = Array.from(dataRoot ? dataRoot.childNodes : [])
 				.slice(0, containerWithOffset.offset)
-				.map(e => removeBOM(serializeNode(e))).join("");
-			return e.length
+				.map(e => removeBOM(serializeNode(e))).join('');
+			return e.length;
 		}
 	}
 
 	let i = 0;
 	for (const childNode of Array.from(dataRoot ? dataRoot.childNodes : [])) {
-		if (childNode.contains(containerWithOffset.container))
+		if (childNode.contains(containerWithOffset.container)) {
 			return i + calcIndex(childNode, containerWithOffset);
-		i += removeBOM(serializeNode(childNode)).length
+		}
+		i += removeBOM(serializeNode(childNode)).length;
 	}
-	return i
-};
+	return i;
+}
 
 export function getIndex(container: Node, offset: number) {
 	const dataRoot = getDataRootInParent(container);
@@ -67,23 +68,23 @@ export function getIndex(container: Node, offset: number) {
 	// Generate containerWithOffset
 	const textMentionElement = getTextMention(container);
 	if (textMentionElement) {
-		const parentNode = textMentionElement.parentNode
+		const parentNode = textMentionElement.parentNode;
 		const textMentionElementIndex = Array.from(parentNode.childNodes).indexOf(textMentionElement);
 		containerWithOffset = {
 			container: parentNode,
 			offset: 0 === offset ? textMentionElementIndex : textMentionElementIndex + 1
-		}
+		};
 	} else {
 		if (isTextBufferElement(container) || isTextBufferElement(container.parentNode)) {
 			containerWithOffset = {
 				container: container,
-				offset: (container.textContent || " ").length - 1
-			}
+				offset: (container.textContent || ' ').length - 1
+			};
 		} else {
 			containerWithOffset = {
 				container: container,
 				offset: offset
-			}
+			};
 		}
 	}
 

@@ -1,7 +1,6 @@
-import * as browser from 'vs/base/browser/browser';
 import * as dom from 'vs/base/browser/dom';
 import * as strings from 'vs/base/common/strings';
-import { nodeToString, serializeNode } from 'mote/editor/common/textSerialize';
+import { nodeToString } from 'mote/editor/common/textSerialize';
 import { Emitter, Event } from 'vs/base/common/event';
 import { getSelectionFromRange, TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
