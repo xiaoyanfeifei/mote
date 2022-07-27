@@ -6,7 +6,7 @@ import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { RangeUtils } from 'mote/editor/common/core/rangeUtils';

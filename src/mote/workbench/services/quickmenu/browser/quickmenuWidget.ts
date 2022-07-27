@@ -1,7 +1,7 @@
 import { Button } from 'mote/base/browser/ui/button/button';
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import { Segment } from 'mote/editor/common/core/segment';
 import { TextSelectionState } from 'mote/editor/common/editorState';
 import { IHoverService } from 'mote/workbench/services/hover/browser/hover';

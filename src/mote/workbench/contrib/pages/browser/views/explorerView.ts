@@ -2,7 +2,7 @@
 import { ListItem } from "mote/base/browser/ui/list/list";
 import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
 import SVGIcon from 'mote/base/browser/ui/svgicon/svgicon';
-import { ThemedStyles } from "mote/base/browser/ui/themes";
+import { ThemedStyles } from "mote/base/common/themes";
 import { EditOperation } from "mote/editor/common/core/editOperation";
 import { Transaction } from "mote/editor/common/core/transaction";
 import BlockStore from "mote/editor/common/store/blockStore";
@@ -20,14 +20,16 @@ import { ITreeContextMenuEvent } from 'vs/base/browser/ui/tree/tree';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IAction } from 'vs/base/common/actions';
 
+const OUTLINER_HEIGHT = 31;
+
 class BlockListVirtualDelegate extends CachedListVirtualDelegate<BlockStore> implements IListVirtualDelegate<BlockStore> {
 
 	protected estimateHeight(element: BlockStore): number {
-		return 31;
+		return OUTLINER_HEIGHT;
 	}
 
 	hasDynamicHeight(element: BlockStore) {
-		return true;
+		return false;
 	}
 
 	getTemplateId(element: BlockStore): string {
@@ -82,6 +84,11 @@ export class ExplorerView extends ViewPane {
 	private view!: List<BlockStore>;
 	private spaceStore!: SpaceStore;
 
+	private viewContainer!: HTMLDivElement;
+
+	private height!: number;
+	private width!: number;
+
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
@@ -123,7 +130,9 @@ export class ExplorerView extends ViewPane {
 
 		};
 
-		const treeView = new List(userId, container, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		this.viewContainer = document.createElement('div');
+
+		const treeView = new List(userId, this.viewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
 		this.view = treeView;
 
@@ -131,6 +140,7 @@ export class ExplorerView extends ViewPane {
 
 		//const addNewPage = new Button(container, {});
 		const domNode = $(".list-item");
+		domNode.style.display = 'flex';
 		const icon = SVGIcon({ name: "plus", style: { fill: ThemedStyles.mediumIconColor.dark } });
 		const child = document.createTextNode("Add new page");
 		const addPageBtn = new ListItem(domNode, { enableClick: true });
@@ -147,11 +157,13 @@ export class ExplorerView extends ViewPane {
 				transaction.postSubmitCallbacks.push(() => this.refresh());
 			}, spaceStore.userId);
 		});
+		container.append(this.viewContainer);
 		container.append(domNode);
 	}
 
 	private refresh() {
 		this.view.splice(0, this.view.length, this.spaceStore.getPagesStores());
+		this.layoutOutliner();
 	}
 
 	private async onContextMenu(e: IListContextMenuEvent<BlockStore>) {
@@ -203,6 +215,14 @@ export class ExplorerView extends ViewPane {
 
 	override layoutBody(height: number, width: number) {
 		super.layoutBody(height, width);
-		this.view.layout(height - 27, width);
+		this.width = width;
+		this.height = height;
+		this.layoutOutliner();
+	}
+
+	private layoutOutliner() {
+		const height = Math.min(this.view.length * OUTLINER_HEIGHT, this.height - 150);
+		this.viewContainer.style.height = `${height}px`;
+		this.view.layout(height + 20, this.width);
 	}
 }

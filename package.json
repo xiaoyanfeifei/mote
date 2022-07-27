@@ -101,6 +101,7 @@
   "devDependencies": {
     "7zip": "0.0.6",
     "@playwright/test": "1.21.0",
+    "@types/chroma-js": "^2.1.4",
     "@types/cookie": "^0.3.3",
     "@types/copy-webpack-plugin": "^6.0.3",
     "@types/cssnano": "^4.0.0",

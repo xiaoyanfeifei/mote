@@ -2,8 +2,7 @@ import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { Event, Emitter } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService';
+import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
 
 export class BrowserThemeService extends Disposable implements IThemeService {
 
@@ -21,6 +20,10 @@ export class BrowserThemeService extends Disposable implements IThemeService {
 	) {
 		super();
 		this.colorThemeRegistry = new Map();
+		this.hostColorSchemeService.onDidChangeColorScheme(() => this.handlePreferredSchemeUpdated());
+	}
+
+	private installPreferredSchemeListener() {
 		this.hostColorSchemeService.onDidChangeColorScheme(() => this.handlePreferredSchemeUpdated());
 	}
 

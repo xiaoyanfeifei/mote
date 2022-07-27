@@ -1,4 +1,6 @@
 import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
+import { attachMenuStyler } from 'mote/platform/theme/common/styler';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { $, addDisposableListener, EventType, isHTMLElement } from 'vs/base/browser/dom';
 import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
 import { Menu } from 'vs/base/browser/ui/menu/menu';
@@ -26,7 +28,8 @@ export class BrowserContextMenuService extends Disposable implements IContextMen
 	private options: IContextMenuHandlerOptions = { blockMouse: true };
 
 	constructor(
-		@IContextViewService private contextViewService: IContextViewService,
+		@IThemeService private readonly themeService: IThemeService,
+		@IContextViewService private readonly contextViewService: IContextViewService,
 	) {
 		super();
 	}
@@ -86,6 +89,8 @@ export class BrowserContextMenuService extends Disposable implements IContextMen
 			actionRunner
 		});
 
+		menuDisposables.add(attachMenuStyler(menu, this.themeService));
+
 		// TODO fixme later, use auto detch instead of force style
 		const menuContainer = menu.getContainer();
 		menuContainer.style.color = 'rgb(204, 204, 204)';
@@ -96,9 +101,7 @@ export class BrowserContextMenuService extends Disposable implements IContextMen
 		menu.onDidBlur(() => this.contextViewService.hideContextView(true), null, menuDisposables);
 		menuDisposables.add(addDisposableListener(window, EventType.BLUR, () => this.contextViewService.hideContextView(true)));
 		menuDisposables.add(addDisposableListener(window, EventType.MOUSE_DOWN, (e: MouseEvent) => {
-			console.log('on mouse down');
 			if (e.defaultPrevented) {
-				console.log('skip due to defaultPrevented');
 				return;
 			}
 

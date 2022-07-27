@@ -1,6 +1,6 @@
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import fonts from 'mote/base/browser/ui/fonts';
-import { ThemedBase, ThemedColors } from 'mote/base/browser/ui/themes';
+import { ThemedBase, ThemedColors } from 'mote/base/common/themes';
 import { isBrNode, isTextMentionNode, isTextNode } from './htmlElementUtils';
 import { getFirstInArray, getSecondArrayInArray, ISegment } from './segmentUtils';
 

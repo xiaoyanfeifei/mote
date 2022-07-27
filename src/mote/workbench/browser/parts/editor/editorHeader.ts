@@ -1,4 +1,4 @@
-import { ThemedStyles } from "mote/base/browser/ui/themes";
+import { ThemedStyles } from "mote/base/common/themes";
 
 class EditorHeader {
 

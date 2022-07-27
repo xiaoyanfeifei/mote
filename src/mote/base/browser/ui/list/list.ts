@@ -1,6 +1,6 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import * as DOM from 'vs/base/browser/dom';
 import { addDisposableListener, EventType, IFocusTracker, trackFocus } from 'vs/base/browser/dom';
 import { EventType as TouchEventType, Gesture } from 'vs/base/browser/touch';

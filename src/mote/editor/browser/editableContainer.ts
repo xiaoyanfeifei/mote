@@ -1,5 +1,5 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import BlockStore from "mote/editor/common/store/blockStore";
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
 import { Disposable } from "vs/base/common/lifecycle";
