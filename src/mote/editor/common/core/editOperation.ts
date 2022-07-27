@@ -8,10 +8,10 @@ import { BlockType } from 'mote/editor/common/store/record';
 
 export class EditOperation {
 
-	public static createBlockStore(type: string, transaction: Transaction) {
+	public static createBlockStore(type: string, transaction: Transaction, table: string = 'block') {
 		const id = generateUuid();
 		const blockStore = new BlockStore({
-			table: 'block',
+			table: table,
 			id: id
 		}, transaction.userId);
 		this.addSetOperationForStore(blockStore, {

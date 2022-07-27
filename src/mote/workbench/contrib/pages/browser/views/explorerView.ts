@@ -149,7 +149,7 @@ export class ExplorerView extends ViewPane {
 		addPageBtn.create();
 		addPageBtn.onDidClick((e) => {
 			Transaction.createAndCommit((transaction) => {
-				let child = EditOperation.createBlockStore("page", transaction);
+				let child = EditOperation.createBlockStore('page', transaction, 'page');
 
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
