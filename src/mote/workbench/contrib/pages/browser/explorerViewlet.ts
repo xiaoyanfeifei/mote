@@ -34,7 +34,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 	override create(parent: HTMLElement): void {
 		super.create(parent);
 		parent.classList.add('explorer-viewlet');
-		parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
+		//parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 	}
 
 }

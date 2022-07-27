@@ -1,3 +1,5 @@
+import { IAction, IActionRunner } from 'vs/base/common/actions';
+
 export interface IContextMenuEvent {
 	readonly shiftKey?: boolean;
 	readonly ctrlKey?: boolean;
@@ -6,7 +8,11 @@ export interface IContextMenuEvent {
 }
 
 export interface IContextMenuDelegate {
-
+	getActions(): readonly IAction[];
+	getAnchor(): HTMLElement | { x: number; y: number; width?: number; height?: number };
+	getMenuClassName?(): string;
+	actionRunner?: IActionRunner;
+	domForShadowRoot?: HTMLElement;
 }
 
 export interface IContextMenuProvider {

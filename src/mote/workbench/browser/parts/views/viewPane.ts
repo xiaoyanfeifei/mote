@@ -11,6 +11,7 @@ import { ILogService } from "vs/platform/log/common/log";
 import { parseLinkedText } from "vs/base/common/linkedText";
 import { Button } from "vs/base/browser/ui/button/button";
 import { Registry } from "vs/platform/registry/common/platform";
+import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 
 export interface IViewPaneOptions extends IPaneOptions {
 	id: string;
@@ -94,6 +95,7 @@ export abstract class ViewPane extends Pane implements IView {
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService protected logService: ILogService,
+		@IContextMenuService protected contextMenuService: IContextMenuService,
 	) {
 		super(options);
 

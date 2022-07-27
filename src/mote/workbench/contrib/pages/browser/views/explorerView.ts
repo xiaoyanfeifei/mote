@@ -8,16 +8,17 @@ import { Transaction } from "mote/editor/common/core/transaction";
 import BlockStore from "mote/editor/common/store/blockStore";
 import SpaceStore from "mote/editor/common/store/spaceStore";
 import { ICommandService } from "mote/platform/commands/common/commands";
-import { TreeRender, TreeView } from "mote/workbench/browser/parts/views/treeView";
 import { IViewPaneOptions, ViewPane } from "mote/workbench/browser/parts/views/viewPane";
 import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
-import { append, $, reset } from "vs/base/browser/dom";
+import { $, reset } from "vs/base/browser/dom";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { NameFromStore } from './outliner';
-import { ListView } from 'vs/base/browser/ui/list/listView';
-import { CachedListVirtualDelegate, IListRenderer } from 'vs/base/browser/ui/list/list';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import { CachedListVirtualDelegate, IListContextMenuEvent, IListRenderer, IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
+import { List } from 'vs/base/browser/ui/list/listWidget';
+import { ITreeContextMenuEvent } from 'vs/base/browser/ui/tree/tree';
+import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
+import { IAction } from 'vs/base/common/actions';
 
 class BlockListVirtualDelegate extends CachedListVirtualDelegate<BlockStore> implements IListVirtualDelegate<BlockStore> {
 
@@ -30,15 +31,13 @@ class BlockListVirtualDelegate extends CachedListVirtualDelegate<BlockStore> imp
 	}
 
 	getTemplateId(element: BlockStore): string {
-		return 'text';
+		return 'sidebar-outliner';
 	}
 
 };
 
 class BlockListRenderer implements IListRenderer<BlockStore, any> {
-	templateId: string = 'text';
-
-	private cache = new WeakMap<BlockStore, string>();
+	templateId: string = 'sidebar-outliner';
 
 	constructor(
 		private readonly commandService: ICommandService
@@ -80,15 +79,17 @@ export class ExplorerView extends ViewPane {
 
 	static readonly ID: string = 'workbench.explorer.pageView';
 
-	private view!: ListView<BlockStore>;
+	private view!: List<BlockStore>;
+	private spaceStore!: SpaceStore;
 
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
+		@IContextMenuService contextMenuService: IContextMenuService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) {
-		super(options, logService);
+		super(options, logService, contextMenuService);
 	}
 
 	override renderBody(container: HTMLElement) {
@@ -101,6 +102,7 @@ export class ExplorerView extends ViewPane {
 			table: 'space',
 			id: '1',
 		}, { userId: userId });
+		this.spaceStore = spaceStore;
 
 		const dataSource = new class implements IAsyncDataSource<ITreeItem, ITreeItem> {
 			hasChildren(element: ITreeItem): boolean {
@@ -121,9 +123,11 @@ export class ExplorerView extends ViewPane {
 
 		};
 
-		const treeView = new ListView(container, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		const treeView = new List(userId, container, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
 		this.view = treeView;
+
+		this._register(this.view.onContextMenu((e) => this.onContextMenu(e)));
 
 		//const addNewPage = new Button(container, {});
 		const domNode = $(".list-item");
@@ -140,14 +144,64 @@ export class ExplorerView extends ViewPane {
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
 				that.commandService.executeCommand("openPage", { id: child.id });
-				transaction.postSubmitCallbacks.push(() => treeView.splice(0, treeView.length, spaceStore.getPagesStores()));
+				transaction.postSubmitCallbacks.push(() => this.refresh());
 			}, spaceStore.userId);
 		});
 		container.append(domNode);
 	}
 
+	private refresh() {
+		this.view.splice(0, this.view.length, this.spaceStore.getPagesStores());
+	}
+
+	private async onContextMenu(e: IListContextMenuEvent<BlockStore>) {
+		const anchor = e.anchor;
+		const pageStore = e.element;
+		if (!pageStore) {
+			return;
+		}
+		const parentStore = pageStore.recordStoreParentStore;
+		if (!parentStore) {
+			return;
+		}
+
+		const actions: IAction[] = [];
+
+		actions.push({
+			id: 'page.pin',
+			label: 'Pin',
+			tooltip: '',
+			run: () => { },
+			class: '',
+			enabled: true,
+			dispose: () => { }
+		});
+
+		actions.push({
+			id: 'page.delete',
+			label: 'Delete',
+			tooltip: '',
+			run: () => {
+				Transaction.createAndCommit((transaction) => {
+					EditOperation.removeChild(parentStore, pageStore, transaction);
+					transaction.postSubmitCallbacks.push(() => this.refresh());
+				}, pageStore.userId);
+
+			},
+			class: '',
+			enabled: true,
+			dispose: () => { }
+		});
+
+
+
+		this.contextMenuService.showContextMenu({
+			getAnchor: () => anchor,
+			getActions: () => actions,
+		});
+	}
+
 	override layoutBody(height: number, width: number) {
-		console.log(height, width);
 		super.layoutBody(height, width);
 		this.view.layout(height - 27, width);
 	}

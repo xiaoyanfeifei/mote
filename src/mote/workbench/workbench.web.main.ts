@@ -33,8 +33,12 @@ import 'mote/workbench/services/lifecycle/browser/lifecycleService';
 
 
 import { FileLoggerService } from 'vs/platform/log/common/fileLog';
+import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
+import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
+
 
 registerSingleton(ILoggerService, FileLoggerService);
+registerSingleton(IContextMenuService, BrowserContextMenuService);
 
 
 
