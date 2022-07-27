@@ -46,11 +46,11 @@ export class NameFromStore {
 
 	private update = () => {
 		this.domNode.textContent = this.getTitle();
-	}
+	};
 
 	getStyle = () => {
 		return Object.assign({}, !this.shouldWrap && fonts.textOverflowStyle || {});
-	}
+	};
 
 	getTitle = () => {
 		const title = this._store.getValue();

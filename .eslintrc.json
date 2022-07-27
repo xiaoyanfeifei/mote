@@ -413,6 +413,7 @@
 					{
 						"target": "src/mote/workbench/~",
 						"restrictions": [
+							"mote/base/~",
 							"vs/base/~",
 							"vs/base/parts/*/~",
 							"mote/platform/*/~",
@@ -420,7 +421,9 @@
 							"mote/editor/~",
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
+							"mote/workbench/~",
 							"vs/workbench/~",
+							"mote/workbench/services/*/~",
 							"vs/workbench/services/*/~",
 							"assert",
 							{

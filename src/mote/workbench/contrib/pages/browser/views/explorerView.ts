@@ -11,14 +11,76 @@ import { ICommandService } from "mote/platform/commands/common/commands";
 import { TreeRender, TreeView } from "mote/workbench/browser/parts/views/treeView";
 import { IViewPaneOptions, ViewPane } from "mote/workbench/browser/parts/views/viewPane";
 import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
-import { append, $ } from "vs/base/browser/dom";
+import { append, $, reset } from "vs/base/browser/dom";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
 import { NameFromStore } from './outliner';
+import { ListView } from 'vs/base/browser/ui/list/listView';
+import { CachedListVirtualDelegate, IListRenderer } from 'vs/base/browser/ui/list/list';
+import RecordStore from 'mote/editor/common/store/recordStore';
+
+class BlockListVirtualDelegate extends CachedListVirtualDelegate<BlockStore> implements IListVirtualDelegate<BlockStore> {
+
+	protected estimateHeight(element: BlockStore): number {
+		return 31;
+	}
+
+	hasDynamicHeight(element: BlockStore) {
+		return true;
+	}
+
+	getTemplateId(element: BlockStore): string {
+		return 'text';
+	}
+
+};
+
+class BlockListRenderer implements IListRenderer<BlockStore, any> {
+	templateId: string = 'text';
+
+	private cache = new WeakMap<BlockStore, string>();
+
+	constructor(
+		private readonly commandService: ICommandService
+	) {
+
+	}
+
+	renderTemplate(container: HTMLElement) {
+		return container;
+	}
+
+	renderElement(element: BlockStore, index: number, templateData: HTMLElement, height: number | undefined): void {
+		const container = document.createElement('div');
+		const titleStore = element.getTitleStore();
+		const icon = SVGIcon({ name: "page", style: { fill: ThemedStyles.mediumIconColor.dark } });
+		const child = new NameFromStore(titleStore);
+		const item = new ListItem(container, { enableClick: true });
+		item.child = child.element;
+		item.icon = icon as any;
+		item.create();
+
+		reset(templateData);
+
+		templateData.appendChild(container);
+
+		item.onDidClick((e) => {
+			this.commandService.executeCommand("openPage", { id: element.id, userId: element.userId });
+		});
+
+	}
+	disposeTemplate(templateData: any): void {
+
+	}
+
+
+}
 
 export class ExplorerView extends ViewPane {
 
 	static readonly ID: string = 'workbench.explorer.pageView';
+
+	private view!: ListView<BlockStore>;
 
 	constructor(
 		options: IViewPaneOptions,
@@ -33,31 +95,12 @@ export class ExplorerView extends ViewPane {
 		super.renderBody(container);
 		const that = this;
 
+		const userId = 'guest';
+
 		const spaceStore = new SpaceStore({
-			table: "space",
-			id: "1",
-		}, { userId: "123" });
-
-		const renderer = new class implements TreeRender<ITreeItem> {
-			render(element: HTMLElement, value: ITreeItem) {
-				const pageStore = new BlockStore(
-					{ table: "page", id: value.id },
-					"123",
-				);
-				const titleStore = pageStore.getPropertyStore("title");
-				const icon = SVGIcon({ name: "page", style: { fill: ThemedStyles.mediumIconColor.dark } });
-				const child = new NameFromStore(titleStore);
-				const item = new ListItem(element, { enableClick: true });
-				item.child = child.element;
-				item.icon = icon as any;
-				item.create();
-
-				item.onDidClick((e) => {
-					that.commandService.executeCommand("openPage", { id: value.id });
-				});
-			}
-
-		};
+			table: 'space',
+			id: '1',
+		}, { userId: userId });
 
 		const dataSource = new class implements IAsyncDataSource<ITreeItem, ITreeItem> {
 			hasChildren(element: ITreeItem): boolean {
@@ -77,8 +120,10 @@ export class ExplorerView extends ViewPane {
 			}
 
 		};
-		const treeView = this.instantiationService.createInstance(TreeView, dataSource, renderer);
-		treeView.show(container);
+
+		const treeView = new ListView(container, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
+		this.view = treeView;
 
 		//const addNewPage = new Button(container, {});
 		const domNode = $(".list-item");
@@ -95,9 +140,15 @@ export class ExplorerView extends ViewPane {
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
 				that.commandService.executeCommand("openPage", { id: child.id });
-				transaction.postSubmitCallbacks.push(() => treeView.refresh());
+				transaction.postSubmitCallbacks.push(() => treeView.splice(0, treeView.length, spaceStore.getPagesStores()));
 			}, spaceStore.userId);
 		});
 		container.append(domNode);
+	}
+
+	override layoutBody(height: number, width: number) {
+		console.log(height, width);
+		super.layoutBody(height, width);
+		this.view.layout(height - 27, width);
 	}
 }

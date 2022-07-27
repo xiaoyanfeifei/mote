@@ -106,12 +106,6 @@ export class BlockService extends Disposable {
 				segmentUtils.merge(storeValue, [segment], selection.startIndex),
 				transaction
 			);
-
-			transaction.postSubmitActions.push(() => {
-				const transaction = Transaction.create(userId);
-				Markdown.parse(store, { selection, mode: selectionMode }, transaction);
-				transaction.commit();
-			});
 		}
 	}
 

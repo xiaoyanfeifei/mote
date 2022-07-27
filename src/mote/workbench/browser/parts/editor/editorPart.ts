@@ -82,7 +82,7 @@ export class EditorPart extends Part implements IEditorService {
 
 
 	openPage = (accessor: ServicesAccessor, payload: any) => {
-		this.pageStore = new BlockStore({ id: payload.id, table: 'page' }, '123');
+		this.pageStore = new BlockStore({ id: payload.id, table: 'page' }, payload.userId);
 		if (this.listener) {
 			this.listener.dispose();
 		}
