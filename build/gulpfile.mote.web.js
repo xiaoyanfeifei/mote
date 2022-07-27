@@ -174,8 +174,8 @@ function packageTask(sourceFolderName, destinationFolderName) {
 		const indexHtml = gulp.src('src/mote/app/browser/workbench/workbench.html', { base: 'src/mote/app/browser/' })
 			.pipe(rename('index.html'));
 		const pwaicons = es.merge(
-			gulp.src('resources/server/code-192.png', { base: 'resources/server' }),
-			gulp.src('resources/server/code-512.png', { base: 'resources/server' })
+			gulp.src('resources/server/mote-192.png', { base: 'resources/server' }),
+			gulp.src('resources/server/mote-512.png', { base: 'resources/server' })
 		);
 
 		const all = es.merge(

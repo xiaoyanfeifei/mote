@@ -1,6 +1,6 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import { $, addDisposableListener, EventHelper, EventType, reset } from 'vs/base/browser/dom';
 import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
 import { Emitter, Event as BaseEvent } from 'vs/base/common/event';

@@ -1,3 +1,4 @@
+import 'vs/css!./workbench.common.main';
 //#region --- workbench parts
 
 import 'mote/workbench/browser/parts/editor/editorPart';

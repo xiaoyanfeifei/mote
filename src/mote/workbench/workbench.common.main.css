@@ -1,0 +1,10 @@
+.scrollbar > .slider {
+    background: rgba(121, 121, 121, 0.4);
+}
+.monaco-list-row.focused{
+	background-color: rgb(71, 76, 80);
+}
+.action-item.focused > .action-menu-item {
+	color: rgb(255,255,255);
+	background-color: rgb(4,54,94);
+}

@@ -160,7 +160,10 @@ export class ViewController {
 							const content = collectValueFromSegment(prevStore.getTitleStore().getValue());
 							this.setSelection({ startIndex: content.length, endIndex: content.length, lineNumber: newLineNumber });
 						} else {
-							this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: newLineNumber });
+							// reset to uninitialized state, don't manually set it in other case, use setSelection instead
+							this.selection.lineNumber = -1;
+							this.selection.startIndex = -1;
+							this.selection.endIndex = -1;
 						}
 						eventsCollector.emitViewEvent(new viewEvents.ViewLinesDeletedEvent(deletedLineNumber, deletedLineNumber));
 					}

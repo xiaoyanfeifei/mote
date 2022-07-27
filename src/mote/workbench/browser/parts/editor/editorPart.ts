@@ -7,7 +7,7 @@ import { IResourceEditorInput } from "mote/platform/editor/common/editor";
 import { IEditorPane } from "mote/workbench/common/editor";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { assertIsDefined } from "vs/base/common/types";
-import { ThemedStyles } from "mote/base/browser/ui/themes";
+import { ThemedStyles } from "mote/base/common/themes";
 import { setStyles } from "mote/base/browser/jsx/createElement";
 import { EditableContainer } from "mote/editor/browser/editableContainer";
 import BlockStore from "mote/editor/common/store/blockStore";
@@ -21,6 +21,7 @@ import { IDisposable } from "vs/base/common/lifecycle";
 import { IEditorService } from "mote/workbench/services/editor/common/editorService";
 import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
+import { CSSProperties } from 'mote/base/browser/jsx/style';
 
 export class EditorPart extends Part implements IEditorService {
 
@@ -82,7 +83,7 @@ export class EditorPart extends Part implements IEditorService {
 
 
 	openPage = (accessor: ServicesAccessor, payload: any) => {
-		this.pageStore = new BlockStore({ id: payload.id, table: 'page' }, '123');
+		this.pageStore = new BlockStore({ id: payload.id, table: 'page' }, payload.userId);
 		if (this.listener) {
 			this.listener.dispose();
 		}
@@ -101,7 +102,7 @@ export class EditorPart extends Part implements IEditorService {
 		throw new Error('Method not implemented.');
 	}
 
-	getTitleStyle() {
+	getTitleStyle(): CSSProperties {
 		return {
 			color: ThemedStyles.regularTextColor.dark,
 			fontWeight: 700,
@@ -109,7 +110,7 @@ export class EditorPart extends Part implements IEditorService {
 			fontSize: '40px',
 			cursor: 'text',
 			display: 'flex',
-			alignItems: 'center'
+			alignItems: 'center',
 		};
 	}
 
@@ -148,7 +149,7 @@ export class EditorPart extends Part implements IEditorService {
 	override createContentArea(parent: HTMLElement) {
 		// Container
 		this.element = parent;
-		this.element.style.backgroundColor = '#303030';
+		this.element.style.backgroundColor = ThemedStyles.contentBackground.dark;
 
 		this.container!.classList.add('content');
 		//this.container.style.paddingLeft = this.getSafePaddingLeftCSS(96);

@@ -315,6 +315,7 @@
 					{
 						"target": "src/mote/platform/*/~",
 						"restrictions": [
+							"mote/base/~",
 							"vs/base/~",
 							"vs/base/parts/*/~",
 							"vs/platform/*/~",
@@ -413,6 +414,7 @@
 					{
 						"target": "src/mote/workbench/~",
 						"restrictions": [
+							"mote/base/~",
 							"vs/base/~",
 							"vs/base/parts/*/~",
 							"mote/platform/*/~",
@@ -420,7 +422,9 @@
 							"mote/editor/~",
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
+							"mote/workbench/~",
 							"vs/workbench/~",
+							"mote/workbench/services/*/~",
 							"vs/workbench/services/*/~",
 							"assert",
 							{
@@ -467,6 +471,7 @@
 							"vs/base/~",
 							"mote/base/~",
 							"vs/base/parts/*/~",
+							"mote/platform/*/~",
 							"vs/platform/*/~",
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
@@ -610,15 +615,19 @@
 						"restrictions": [
 							"vs/base/~",
 							"vs/base/parts/*/~",
+							"mote/platform/*/~",
 							"vs/platform/*/~",
 							"mote/editor/~",
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
 							"vs/editor/editor.all",
+							"mote/workbench/~",
 							"vs/workbench/~",
 							"vs/workbench/api/~",
+							"mote/workbench/services/*/~",
 							"vs/workbench/services/*/~",
 							"vs/workbench/contrib/*/~",
+							"mote/workbench/workbench.common.main",
 							"vs/workbench/workbench.common.main"
 						]
 					},

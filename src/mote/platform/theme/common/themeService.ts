@@ -67,27 +67,6 @@ export interface IThemeService {
 
 }
 
-export class ColorTheme implements IColorTheme {
-	constructor(
-		public label: string,
-		private colors: { [id: string]: string } = {},
-		public type = ColorScheme.DARK,
-		public readonly semanticHighlighting = false
-	) { }
-
-	getColor(color: string, useDefault?: boolean): Color | undefined {
-		const value = this.colors[color];
-		if (value) {
-			return Color.fromHex(value);
-		}
-		return undefined;
-	}
-
-	defines(color: string): boolean {
-		throw new Error('Method not implemented.');
-	}
-}
-
 
 /**
  * Utility base class for all themable components.

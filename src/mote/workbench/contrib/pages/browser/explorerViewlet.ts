@@ -1,4 +1,4 @@
-import { ThemedStyles } from 'mote/base/browser/ui/themes';
+import { ThemedStyles } from 'mote/base/common/themes';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
 import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
@@ -34,7 +34,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 	override create(parent: HTMLElement): void {
 		super.create(parent);
 		parent.classList.add('explorer-viewlet');
-		parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
+		//parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 	}
 
 }

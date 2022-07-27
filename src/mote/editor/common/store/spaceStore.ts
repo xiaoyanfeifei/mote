@@ -3,54 +3,54 @@ import { Pointer, RecordValue } from "./record";
 import RecordStore from "./recordStore";
 
 interface SpaceRecord extends RecordValue {
-    name: string;
-    description?: string;
-    pages: string[];
+	name: string;
+	description?: string;
+	pages: string[];
 }
 
 interface SpaceStoreProps {
-    userId: string;
+	userId: string;
 }
 
 export default class SpaceStore extends RecordStore<SpaceRecord> {
-    static override keyName = "SpaceStore";
+	static override keyName = 'SpaceStore';
 
-    static override createChildStore(parentStore: RecordStore, pointer: Pointer): SpaceStore {
-        const childStoreKey = RecordStore.getChildStoreKey(pointer, SpaceStore.keyName)
-        const childStoreInCache = parentStore.getRecordStoreChildStore(childStoreKey) as SpaceStore;
-        const childStore = childStoreInCache || new SpaceStore(pointer, {
-            userId: parentStore.userId,
-        });
-        childStoreInCache || childStore.setRecordStoreParent(childStoreKey, parentStore);
-        return childStore;
-    }
+	static override createChildStore(parentStore: RecordStore, pointer: Pointer): SpaceStore {
+		const childStoreKey = RecordStore.getChildStoreKey(pointer, SpaceStore.keyName)
+		const childStoreInCache = parentStore.getRecordStoreChildStore(childStoreKey) as SpaceStore;
+		const childStore = childStoreInCache || new SpaceStore(pointer, {
+			userId: parentStore.userId,
+		});
+		childStoreInCache || childStore.setRecordStoreParent(childStoreKey, parentStore);
+		return childStore;
+	}
 
-    constructor(pointer:Pointer, props: SpaceStoreProps){
-        super({
-            pointer: pointer,
-            userId: props.userId,
-        })
-    }
+	constructor(pointer: Pointer, props: SpaceStoreProps) {
+		super({
+			pointer: pointer,
+			userId: props.userId,
+		});
+	}
 
-    getSpaceId() {
-        const record = this.getValue();
-        if (record && record.id) {
-            return record.id
-        }
-        return null;
-    }
+	getSpaceId() {
+		const record = this.getValue();
+		if (record && record.id) {
+			return record.id
+		}
+		return null;
+	}
 
-    getPagesStore() {
-        return this.getPropertyStore("pages");
-    }
+	getPagesStore() {
+		return this.getPropertyStore("pages");
+	}
 
-    getPagesStores(): BlockStore[] {
-        const contentStore = this.getPagesStore();
-        const record = this.getValue()
-        const pages: string[] = record && record.pages ? record.pages : [];
-        return pages.map(itemId=>BlockStore.createChildStore(contentStore, {
-            table: "page",
-            id: itemId,
-        }));
-    }
+	getPagesStores(): BlockStore[] {
+		const contentStore = this.getPagesStore();
+		const record = this.getValue();
+		const pages: string[] = record && record.pages ? record.pages : [];
+		return pages.map(itemId => BlockStore.createChildStore(contentStore, {
+			table: "page",
+			id: itemId,
+		}));
+	}
 }

@@ -1,8 +1,8 @@
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { Event } from 'vs/base/common/event';
 import { IDisposable } from 'vs/base/common/lifecycle';
-import { IContextMenuDelegate } from "mote/base/browser/contextmenu";
-import { AnchorAlignment, AnchorAxisAlignment, IContextViewProvider } from "mote/base/browser/ui/contextview/contextview";
+import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
+import { AnchorAlignment, AnchorAxisAlignment, IContextViewProvider } from 'mote/base/browser/ui/contextview/contextview';
 
 export const IContextViewService = createDecorator<IContextViewService>('contextViewService');
 
