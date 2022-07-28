@@ -1,12 +1,11 @@
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IQuickMenuDelegate, IQuickMenuService } from './quickmenu';
-import { QuickMenuHeight } from './quickmenuWidget';
 import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
 import { IAction } from 'vs/base/common/actions';
 import { BrowserContextViewBasedService } from 'mote/platform/contextview/browser/contextViewBasedService';
 import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
-import { QuickMenu } from 'mote/base/browser/ui/menu/quickMenu';
+import { QuickMenu, QuickMenuHeight } from 'mote/base/browser/ui/menu/quickMenu';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IHoverService, IHoverTarget } from 'mote/workbench/services/hover/browser/hover';
 import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
