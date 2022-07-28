@@ -1,5 +1,5 @@
 import { getDataRootInParent, getTextMention, isTextBufferElement, isTextNode, removeBOM } from "mote/editor/common/htmlElementUtils";
-import BlockStore from 'mote/editor/common/store/blockStore';
+import RecordStore from 'mote/editor/common/store/recordStore';
 import { serializeNode } from 'mote/editor/common/textSerialize';
 import { RangeUtils } from './rangeUtils';
 
@@ -29,7 +29,7 @@ export interface TextSelectionState {
 	/**
 	 * The selection belong to
 	 */
-	store?: BlockStore;
+	store?: RecordStore;
 }
 
 interface ContainerWithOffset {

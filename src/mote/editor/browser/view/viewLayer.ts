@@ -1,6 +1,6 @@
 import BlockStore from 'mote/editor/common/store/blockStore';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
-import { IStringBuilder } from 'vs/editor/common/core/stringBuilder';
+import { FastDomNode } from 'vs/base/browser/fastDomNode';
 
 export interface ILine {
 	onContentChanged(): void;
@@ -11,8 +11,8 @@ export interface ILine {
  * Represents a visible line
  */
 export interface IVisibleLine extends ILine {
-	getDomNode(): HTMLElement | null;
-	setDomNode(domNode: HTMLElement): void;
+	getDomNode(): FastDomNode<HTMLElement> | null;
+	setDomNode(domNode: FastDomNode<HTMLElement>): void;
 
 	/**
 	 * Return null if the HTML should not be touched.

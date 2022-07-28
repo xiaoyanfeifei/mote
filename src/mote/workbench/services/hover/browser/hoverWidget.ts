@@ -1,12 +1,12 @@
-import * as dom from "vs/base/browser/dom";
-import { AnchorPosition } from "vs/base/browser/ui/contextview/contextview";
-import { HoverPosition, HoverWidget as BaseHoverWidget } from "vs/base/browser/ui/hover/hoverWidget";
-import { Widget } from "vs/base/browser/ui/widget";
-import { Emitter, Event } from "vs/base/common/event";
-import { KeyCode } from "vs/base/common/keyCodes";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IHoverOptions, IHoverTarget } from "./hover";
+import * as dom from 'vs/base/browser/dom';
+import { AnchorPosition } from 'vs/base/browser/ui/contextview/contextview';
+import { HoverPosition, HoverWidget as BaseHoverWidget } from 'vs/base/browser/ui/hover/hoverWidget';
+import { Widget } from 'vs/base/browser/ui/widget';
+import { Emitter, Event } from 'vs/base/common/event';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IHoverOptions, IHoverTarget } from './hover';
 
 const $ = dom.$;
 type TargetRect = {
@@ -25,9 +25,9 @@ const enum Constants {
 	HoverWindowEdgeMargin = 2,
 }
 
-export class HoverWidget extends Widget { 
+export class HoverWidget extends Widget {
 
-    private readonly _messageListeners = new DisposableStore();
+	private readonly _messageListeners = new DisposableStore();
 	private readonly _mouseTracker: CompositeMouseTracker;
 
 	private readonly _hover: BaseHoverWidget;
@@ -54,16 +54,16 @@ export class HoverWidget extends Widget {
 	get x(): number { return this._x; }
 	get y(): number { return this._y; }
 
-    
-    constructor(
+
+	constructor(
 		options: IHoverOptions,
-        @IInstantiationService private readonly _instantiationService: IInstantiationService,
-    ) {
-        super();
+		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+	) {
+		super();
 
-        this._target = 'targetElements' in options.target ? options.target : new ElementHoverTarget(options.target);
+		this._target = 'targetElements' in options.target ? options.target : new ElementHoverTarget(options.target);
 
-        this._hoverPointer = options.showPointer ? $('div.workbench-hover-pointer') : undefined;
+		this._hoverPointer = options.showPointer ? $('div.workbench-hover-pointer') : undefined;
 		this._hover = this._register(new BaseHoverWidget());
 		this._hover.containerDomNode.classList.add('workbench-hover', 'fadeIn');
 		if (options.compact) {
@@ -79,9 +79,9 @@ export class HoverWidget extends Widget {
 			this._forcePosition = true;
 		}
 
-        this._hoverPosition = options.hoverPosition ?? HoverPosition.ABOVE;
+		this._hoverPosition = options.hoverPosition ?? HoverPosition.ABOVE;
 
-        // Don't allow mousedown out of the widget, otherwise preventDefault will call and text will
+		// Don't allow mousedown out of the widget, otherwise preventDefault will call and text will
 		// not be selected.
 		this.onmousedown(this._hover.containerDomNode, e => e.stopPropagation());
 
@@ -92,7 +92,7 @@ export class HoverWidget extends Widget {
 			}
 		});
 
-        const rowElement = $('div.hover-row.markdown-hover');
+		const rowElement = $('div.hover-row.markdown-hover');
 		const contentsElement = $('div.hover-contents');
 		if (typeof options.content === 'string') {
 			contentsElement.textContent = options.content;
@@ -104,10 +104,10 @@ export class HoverWidget extends Widget {
 
 		}
 
-        rowElement.appendChild(contentsElement);
+		rowElement.appendChild(contentsElement);
 		this._hover.contentsDomNode.appendChild(rowElement);
 
-        this._hoverContainer = $('div.workbench-hover-container');
+		this._hoverContainer = $('div.workbench-hover-container');
 		if (this._hoverPointer) {
 			this._hoverContainer.appendChild(this._hoverPointer);
 		}
@@ -127,21 +127,21 @@ export class HoverWidget extends Widget {
 				hideOnHover = options.hideOnHover;
 			}
 		}
-        if (!hideOnHover) {
+		if (!hideOnHover) {
 			mouseTrackerTargets.push(this._hoverContainer);
 		}
 		this._mouseTracker = new CompositeMouseTracker(mouseTrackerTargets);
 		this._register(this._mouseTracker.onMouseOut(() => this.dispose()));
 		this._register(this._mouseTracker);
-    }
+	}
 
-    public render(container: HTMLElement): void {
+	public render(container: HTMLElement): void {
 		container.appendChild(this._hoverContainer);
 
 		this.layout();
 	}
 
-    public layout() {
+	public layout() {
 		this._hover.containerDomNode.classList.remove('right-aligned');
 		this._hover.contentsDomNode.style.maxHeight = '';
 
@@ -393,7 +393,7 @@ export class HoverWidget extends Widget {
 		this._hover.containerDomNode.focus();
 	}
 
-    public hide(): void {
+	public hide(): void {
 		this.dispose();
 	}
 
@@ -421,7 +421,7 @@ class CompositeMouseTracker extends Widget {
 	) {
 		super();
 		this._elements.forEach(n => this.onmouseover(n, () => this._onTargetMouseOver()));
-		this._elements.forEach(n => this.onnonbubblingmouseout(n, () => this._onTargetMouseOut()));
+		this._elements.forEach(n => this.onmouseleave(n, () => this._onTargetMouseOut()));
 	}
 
 	private _onTargetMouseOver(): void {

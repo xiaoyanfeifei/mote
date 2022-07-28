@@ -44,7 +44,7 @@ export default class RecordCacheStore extends Disposable {
 			this.state.cache.set(key, record);
 			return record.value;
 		}
-		this.logService.debug(`[RecordCache] could not locate record<${key}>`)
+		this.logService.debug(`[RecordCache] could not locate record<${key}>`);
 		return null;
 	}
 

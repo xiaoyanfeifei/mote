@@ -473,6 +473,7 @@
 							"vs/base/parts/*/~",
 							"mote/platform/*/~",
 							"vs/platform/*/~",
+							"mote/editor/~",
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
 							"vs/workbench/~",

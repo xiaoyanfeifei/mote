@@ -40,7 +40,7 @@ export class EmptyViewLine extends Disposable {
 export class ViewLine implements IVisibleLine {
 	public static readonly CLASS_NAME = 'view-line';
 
-	private domNode: HTMLElement | null = null;
+	private domNode: FastDomNode<HTMLElement> | null = null;
 
 	constructor(
 		private readonly viewContext: ViewContext,
@@ -58,11 +58,11 @@ export class ViewLine implements IVisibleLine {
 		throw new Error('Method not implemented.');
 	}
 
-	public getDomNode(): HTMLElement | null {
+	public getDomNode(): FastDomNode<HTMLElement> | null {
 		return this.domNode;
 	}
 
-	public setDomNode(domNode: HTMLElement) {
+	public setDomNode(domNode: FastDomNode<HTMLElement>) {
 		this.domNode = domNode;
 	}
 
@@ -81,8 +81,9 @@ export class ViewLine implements IVisibleLine {
 				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
 		}
 		viewBlock.setValue(store);
-		this.domNode = viewBlock.getDomNode().domNode;
-		this.domNode.className = 'view-line';
+		this.domNode = viewBlock.getDomNode();
+		this.domNode.setClassName('view-line');
+		this.domNode.setAttribute('data-index', lineNumber.toString());
 
 		return true;
 	}

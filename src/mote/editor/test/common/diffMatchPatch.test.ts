@@ -19,10 +19,10 @@ suite('Editor Common - DiffMatchPatch', () => {
 		assert.equal(0, diffMatchPatch.diffCommonSuffix('abc', 'xyz'));
 
 		// Non-null case.
-		assert.equal(4, diffMatchPatch.diffCommonPrefix('abcdef1234', 'xyz1234'));
+		assert.equal(4, diffMatchPatch.diffCommonSuffix('abcdef1234', 'xyz1234'));
 
 		// Whole case.
-		assert.equal(4, diffMatchPatch.diffCommonPrefix('1234', 'xyz1234'));
+		assert.equal(4, diffMatchPatch.diffCommonSuffix('1234', 'xyz1234'));
 	});
 
 	test('testDiffCommonOverlap', () => {

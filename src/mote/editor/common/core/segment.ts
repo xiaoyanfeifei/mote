@@ -115,7 +115,7 @@ export class Segment {
 				const text = getFirstInArray(segment);
 				const annotations = getSecondArrayInArray(segment).filter(e => e[0] !== annotation[0]);
 				return combineArray(text, annotations) as ISegment;
-			})
+			});
 		}
 		// Add new annotation
 		else {
@@ -124,20 +124,20 @@ export class Segment {
 				const annotations = new Set(getSecondArrayInArray(segment));
 				annotations.add(annotation);
 				return combineArray(text, [...annotations]) as ISegment;
-			})
+			});
 		}
 		return [...segmentsBeforeRange, ...newSegments, ...segmentsAfterRange];
 	}
 
 	public static update(textSelection: TextSelectionState, annotation: IAnnotation) {
 		if (!textSelection.store) {
-			return;
+			return false;
 		}
 
 		const store = textSelection.store;
 		const storeValue = store.getValue();
 		if (!Array.isArray(storeValue)) {
-			return;
+			return false;
 		}
 
 		const segments = this.merge(storeValue, textSelection.selection, annotation);
@@ -150,7 +150,7 @@ export class Segment {
 			args: segments
 		});
 		transaction.commit();
-		window.getSelection()?.empty();
 		// dismiss the quick menu
+		return true;
 	}
 }

@@ -1,85 +1,82 @@
-import { IContextViewService } from "mote/platform/contextview/browser/contextView";
-import { addDisposableListener, EventType, getDomNodePagePosition, isHTMLElement } from "vs/base/browser/dom";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { registerSingleton } from "vs/platform/instantiation/common/extensions";
-import { IQuickMenuDelegate, IQuickMenuOptions, IQuickMenuService } from "./quickmenu";
-import { QuickMenuHeight, QuickMenuWidget } from "./quickmenuWidget";
-import { RangeUtils } from "mote/editor/common/core/rangeUtils";
+import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IQuickMenuDelegate, IQuickMenuService } from './quickmenu';
+import { QuickMenuHeight } from './quickmenuWidget';
+import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
+import { IAction } from 'vs/base/common/actions';
+import { BrowserContextViewBasedService } from 'mote/platform/contextview/browser/contextViewBasedService';
+import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
+import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
+import { QuickMenu } from 'mote/base/browser/ui/menu/quickMenu';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { IHoverService, IHoverTarget } from 'mote/workbench/services/hover/browser/hover';
+import { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ContextViewService } from 'mote/platform/contextview/browser/contextViewService';
+import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
 
-interface QuickMenuState {
 
-}
-
-export class QuickMenuService implements IQuickMenuService {
+export class QuickMenuService extends BrowserContextViewBasedService implements IQuickMenuService {
 
 	declare readonly _serviceBrand: undefined;
 
-	private focusToReturn: HTMLElement | null = null;
-
-	private widget: QuickMenuWidget;
+	private hoverDelegate: IHoverDelegate;
 
 	constructor(
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IThemeService themeService: IThemeService,
+		@IInstantiationService instantiationService: IInstantiationService,
+		@IHoverService hoverService: IHoverService
 	) {
-		this.widget = new QuickMenuWidget();
+		// We need show tooltip, and tooltop is based on the ContextViewService;
+		// ContextViewService just allowed to show one context view in same time.
+		// It's why we need to create a self owned contextViewService
+		const contextViewService = instantiationService.createInstance(ContextViewService);
+		super(themeService, contextViewService);
+
+		this.hoverDelegate = new class implements IHoverDelegate {
+
+			readonly placement = 'element';
+
+			private _lastHoverHideTime: number = 0;
+
+			showHover(options: IHoverDelegateOptions, focus?: boolean) {
+				let target: HTMLElement;
+				if (options.target.hasOwnProperty('targetElements')) {
+					target = (options.target as any as IHoverDelegateTarget).targetElements[0];
+				} else {
+					target = options.target as HTMLElement;
+				}
+				const rect = target.getBoundingClientRect();
+				const width = rect.right - rect.left;
+				const height = rect.bottom - rect.top;
+				options.hoverPosition = HoverPosition.ABOVE;
+				options.showPointer = false;
+				const hoverOptions = options as any;
+				const hoverTarget: IHoverTarget = {
+					x: rect.left - width / 4, y: rect.top - height - 10, targetElements: [target],
+					dispose: () => { }
+				};
+				return hoverService.showHover({ ...hoverOptions, target: hoverTarget }, focus);
+			}
+
+			get delay(): number {
+				return Date.now() - this._lastHoverHideTime < 200
+					? 0  // show instantly when a hover was recently shown
+					: 200;
+			}
+
+			onDidHideHover() {
+				this._lastHoverHideTime = Date.now();
+			}
+		};
+	}
+
+	createMenu(container: HTMLElement, actions: readonly IAction[], options: IMenuOptions): IMenuLike {
+		return new QuickMenu(container, actions, { ...options, hoverDelegate: this.hoverDelegate });
 	}
 
 	showQuickMenu(delegate: IQuickMenuDelegate): void {
-		this.focusToReturn = document.activeElement as HTMLElement;
-		// Update store for widget
-		this.widget.configure(delegate.state);
-
-		const shadowRootElement = isHTMLElement(delegate.domForShadowRoot) ? delegate.domForShadowRoot : undefined;
-		this.contextViewService.showContextView({
-			getAnchor: () => this.getAnchor(),
-			canRelayout: false,
-			anchorAlignment: delegate.anchorAlignment,
-			anchorAxisAlignment: delegate.anchorAxisAlignment,
-
-			render: (container) => {
-				container.appendChild(this.widget.element);
-
-				const menuDisposables = new DisposableStore();
-				menuDisposables.add(addDisposableListener(window, EventType.BLUR, () => this.contextViewService.hideContextView(true)));
-				menuDisposables.add(addDisposableListener(window, EventType.MOUSE_DOWN, (e: MouseEvent) => {
-					if (e.defaultPrevented) {
-						return;
-					}
-
-					const event = new StandardMouseEvent(e);
-					let element: HTMLElement | null = event.target;
-
-					// Don't do anything as we are likely creating a context menu
-					if (event.rightButton) {
-						return;
-					}
-
-					while (element) {
-						if (element === container) {
-							return;
-						}
-
-						element = element.parentElement;
-					}
-
-					this.contextViewService.hideContextView(true);
-				}));
-
-				return menuDisposables;
-			},
-
-			onHide: (didCancel?: boolean) => {
-				if (this.focusToReturn) {
-					this.focusToReturn.focus();
-				}
-				//this.widget.element.parentElement?.remove()
-			}
-		}, shadowRootElement, !!shadowRootElement);
-	}
-
-	hideQuickMenu(): void {
-		throw new Error("Method not implemented.");
+		this.configure({ blockMouse: false });
+		this.showContextMenu({ ...delegate, getAnchor: () => this.getAnchor() });
 	}
 
 	private getAnchor() {
@@ -94,7 +91,7 @@ export class QuickMenuService implements IQuickMenuService {
 		return {
 			y: top,
 			x: left
-		}
+		};
 	}
 }
 

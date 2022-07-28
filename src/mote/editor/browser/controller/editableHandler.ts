@@ -9,7 +9,7 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
-import { RangeUtils } from 'mote/editor/common/core/rangeUtils';
+import { RangeUtils, TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 
@@ -106,7 +106,7 @@ export class EditableHandler extends ViewPart {
 		}));
 		this._register(this.editableInput.onSelectionChange((e) => {
 			e.lineNumber = this.lineNumber;
-			this.viewController.setSelection(e);
+			this.viewController.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
 			setTimeout(() => {

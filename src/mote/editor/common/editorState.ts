@@ -3,6 +3,7 @@ import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import BlockStore from "mote/editor/common/store/blockStore";
 import { TextSelectionUpdatePayload } from "mote/workbench/services/editor/common/editorService";
+import RecordStore from 'mote/editor/common/store/recordStore';
 
 export interface TextSelectionState {
 	/**
@@ -18,7 +19,7 @@ export interface TextSelectionState {
 	/**
 	 * The selection belong to
 	 */
-	store?: BlockStore;
+	store?: RecordStore;
 }
 
 const initialState: TextSelectionState = {

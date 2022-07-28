@@ -11,44 +11,44 @@ import { ILogService } from "vs/platform/log/common/log";
 
 export class MoteApplication extends Disposable {
 
-    private windowsMainService: IWindowsMainService | undefined;
-    
-    constructor(
-        @ILogService private readonly logService: ILogService,
-        //@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-        @IInstantiationService private readonly mainInstantiationService: IInstantiationService,
-    ) {
-        super();
+	private windowsMainService: IWindowsMainService | undefined;
 
-        this.registerListeners();
-    }
+	constructor(
+		@ILogService private readonly logService: ILogService,
+		//@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IInstantiationService private readonly mainInstantiationService: IInstantiationService,
+	) {
+		super();
 
-    private registerListeners(): void {
-        // We handle uncaught exceptions here to prevent electron from opening a dialog to the user
+		this.registerListeners();
+	}
+
+	private registerListeners(): void {
+		// We handle uncaught exceptions here to prevent electron from opening a dialog to the user
 		setUnexpectedErrorHandler(error => this.onUnexpectedError(error));
 		process.on('uncaughtException', error => onUnexpectedError(error));
 		process.on('unhandledRejection', (reason: unknown) => onUnexpectedError(reason));
 
-        // Dispose on shutdown
+		// Dispose on shutdown
 		//this.lifecycleMainService.onWillShutdown(() => this.dispose());
-        
-        ipcMain.handle('vscode:fetchShellEnv', event => {
+
+		ipcMain.handle('vscode:fetchShellEnv', event => {
 
 		});
-    }
+	}
 
-    async startup(): Promise<void> {
+	async startup(): Promise<void> {
 
-        // Services
+		// Services
 		const appInstantiationService = await this.initServices();
 
-        // Open Windows
+		// Open Windows
 		const windows = appInstantiationService.invokeFunction(
 			accessor => this.openFirstWindow(accessor)
 		);
-    }
+	}
 
-    private onUnexpectedError(error: Error): void {
+	private onUnexpectedError(error: Error): void {
 		if (error) {
 
 			// take only the message and stack property
@@ -67,20 +67,20 @@ export class MoteApplication extends Disposable {
 		}
 	}
 
-    private async initServices() {
-        const services = new ServiceCollection();
+	private async initServices() {
+		const services = new ServiceCollection();
 
-        // Windows
+		// Windows
 		services.set(IWindowsMainService, new SyncDescriptor(WindowsMainService));
 
-        return this.mainInstantiationService.createChild(services);
-    }
+		return this.mainInstantiationService.createChild(services);
+	}
 
-    private openFirstWindow(accessor: ServicesAccessor) {
-        const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
+	private openFirstWindow(accessor: ServicesAccessor) {
+		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
 
-        return windowsMainService.open({
-            context: OpenContext.DESKTOP
-        });
-    }
+		return windowsMainService.open({
+			context: OpenContext.DESKTOP
+		});
+	}
 }

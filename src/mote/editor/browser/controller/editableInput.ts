@@ -83,6 +83,12 @@ export interface ICompleteEditableWrapper extends IEditableWrapper {
 	readonly onKeyDown: Event<KeyboardEvent>;
 	readonly onFocus: Event<FocusEvent>;
 	readonly onBlur: Event<FocusEvent>;
+
+	setIgnoreSelectionChangeTime(reason: string): void;
+	getIgnoreSelectionChangeTime(): number;
+	resetSelectionChangeTime(): void;
+
+	hasFocus(): boolean;
 }
 
 export interface IBrowser {
@@ -244,6 +250,15 @@ export class EditableInput extends Disposable {
 				// => ignore it
 				return;
 			}
+
+			const delta2 = now - this.editable.getIgnoreSelectionChangeTime();
+			this.editable.resetSelectionChangeTime();
+			if (delta2 < 100) {
+				// received a `selectionchange` event within 100ms since we touched the textarea
+				// => ignore it, since we caused it
+				return;
+			}
+
 			const selectionWithOptions = getSelectionFromRange();
 			if (selectionWithOptions) {
 				this._onSelectionChange.fire(selectionWithOptions.selection);
@@ -316,14 +331,41 @@ export class EditableWrapper extends Disposable implements ICompleteEditableWrap
 
 	//#endregion
 
+	private _ignoreSelectionChangeTime: number = 0;
+
 	constructor(
 		private readonly _actual: HTMLDivElement
 	) {
 		super();
 	}
+
+	public hasFocus(): boolean {
+		const shadowRoot = dom.getShadowRoot(this._actual);
+		if (shadowRoot) {
+			return shadowRoot.activeElement === this._actual;
+		} else if (dom.isInDOM(this._actual)) {
+			return document.activeElement === this._actual;
+		} else {
+			return false;
+		}
+	}
+
+	public setIgnoreSelectionChangeTime(reason: string): void {
+		this._ignoreSelectionChangeTime = Date.now();
+	}
+
+	public getIgnoreSelectionChangeTime(): number {
+		return this._ignoreSelectionChangeTime;
+	}
+
+	public resetSelectionChangeTime(): void {
+		this._ignoreSelectionChangeTime = 0;
+	}
+
 	getValue(): string {
 		return nodeToString(this._actual);
 	}
+
 	setValue(reason: string, value: string): void {
 		const editable = this._actual;
 		if (editable.innerHTML === value) {

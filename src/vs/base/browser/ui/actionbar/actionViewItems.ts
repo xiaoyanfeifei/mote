@@ -259,9 +259,7 @@ export class ActionViewItem extends BaseActionViewItem {
 	override render(container: HTMLElement): void {
 		super.render(container);
 
-		if (this.element) {
-			this.label = append(this.element, $('a.action-label'));
-		}
+		this.createLabel();
 
 		if (this.label) {
 			if (this._action.id === Separator.ID) {
@@ -284,6 +282,12 @@ export class ActionViewItem extends BaseActionViewItem {
 		this.updateTooltip();
 		this.updateEnabled();
 		this.updateChecked();
+	}
+
+	protected createLabel() {
+		if (this.element) {
+			this.label = append(this.element, $('a.action-label'));
+		}
 	}
 
 	// Only set the tabIndex on the element once it is about to get focused

@@ -11,6 +11,7 @@ import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportDat
 import { clearNode } from 'vs/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { StoreUtils } from 'mote/editor/common/store/storeUtils';
 
 export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
@@ -53,12 +54,12 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		const pageIds: string[] = this.context.contentStore.getValue() || [];
 		clearNode(this.domNode.domNode);
 		pageIds.forEach((pageId, idx) => {
-			const blockStore = this.createStoreForPageId(pageId, this.context.contentStore);
+			const blockStore = StoreUtils.createStoreForPageId(pageId, this.context.contentStore);
 			const viewLine = this.createVisibleLine();
 			this.lines[idx] = viewLine;
 			viewLine.renderLine(idx, blockStore);
 			if (viewLine.getDomNode()) {
-				this.domNode.domNode.appendChild(viewLine.getDomNode()!);
+				this.domNode.appendChild(viewLine.getDomNode()!);
 			}
 		});
 		if (pageIds.length === 0) {
@@ -79,19 +80,8 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 	}
 
 	public override onLinesChanged(e: ViewLinesChangedEvent): boolean {
-		for (let i = e.fromLineNumber; i < e.fromLineNumber + e.count; i++) {
-			const viewLine = this.lines[i];
-
-		}
 		return true;
 	}
 
 	//#endregion
-
-	private createStoreForPageId = (id: string, contentStore: RecordStore) => {
-		return BlockStore.createChildStore(contentStore, {
-			table: 'block',
-			id: id
-		});
-	};
 }

@@ -4,29 +4,29 @@ import { IInstantiationService } from 'vs/platform/instantiation/common/instanti
 import { HoverWidget } from 'mote/workbench/services/hover/browser/hoverWidget';
 import { addDisposableListener, EventType } from 'vs/base/browser/dom';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IContextViewService } from 'vs/platform/contextview/browser/contextView';
+import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { IContextViewProvider, IDelegate } from 'vs/base/browser/ui/contextview/contextview';
 
 export class HoverService implements IHoverService {
-   
+
 	declare readonly _serviceBrand: undefined;
 
 	private _currentHoverOptions: IHoverOptions | undefined;
 
-    constructor(
-        @IInstantiationService private readonly _instantiationService: IInstantiationService,
+	constructor(
+		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 		@IContextViewService private readonly _contextViewService: IContextViewService,
-    ) {
+	) {
 
-    }
+	}
 
-    showHover(options: IHoverOptions, focus?: boolean): IHoverWidget | undefined {
-        if (this._currentHoverOptions === options) {
+	showHover(options: IHoverOptions, focus?: boolean): IHoverWidget | undefined {
+		if (this._currentHoverOptions === options) {
 			return undefined;
 		}
 		this._currentHoverOptions = options;
 
-        const hoverDisposables = new DisposableStore();
+		const hoverDisposables = new DisposableStore();
 		const hover = this._instantiationService.createInstance(HoverWidget, options);
 		hover.onDispose(() => {
 			this._currentHoverOptions = undefined;
@@ -34,7 +34,7 @@ export class HoverService implements IHoverService {
 		});
 		const provider = this._contextViewService as IContextViewProvider;
 		provider.showContextView(new HoverContextViewDelegate(hover, focus));
-        if ('targetElements' in options.target) {
+		if ('targetElements' in options.target) {
 			for (const element of options.target.targetElements) {
 				hoverDisposables.add(addDisposableListener(element, EventType.CLICK, () => this.hideHover()));
 			}
@@ -56,16 +56,16 @@ export class HoverService implements IHoverService {
 		}
 
 		return hover;
-    }
+	}
 
-    hideHover(): void {
-        if (!this._currentHoverOptions) {
+	hideHover(): void {
+		if (!this._currentHoverOptions) {
 			return;
 		}
 		this._currentHoverOptions = undefined;
-    }
+	}
 
-    private _intersectionChange(entries: IntersectionObserverEntry[], hover: IDisposable): void {
+	private _intersectionChange(entries: IntersectionObserverEntry[], hover: IDisposable): void {
 		const entry = entries[entries.length - 1];
 		if (!entry.isIntersecting) {
 			hover.dispose();

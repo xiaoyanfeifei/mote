@@ -1,4 +1,5 @@
 import { EditorSelection } from 'mote/editor/common/core/editorSelection';
+import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { ViewEvent } from 'mote/editor/common/viewEvents';
 import { Emitter } from 'vs/base/common/event';
@@ -6,7 +7,29 @@ import { Disposable } from 'vs/base/common/lifecycle';
 import { CursorChangeReason } from 'vs/editor/common/cursorEvents';
 
 export const enum OutgoingViewEventKind {
-	CursorStateChanged
+	CursorStateChanged,
+	SelectionChanged,
+}
+
+export class SelectionChangedEvent {
+	public readonly kind = OutgoingViewEventKind.SelectionChanged;
+
+	constructor(
+		public readonly selection: TextSelection
+	) {
+
+	}
+
+	public isNoOp(): boolean {
+		return false;
+	}
+
+	public attemptToMerge(other: OutgoingViewEvent): OutgoingViewEvent | null {
+		if (other.kind !== this.kind) {
+			return null;
+		}
+		return other;
+	}
 }
 
 export class CursorStateChangedEvent {
@@ -70,6 +93,7 @@ export class CursorStateChangedEvent {
 
 export type OutgoingViewEvent = (
 	CursorStateChangedEvent
+	| SelectionChangedEvent
 );
 
 export class ViewEventsCollector {

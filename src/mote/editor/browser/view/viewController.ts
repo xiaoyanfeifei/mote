@@ -1,12 +1,13 @@
 import * as viewEvents from 'mote/editor/common/viewEvents';
+import { Event } from 'vs/base/common/event';
 import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import RecordStore from 'mote/editor/common/store/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
-import { ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
+import { OutgoingViewEvent, SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
-import { collectValueFromSegment, ISegment } from 'mote/editor/common/segmentUtils';
+import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
 import { Lodash } from 'mote/base/common/lodash';
@@ -14,6 +15,8 @@ import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import blockTypes, { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
+import { Segment } from 'mote/editor/common/core/segment';
+import { StoreUtils } from 'mote/editor/common/store/storeUtils';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -21,14 +24,17 @@ export interface ICommandDelegate {
 }
 
 export class ViewController {
+	public readonly onEvent: Event<OutgoingViewEvent>;
+
 	private selection: TextSelection;
 	private readonly eventDispatcher: ViewEventDispatcher;
 
 	constructor(
-		private readonly contentStore: RecordStore,
+		private readonly contentStore: RecordStore<string[]>,
 	) {
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -1 };
 		this.eventDispatcher = new ViewEventDispatcher();
+		this.onEvent = this.eventDispatcher.onEvent;
 	}
 
 	public addViewEventHandler(eventHandler: ViewEventHandler): void {
@@ -39,12 +45,29 @@ export class ViewController {
 		this.eventDispatcher.removeViewEventHandler(eventHandler);
 	}
 
-	//#region command
+	//#region command expose to editable
+
+	public select(selection: TextSelection): void {
+		this.withViewEventsCollector(eventsCollector => {
+			this.setSelection(selection);
+			eventsCollector.emitOutgoingEvent(new SelectionChangedEvent(selection));
+		});
+	}
+
+	public decorate(annotation: IAnnotation): void {
+		this.executeCursorEdit(eventsCollector => {
+			const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
+			const updated = Segment.update({ selection: this.selection, store: store.getTitleStore(), mode: TextSelectionMode.Editing }, annotation);
+			if (updated) {
+				eventsCollector.emitViewEvent(new viewEvents.ViewLinesChangedEvent(this.selection.lineNumber, 1));
+			}
+		});
+	}
 
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = this.createStoreForLineNumber(this.selection.lineNumber!);
+				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
 				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
@@ -53,7 +76,7 @@ export class ViewController {
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = this.createStoreForLineNumber(this.selection.lineNumber!);
+				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
 				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
@@ -62,14 +85,16 @@ export class ViewController {
 	public backspace() {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = this.createStoreForLineNumber(this.selection.lineNumber!);
+				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
 				this.onBackspace(eventsCollector, store.getTitleStore(), transaction, this.selection);
 			}, this.contentStore.userId);
 		});
 	}
 
 	public enter() {
-		this.executeCursorEdit(eventsCollector => {
+		// We dont use executeCursorEdit because of some times user trigger this method
+		// before the content store has any children
+		this.withViewEventsCollector(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
 				let child: BlockStore = EditOperation.createBlockStore('text', transaction);
 				let lineNumber: number;
@@ -78,10 +103,10 @@ export class ViewController {
 					child = EditOperation.appendToParent(this.contentStore, child, transaction).child as BlockStore;
 					lineNumber = 0;
 				} else {
-					const lineStore = this.createStoreForLineNumber(this.selection.lineNumber!);
+					const lineStore = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
 					child = EditOperation.insertChildAfterTarget(
 						this.contentStore, child, lineStore, transaction).child as BlockStore;
-					lineNumber = this.getLineNumberForStore(child);
+					lineNumber = StoreUtils.getLineNumberForStore(child, this.contentStore);
 				}
 				// emit the line change event
 				eventsCollector.emitViewEvent(new viewEvents.ViewLinesInsertedEvent(lineNumber, lineNumber));
@@ -92,7 +117,12 @@ export class ViewController {
 
 	//#endregion
 
-	public setSelection(selection: TextSelection) {
+	/**
+	 * The only way to set selection from outside is to use ViewController#select method
+	 * setSelection is only works for internal usage
+	 * @param selection
+	 */
+	private setSelection(selection: TextSelection) {
 		if (selection.lineNumber < 0) {
 			throw new BugIndicatingError('lineNumber should never be negative');
 		}
@@ -107,12 +137,20 @@ export class ViewController {
 	}
 
 	public isEmpty(lineNumber: number) {
-		const value: any[] = this.createStoreForLineNumber(lineNumber).getTitleStore().getValue() || [];
+		const value: any[] = StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore).getTitleStore().getValue() || [];
 		return value.length === 0;
 	}
 
 	private executeCursorEdit(callback: (eventsCollector: ViewEventsCollector) => void) {
-		// TODO is readonly ?
+		if (this.selection === null || this.selection.lineNumber < 0) {
+			return;
+		}
+		const contents = this.contentStore.getValue() || [];
+		if (this.selection.lineNumber >= contents.length) {
+			// Bad case, should we throw a BugIndicatingError here?
+			return;
+		}
+		// TODO check readOnly or not
 		this.withViewEventsCollector(callback);
 	}
 
@@ -144,7 +182,7 @@ export class ViewController {
 			}
 			this.delete(transaction, store, newSelection);
 		} else {
-			const blockStore = getParentBlockStore(store);
+			const blockStore = StoreUtils.getParentBlockStore(store);
 			if (blockStore) {
 				const record = blockStore.getValue();
 				if (record) {
@@ -156,7 +194,7 @@ export class ViewController {
 						const deletedLineNumber = this.selection.lineNumber;
 						const newLineNumber = this.selection.lineNumber - 1;
 						if (this.selection.lineNumber > 0) {
-							const prevStore = this.createStoreForLineNumber(newLineNumber);
+							const prevStore = StoreUtils.createStoreForLineNumber(newLineNumber, this.contentStore);
 							const content = collectValueFromSegment(prevStore.getTitleStore().getValue());
 							this.setSelection({ startIndex: content.length, endIndex: content.length, lineNumber: newLineNumber });
 						} else {
@@ -234,7 +272,7 @@ export class ViewController {
 
 		newLineStore = EditOperation.insertChildAfterTarget(
 			parentStore.getContentStore(), newLineStore, store, transaction).child as BlockStore;
-		const lineNumber = this.getLineNumberForStore(newLineStore);
+		const lineNumber = StoreUtils.getLineNumberForStore(newLineStore, this.contentStore);
 		this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
 	}
 
@@ -311,43 +349,4 @@ export class ViewController {
 	}
 
 	//#endregion
-
-	private getLineNumberForStore(store: BlockStore) {
-		const storeId = store.id;
-		const pageIds: string[] = this.contentStore.getValue() || [];
-		return Lodash.findIndex(pageIds, (id) => id === storeId);
-	}
-
-	private createStoreForLineNumber(lineNumber: number) {
-		if (lineNumber < 0) {
-			throw new BugIndicatingError('lineNumber should never be negative when create new store');
-		}
-		const pageId = this.getPageId(lineNumber);
-		return this.createStoreForPageId(pageId, this.contentStore);
-	}
-
-	private getPageId(lineNumber: number) {
-		const pageIds: string[] = this.contentStore.getValue() || [];
-		return pageIds[lineNumber];
-	}
-
-	private createStoreForPageId = (id: string, contentStore: RecordStore) => {
-		return BlockStore.createChildStore(contentStore, {
-			table: 'block',
-			id: id
-		});
-	};
-}
-
-export function getParentBlockStore(childStore: RecordStore) {
-	let parentStore: RecordStore = childStore;
-	while (true) {
-		if (!parentStore.recordStoreParentStore) {
-			return;
-		}
-		parentStore = parentStore.recordStoreParentStore;
-		if (parentStore instanceof BlockStore && parentStore !== childStore) {
-			return parentStore;
-		}
-	}
 }
