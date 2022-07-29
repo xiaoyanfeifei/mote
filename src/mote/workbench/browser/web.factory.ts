@@ -8,7 +8,7 @@ import { BrowserMain } from 'mote/workbench/browser/web.main';
 import { URI } from 'vs/base/common/uri';
 import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
 import { CommandsRegistry } from 'vs/platform/commands/common/commands';
-import { mark, PerformanceMark } from 'vs/base/common/performance';
+import { mark } from 'vs/base/common/performance';
 import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
 import { DeferredPromise } from 'vs/base/common/async';
 import { asArray } from 'vs/base/common/arrays';
@@ -106,15 +106,6 @@ export namespace logger {
 }
 
 export namespace env {
-
-	/**
-	 * {@linkcode IWorkbench.env IWorkbench.env.retrievePerformanceMarks}
-	 */
-	export async function retrievePerformanceMarks(): Promise<[string, readonly PerformanceMark[]][]> {
-		const workbench = await workbenchPromise.p;
-
-		return workbench.env.retrievePerformanceMarks();
-	}
 
 	/**
 	 * {@linkcode IWorkbench.env IWorkbench.env.getUriScheme}

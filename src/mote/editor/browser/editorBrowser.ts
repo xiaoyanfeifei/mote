@@ -1,5 +1,6 @@
 import { EditorRange } from 'mote/editor/common/core/editorRange';
 import { Position } from 'mote/editor/common/core/position';
+import * as editorCommon from 'mote/editor/common/editorCommon';
 
 /**
  * Type of hit element with the mouse in the editor.
@@ -104,3 +105,11 @@ export type IMouseTarget = (
 	IMouseTargetUnknown
 	| IMouseTargetContentText
 );
+
+
+/**
+ * A rich code editor.
+ */
+export interface IMoteEditor extends editorCommon.IEditor {
+
+}

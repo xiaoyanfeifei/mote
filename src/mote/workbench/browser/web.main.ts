@@ -203,28 +203,13 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IWorkbenchFileService, fileService);
 		await this.registerFileSystemProviders(environmentService, fileService, remoteAgentService, logService, logsPath);
 
+		// Storage
+		const storageService = await this.createStorageService({ id: 'mote' }, logService);
+		serviceCollection.set(IStorageService, storageService);
 
-		// Long running services (workspace, config, storage)
-		const [workspaceService, _] = await Promise.all([
-			this.createWorkspaceService().then(service => {
-
-				// Workspace
-				serviceCollection.set(IWorkspaceContextService, service);
-
-				// Configuration
-				//serviceCollection.set(IWorkbenchConfigurationService, service);
-
-				return service;
-			}),
-
-			this.createStorageService({ id: 'mote' }, logService).then(service => {
-
-				// Storage
-				serviceCollection.set(IStorageService, service);
-
-				return service;
-			})
-		]);
+		// Workspace
+		const workspaceService = await this.createWorkspaceService(storageService, logService);
+		serviceCollection.set(IWorkspaceContextService, workspaceService);
 
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -315,8 +300,8 @@ export class BrowserMain extends Disposable {
 		return storageService;
 	}
 
-	private async createWorkspaceService() {
-		const workspaceService = new WorkspaceService();
+	private async createWorkspaceService(storageService: IStorageService, logService: ILogService) {
+		const workspaceService = new WorkspaceService('local', storageService, logService);
 		await workspaceService.initialize();
 		return workspaceService;
 	}

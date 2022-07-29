@@ -271,24 +271,6 @@ export class ViewController {
 		}
 	}
 
-	private onEnter(transaction: Transaction, store: BlockStore) {
-		let parentStore: BlockStore;
-		if ('page' === store.table) {
-			parentStore = store.recordStoreParentStore as BlockStore;
-		} else {
-			const titleStore = store.recordStoreParentStore;
-			parentStore = titleStore?.recordStoreParentStore as BlockStore;
-		}
-
-		this.delete(transaction, store, this.selection);
-		let newLineStore = EditOperation.createBlockStore('text', transaction);
-
-		newLineStore = EditOperation.insertChildAfterTarget(
-			parentStore.getContentStore(), newLineStore, store, transaction).child as BlockStore;
-		const lineNumber = StoreUtils.getLineNumberForStore(newLineStore, this.contentStore);
-		this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
-	}
-
 	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {

@@ -1,24 +1,20 @@
-/* eslint-disable code-no-unexternalized-strings */
-import { ListItem } from "mote/base/browser/ui/list/list";
-import { IAsyncDataSource } from "mote/base/browser/ui/tree/tree";
+import { ListItem } from 'mote/base/browser/ui/list/list';
 import SVGIcon from 'mote/base/browser/ui/svgicon/svgicon';
-import { ThemedStyles } from "mote/base/common/themes";
-import { EditOperation } from "mote/editor/common/core/editOperation";
-import { Transaction } from "mote/editor/common/core/transaction";
-import BlockStore from "mote/editor/common/store/blockStore";
-import SpaceStore from "mote/editor/common/store/spaceStore";
-import { ICommandService } from "mote/platform/commands/common/commands";
-import { IViewPaneOptions, ViewPane } from "mote/workbench/browser/parts/views/viewPane";
-import { ITreeItem, TreeItemCollapsibleState } from "mote/workbench/common/treeView";
-import { $, reset } from "vs/base/browser/dom";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
+import { ThemedStyles } from 'mote/base/common/themes';
+import { EditOperation } from 'mote/editor/common/core/editOperation';
+import { Transaction } from 'mote/editor/common/core/transaction';
+import BlockStore from 'mote/editor/common/store/blockStore';
+import SpaceStore from 'mote/editor/common/store/spaceStore';
+import { ICommandService } from 'mote/platform/commands/common/commands';
+import { IViewPaneOptions, ViewPane } from 'mote/workbench/browser/parts/views/viewPane';
+import { $, reset } from 'vs/base/browser/dom';
+import { ILogService } from 'vs/platform/log/common/log';
 import { NameFromStore } from './outliner';
 import { CachedListVirtualDelegate, IListContextMenuEvent, IListRenderer, IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
 import { List } from 'vs/base/browser/ui/list/listWidget';
-import { ITreeContextMenuEvent } from 'vs/base/browser/ui/tree/tree';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IAction } from 'vs/base/common/actions';
+import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -36,7 +32,7 @@ class BlockListVirtualDelegate extends CachedListVirtualDelegate<BlockStore> imp
 		return 'sidebar-outliner';
 	}
 
-};
+}
 
 class BlockListRenderer implements IListRenderer<BlockStore, any> {
 	templateId: string = 'sidebar-outliner';
@@ -54,7 +50,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 	renderElement(element: BlockStore, index: number, templateData: HTMLElement, height: number | undefined): void {
 		const container = document.createElement('div');
 		const titleStore = element.getTitleStore();
-		const icon = SVGIcon({ name: "page", style: { fill: ThemedStyles.mediumIconColor.dark } });
+		const icon = SVGIcon({ name: 'page', style: { fill: ThemedStyles.mediumIconColor.dark } });
 		const child = new NameFromStore(titleStore);
 		const item = new ListItem(container, { enableClick: true });
 		item.child = child.element;
@@ -66,7 +62,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 		templateData.appendChild(container);
 
 		item.onDidClick((e) => {
-			this.commandService.executeCommand("openPage", { id: element.id, userId: element.userId });
+			this.commandService.executeCommand('openPage', { id: element.id, userId: element.userId });
 		});
 
 	}
@@ -94,7 +90,7 @@ export class ExplorerView extends ViewPane {
 		@ILogService logService: ILogService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
 		super(options, logService, contextMenuService);
 	}
@@ -103,46 +99,21 @@ export class ExplorerView extends ViewPane {
 		super.renderBody(container);
 		const that = this;
 
-		const userId = 'guest';
-
-		const spaceStore = new SpaceStore({
-			table: 'space',
-			id: '1',
-		}, { userId: userId });
+		const spaceStore = this.contextService.getSpaceStore();
 		this.spaceStore = spaceStore;
-
-		const dataSource = new class implements IAsyncDataSource<ITreeItem, ITreeItem> {
-			hasChildren(element: ITreeItem): boolean {
-				return true;
-			}
-			getChildren(element: ITreeItem): Promise<Iterable<ITreeItem>> {
-
-				const items = spaceStore.getPagesStores().map(store => {
-					const item: ITreeItem = {
-						id: store.id,
-						handle: "",
-						collapsibleState: TreeItemCollapsibleState.Collapsed
-					};
-					return item;
-				});
-				return Promise.resolve(items);
-			}
-
-		};
 
 		this.viewContainer = document.createElement('div');
 
-		const treeView = new List(userId, this.viewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		const treeView = new List(spaceStore.userId, this.viewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
 		this.view = treeView;
 
 		this._register(this.view.onContextMenu((e) => this.onContextMenu(e)));
 
-		//const addNewPage = new Button(container, {});
-		const domNode = $(".list-item");
+		const domNode = $('.list-item');
 		domNode.style.display = 'flex';
-		const icon = SVGIcon({ name: "plus", style: { fill: ThemedStyles.mediumIconColor.dark } });
-		const child = document.createTextNode("Add new page");
+		const icon = SVGIcon({ name: 'plus', style: { fill: ThemedStyles.mediumIconColor.dark } });
+		const child = document.createTextNode('Add new page');
 		const addPageBtn = new ListItem(domNode, { enableClick: true });
 		addPageBtn.child = child as any;
 		addPageBtn.icon = icon as any;
@@ -153,7 +124,7 @@ export class ExplorerView extends ViewPane {
 
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
-				that.commandService.executeCommand("openPage", { id: child.id });
+				that.commandService.executeCommand('openPage', { id: child.id });
 				transaction.postSubmitCallbacks.push(() => this.refresh());
 			}, spaceStore.userId);
 		});

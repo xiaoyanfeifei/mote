@@ -35,13 +35,13 @@ export default class SpaceStore extends RecordStore<SpaceRecord> {
 	getSpaceId() {
 		const record = this.getValue();
 		if (record && record.id) {
-			return record.id
+			return record.id;
 		}
 		return null;
 	}
 
 	getPagesStore() {
-		return this.getPropertyStore("pages");
+		return this.getPropertyStore('pages');
 	}
 
 	getPagesStores(): BlockStore[] {
@@ -49,8 +49,12 @@ export default class SpaceStore extends RecordStore<SpaceRecord> {
 		const record = this.getValue();
 		const pages: string[] = record && record.pages ? record.pages : [];
 		return pages.map(itemId => BlockStore.createChildStore(contentStore, {
-			table: "page",
+			table: 'page',
 			id: itemId,
 		}));
+	}
+
+	override clone() {
+		return new SpaceStore(this.pointer, { userId: this.userId });
 	}
 }

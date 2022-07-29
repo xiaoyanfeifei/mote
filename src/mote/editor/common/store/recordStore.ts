@@ -79,12 +79,13 @@ export default class RecordStore<T = any> extends Disposable {
 		this.instanceState = {} as any;
 
 		this.sync();
-		RecordCacheStore.Default.onDidChange((e) => {
+
+		this._register(RecordCacheStore.Default.onDidChange((e) => {
 			if (this.identify === e) {
 				this.sync();
 				this._onDidChange.fire();
 			}
-		});
+		}));
 	}
 
 	get identify() {
@@ -135,6 +136,23 @@ export default class RecordStore<T = any> extends Disposable {
 
 	getRecordStoreAtRootPath(): RecordStore<RecordValue> {
 		return RecordStore.createChildStore(this, this.pointer);
+	}
+
+	async awaitNonNullValue() {
+		const value = this.getValue();
+		if (value) {
+			return Promise.resolve(value);
+		}
+		return new Promise((resolve) => {
+			this._register(RecordCacheStore.Default.onDidChange((e) => {
+				if (this.identify === e) {
+					const value = this.getValue();
+					if (value) {
+						return resolve(value);
+					}
+				}
+			}));
+		});
 	}
 
 	clone() {
