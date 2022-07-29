@@ -27,6 +27,12 @@ interface ParseMarkdownBlockProps extends MarkdownBlockParseRule {
 }
 
 const markdownBlockParseRules: MarkdownBlockParseRule[] = [];
+// Todo tag
+markdownBlockParseRules.push({
+	matchRegex: /^\[\]$/,
+	toBlockType: () => blockTypes.todo,
+	insertTextAfter: false,
+});
 // Add H1 tag
 markdownBlockParseRules.push({
 	matchRegex: /^# $/,
