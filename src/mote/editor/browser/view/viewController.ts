@@ -64,6 +64,19 @@ export class ViewController {
 		});
 	}
 
+	public updateProperties(data: any) {
+		this.executeCursorEdit(eventsCollector => {
+			Transaction.createAndCommit((transaction) => {
+				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
+				EditOperation.addUpdateOperationForStore(
+					store.getPropertiesStore(),
+					data,
+					transaction
+				);
+			}, this.contentStore.userId);
+		});
+	}
+
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {

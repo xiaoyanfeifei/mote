@@ -9,8 +9,8 @@ import { Disposable } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IVisibleLine } from 'mote/editor/browser/view/viewLayer';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
-import { setStyles } from 'mote/base/browser/jsx/createElement';
 import fonts from 'mote/base/browser/ui/fonts';
+import { CheckBox } from 'mote/base/browser/ui/checkbox/checkbox';
 
 export class EmptyViewLine extends Disposable {
 
@@ -77,8 +77,12 @@ export class ViewLine implements IVisibleLine {
 			case 'quote':
 				viewBlock = new QuoteBlock(lineNumber, this.viewContext, this.viewController);
 				break;
+			case 'todo':
+				viewBlock = new TodoBlock(lineNumber, this.viewContext, this.viewController);
+				break;
 			default:
 				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
+
 		}
 		viewBlock.setValue(store);
 		this.domNode = viewBlock.getDomNode();
@@ -89,7 +93,7 @@ export class ViewLine implements IVisibleLine {
 	}
 }
 
-abstract class BaseBlock {
+abstract class BaseBlock extends Disposable {
 	private editableHandler: EditableHandler;
 
 	constructor(
@@ -97,6 +101,7 @@ abstract class BaseBlock {
 		viewContext: ViewContext,
 		viewController: ViewController
 	) {
+		super();
 		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
 		if (viewController.getSelection().lineNumber === lineNumber) {
@@ -180,5 +185,47 @@ class QuoteBlock extends ViewBlock {
 			paddingLeft: '0.9em',
 			paddingRight: '0.9em'
 		}, {});
+	}
+}
+
+class TodoBlock extends ViewBlock {
+
+	private container!: FastDomNode<HTMLDivElement>;
+
+	private checkbox!: CheckBox;
+
+	override renderPersisted(
+		lineNumber: number,
+		viewContext: ViewContext,
+		viewController: ViewController
+	) {
+		const editableHandler = super.renderPersisted(lineNumber, viewContext, viewController);
+		editableHandler.editable.domNode.style.width = '100%';
+
+		this.container = createFastDomNode(document.createElement('div'));
+		this.container.domNode.style.padding = '3px 2px';
+		this.container.domNode.style.display = 'flex';
+
+		this.checkbox = new CheckBox(this.container.domNode);
+		this._register(this.checkbox.onDidClick(() => {
+			const checked = this.checkbox.hasChecked();
+			viewController.select({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
+			viewController.updateProperties({ checked: checked ? 'true' : 'false' });
+		}));
+
+		this.container.appendChild(editableHandler.editable);
+		return editableHandler;
+	}
+
+	override setValue(store: BlockStore): void {
+		super.setValue(store);
+
+		const properties = store.getProperties();
+		const checked = properties.checked === 'true';
+		this.checkbox.checked(checked);
+	}
+
+	override getDomNode() {
+		return this.container;
 	}
 }

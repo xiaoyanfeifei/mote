@@ -3,6 +3,7 @@
 const blockTypes = {
 	text: "text",
 	quote: 'quote',
+	todo: 'todo',
 	code: "code",
 	image: "image",
 	header: "header",
@@ -17,6 +18,8 @@ const blockTypes = {
 
 export const textBasedTypes = new Set([
 	blockTypes.header,
+	blockTypes.quote,
+	blockTypes.todo,
 	blockTypes.secondLevelHeader,
 	blockTypes.thridLevelHeader,
 	blockTypes.fourthLevelHeader,
