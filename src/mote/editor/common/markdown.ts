@@ -40,6 +40,20 @@ markdownBlockParseRules.push({
 	insertTextAfter: false,
 });
 
+// Add H2 tag
+markdownBlockParseRules.push({
+	matchRegex: /^## $/,
+	toBlockType: () => blockTypes.heading2,
+	insertTextAfter: false,
+});
+
+// Add H3 tag
+markdownBlockParseRules.push({
+	matchRegex: /^### $/,
+	toBlockType: () => blockTypes.heading3,
+	insertTextAfter: false,
+});
+
 // Add Quote tag
 markdownBlockParseRules.push({
 	matchRegex: /^["“|] $/,

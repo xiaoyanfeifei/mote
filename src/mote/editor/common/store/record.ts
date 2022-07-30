@@ -39,5 +39,7 @@ export const blockTypes = {
 	image: 'image',
 	quote: 'quote',
 	todo: 'todo',
+	heading2: 'heading2',
+	heading3: 'heading3',
 };
 export type BlockType = keyof typeof blockTypes;
