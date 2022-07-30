@@ -1,0 +1,24 @@
+.part > .title {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+.part > .title > .title-label {
+	line-height: 35px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.part > .title > .title-label {
+	padding-left: 12px;
+}
+
+.part > .title > .title-label h2 {
+	font-size: 11px;
+	cursor: default;
+	font-weight: normal;
+	margin: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

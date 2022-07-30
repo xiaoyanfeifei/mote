@@ -1,3 +1,4 @@
+import 'vs/css!./media/part';
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
@@ -17,9 +18,9 @@ export interface ILayoutContentResult {
 }
 
 class PartLayout {
-    private static readonly TITLE_HEIGHT = 35;
+	private static readonly TITLE_HEIGHT = 35;
 
-    constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
+	constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
 
 	layout(width: number, height: number): ILayoutContentResult {
 
@@ -53,27 +54,27 @@ export abstract class Part extends Component implements ISerializableView {
 	private _dimension: Dimension | undefined;
 	get dimension(): Dimension | undefined { return this._dimension; }
 
-    private parent: HTMLElement | undefined;
+	private parent: HTMLElement | undefined;
 	private titleArea: HTMLElement | undefined;
 	private contentArea: HTMLElement | undefined;
-    private partLayout: PartLayout | undefined;
+	private partLayout: PartLayout | undefined;
 
-    constructor(
+	constructor(
 		id: string,
 		private options: IPartOptions,
 		themeService: IThemeService,
-        protected readonly layoutService: IWorkbenchLayoutService
-    ) {
-        super(id, themeService);
+		protected readonly layoutService: IWorkbenchLayoutService
+	) {
+		super(id, themeService);
 
-        layoutService.registerPart(this);
-    }
+		layoutService.registerPart(this);
+	}
 
 	override updateStyles(): void {
 		super.updateStyles();
 	}
 
-    /**
+	/**
 	 * Note: Clients should not call this method, the workbench calls this
 	 * method. Calling it otherwise may result in unexpected behavior.
 	 *
@@ -89,7 +90,7 @@ export abstract class Part extends Component implements ISerializableView {
 		this.updateStyles();
 	}
 
-    /**
+	/**
 	 * Returns the overall part container.
 	 */
 	getContainer(): HTMLElement | undefined {
@@ -110,7 +111,7 @@ export abstract class Part extends Component implements ISerializableView {
 		return this.titleArea;
 	}
 
-    /**
+	/**
 	 * Subclasses override to provide a content area implementation.
 	 */
 	protected createContentArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
@@ -138,7 +139,7 @@ export abstract class Part extends Component implements ISerializableView {
 	/**
 	 * Layout title and content area in the given dimension.
 	 */
-	 protected layoutContents(width: number, height: number): ILayoutContentResult {
+	protected layoutContents(width: number, height: number): ILayoutContentResult {
 		const partLayout = assertIsDefined(this.partLayout);
 
 		return partLayout.layout(width, height);

@@ -15,6 +15,7 @@ import { IWorkbenchContribution } from 'mote/workbench/common/contribution';
 import { EmptyView } from './views/emptyView';
 import { ExplorerView } from './views/explorerView';
 import { ICommandService } from 'mote/platform/commands/common/commands';
+import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.ViewContainersRegistry);
@@ -27,6 +28,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 		@IThemeService themeService: IThemeService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
 		super(FILES_VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, layoutService, logService, instantiationService, themeService, viewDescriptorService);
 	}
@@ -37,6 +39,41 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 		//parent.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
 	}
 
+	override renderHeader(parent: HTMLElement) {
+		const title = this.getTitle();
+
+		parent.style.height = '45px';
+		parent.style.alignItems = 'center';
+		parent.style.display = 'flex';
+
+		const iconContainer = document.createElement('div');
+		iconContainer.style.borderRadius = '3px';
+		iconContainer.style.height = '18px';
+		iconContainer.style.width = '18px';
+		iconContainer.style.backgroundColor = 'rgb(137, 137, 137)';
+		iconContainer.style.alignItems = 'center';
+		iconContainer.style.justifyContent = 'center';
+		iconContainer.style.display = 'flex';
+		iconContainer.style.marginRight = '8px';
+
+		const icon = document.createElement('div');
+		icon.style.lineHeight = '1';
+		icon.innerText = title[0];
+
+		iconContainer.appendChild(icon);
+
+		const spaceContainer = document.createElement('div');
+		spaceContainer.innerText = title;
+
+		parent.appendChild(iconContainer);
+		parent.appendChild(spaceContainer);
+		return true;
+	}
+
+	override getTitle() {
+		const spaceStore = this.contextService.getSpaceStore();
+		return spaceStore.getSpaceName() || 'Untitled Space';
+	}
 }
 
 export class ExplorerViewlet {
@@ -109,6 +146,6 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
  */
 export const EXPLORER_VIEW_CONTAINER: ViewContainer = viewContainerRegistry.registerViewContainer({
 	id: FILES_VIEWLET_ID,
-	title: localize('explore', "Explorer"),
+	title: localize('workspace', "Workspace"),
 	ctorDescriptor: new SyncDescriptor(ExplorerViewPaneContainer),
 }, ViewContainerLocation.Sidebar, { isDefault: true });

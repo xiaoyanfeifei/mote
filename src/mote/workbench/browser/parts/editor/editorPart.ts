@@ -1,24 +1,24 @@
-import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
-import { $, Dimension } from "vs/base/browser/dom";
-import { Emitter } from "vs/base/common/event";
-import { Part } from "mote/workbench/browser/part";
-import { registerSingleton } from "vs/platform/instantiation/common/extensions";
-import { IResourceEditorInput } from "mote/platform/editor/common/editor";
-import { IEditorPane } from "mote/workbench/common/editor";
-import { IThemeService } from "mote/platform/theme/common/themeService";
-import { assertIsDefined } from "vs/base/common/types";
-import { ThemedStyles } from "mote/base/common/themes";
-import { setStyles } from "mote/base/browser/jsx/createElement";
-import { EditableContainer } from "mote/editor/browser/editableContainer";
-import BlockStore from "mote/editor/common/store/blockStore";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
-import { ILogService } from "vs/platform/log/common/log";
-import { CommandsRegistry } from "mote/platform/commands/common/commands";
-import { IInstantiationService, ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { EmptyHolder } from "./emptyHolder";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { IEditorService } from "mote/workbench/services/editor/common/editorService";
+import { IWorkbenchLayoutService, Parts } from 'mote/workbench/services/layout/browser/layoutService';
+import { $, Dimension } from 'vs/base/browser/dom';
+import { Emitter } from 'vs/base/common/event';
+import { Part } from 'mote/workbench/browser/part';
+import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
+import { IEditorPane } from 'mote/workbench/common/editor';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { assertIsDefined } from 'vs/base/common/types';
+import { ThemedStyles } from 'mote/base/common/themes';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
+import { EditableContainer } from 'mote/editor/browser/editableContainer';
+import BlockStore from 'mote/editor/common/store/blockStore';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
+import { ILogService } from 'vs/platform/log/common/log';
+import { CommandsRegistry } from 'mote/platform/commands/common/commands';
+import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { EmptyHolder } from './emptyHolder';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
@@ -74,8 +74,6 @@ export class EditorPart extends Part implements IEditorService {
 		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super(Parts.EDITOR_PART, { hasTitle: false }, themeService, layoutService);
-		RecordCacheStore.Default.storageService = storageService;
-		RecordCacheStore.Default.logService = logService;
 		CommandsRegistry.registerCommand('openPage', this.openPage);
 		this.container = document.createElement('div');
 		this.editorPanes = this._register(this.instantiationService.createInstance(EditorPanes, this.container));
@@ -123,7 +121,13 @@ export class EditorPart extends Part implements IEditorService {
 	}
 
 	updateTitle() {
-		this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
+		if (!this.headerContainer) {
+			this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
+				placeholder: 'Untitled',
+				autoFocus: false,
+			});
+		}
+		this.headerContainer!.store = this.pageStore!.getPropertyStore('title');
 	}
 
 	override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
@@ -134,11 +138,6 @@ export class EditorPart extends Part implements IEditorService {
 		this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
 		this.titleContainer.style.width = '100%';
-
-		this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
-			placeholder: 'Untitled',
-			autoFocus: false,
-		});
 
 		titleDomNode.append(this.titleContainer);
 		setStyles(titleDomNode, this.getTitleStyle());

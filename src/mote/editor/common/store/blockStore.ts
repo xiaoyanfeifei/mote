@@ -63,6 +63,6 @@ export default class BlockStore extends RecordStore {
 			this.pointer,
 			this.userId,
 			this.path
-		)
+		);
 	}
 }

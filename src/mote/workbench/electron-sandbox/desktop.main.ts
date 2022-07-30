@@ -79,11 +79,11 @@ export class DesktopMain extends Disposable {
 			logService.trace('workbench#open(): with configuration', safeStringify(this.configuration));
 		}
 
-		const storageService = await this.createStorageService(logService);
 		// Storage
+		const storageService = await this.createStorageService(logService);
 		serviceCollection.set(IStorageService, storageService);
 
-		const workspaceService = await this.createWorkspaceService();
+		const workspaceService = await this.createWorkspaceService(storageService, logService);
 		serviceCollection.set(IWorkspaceContextService, workspaceService);
 
 		return { serviceCollection, logService };
@@ -104,8 +104,8 @@ export class DesktopMain extends Disposable {
 		return storageService;
 	}
 
-	private async createWorkspaceService() {
-		const workspaceService = new WorkspaceService();
+	private async createWorkspaceService(storageService: IStorageService, logService: ILogService) {
+		const workspaceService = new WorkspaceService('local', storageService, logService);
 		await workspaceService.initialize();
 		return workspaceService;
 	}

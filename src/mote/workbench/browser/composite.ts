@@ -44,6 +44,11 @@ export abstract class Composite extends Component {
 		this.parent = parent;
 	}
 
+
+	renderHeader(parent: HTMLElement): boolean {
+		return false;
+	}
+
 	getTitle(): string | undefined {
 		return undefined;
 	}
@@ -66,29 +71,29 @@ export abstract class Composite extends Component {
 	 * Typically this operation should be fast though because setVisible might be called many times during a session.
 	 * If there is a long running opertaion it is fine to have it running in the background asyncly and return before.
 	 */
-	 setVisible(visible: boolean): void {
+	setVisible(visible: boolean): void {
 		if (this.visible !== !!visible) {
 			this.visible = visible;
 		}
 	}
-	
+
 	/**
 	 * Called when this composite should receive keyboard focus.
 	 */
-	 focus(): void {
+	focus(): void {
 		// Subclasses can implement
 	}
 
 	/**
 	 * Layout the contents of this composite using the provided dimensions.
 	 */
-	 abstract layout(dimension: Dimension): void;
+	abstract layout(dimension: Dimension): void;
 }
 
 /**
  * A composite descriptor is a leightweight descriptor of a composite in the workbench.
  */
- export abstract class CompositeDescriptor<T extends Composite> {
+export abstract class CompositeDescriptor<T extends Composite> {
 
 	constructor(
 		private readonly ctor: IConstructorSignature<T>,

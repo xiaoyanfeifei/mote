@@ -1,8 +1,12 @@
 import { ColorScheme } from 'mote/platform/theme/common/theme';
-import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
+import { IColorTheme, IProductIconTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { Event, Emitter } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
+import { createStyleSheet } from 'vs/base/browser/dom';
+import { getIconsStyleSheet } from 'mote/platform/theme/browser/iconsStyleSheet';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { IconTheme } from 'mote/platform/theme/common/iconTheme';
 
 export class BrowserThemeService extends Disposable implements IThemeService {
 
@@ -11,7 +15,12 @@ export class BrowserThemeService extends Disposable implements IThemeService {
 	private readonly _onDidColorThemeChange: Emitter<IColorTheme> = this._register(new Emitter<IColorTheme>());
 	onDidColorThemeChange: Event<IColorTheme> = this._onDidColorThemeChange.event;
 
+	private readonly _onDidProductIconThemeChange: Emitter<IProductIconTheme> = this._register(new Emitter<IProductIconTheme>());
+
+	onDidProductIconThemeChange: Event<IProductIconTheme> = this._onDidProductIconThemeChange.event;
+
 	private currentColorTheme!: IColorTheme;
+	private currentProductIconTheme: IProductIconTheme = new IconTheme();
 
 	private colorThemeRegistry: Map<ColorScheme, IColorTheme>;
 
@@ -21,7 +30,23 @@ export class BrowserThemeService extends Disposable implements IThemeService {
 		super();
 		this.colorThemeRegistry = new Map();
 		this.hostColorSchemeService.onDidChangeColorScheme(() => this.handlePreferredSchemeUpdated());
+
+		const codiconStyleSheet = createStyleSheet();
+		codiconStyleSheet.id = 'codiconStyles';
+
+		const iconsStyleSheet = getIconsStyleSheet(this);
+		function updateAll() {
+			codiconStyleSheet.textContent = iconsStyleSheet.getCSS();
+		}
+
+		const delayer = new RunOnceScheduler(updateAll, 0);
+		iconsStyleSheet.onDidChange(() => delayer.schedule());
+		delayer.schedule();
 	}
+	getProductIconTheme(): IProductIconTheme {
+		return this.currentProductIconTheme;
+	}
+
 
 	private installPreferredSchemeListener() {
 		this.hostColorSchemeService.onDidChangeColorScheme(() => this.handlePreferredSchemeUpdated());

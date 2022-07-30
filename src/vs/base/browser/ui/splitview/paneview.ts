@@ -101,7 +101,7 @@ export abstract class Pane extends Disposable implements IView {
 		this._onDidChange.fire(undefined);
 	}
 
-	private get headerSize(): number {
+	protected get headerSize(): number {
 		return this.headerVisible ? Pane.HEADER_SIZE : 0;
 	}
 
@@ -248,7 +248,7 @@ export abstract class Pane extends Disposable implements IView {
 	}
 
 	layout(size: number): void {
-		const headerSize = this.headerVisible ? Pane.HEADER_SIZE : 0;
+		const headerSize = this.headerVisible ? this.headerSize : 0;
 
 		const width = this._orientation === Orientation.VERTICAL ? this.orthogonalSize : size;
 		const height = this._orientation === Orientation.VERTICAL ? size - headerSize : this.orthogonalSize - headerSize;

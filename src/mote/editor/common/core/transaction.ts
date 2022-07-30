@@ -1,9 +1,9 @@
-import RecordStore from "mote/editor/common/store/recordStore";
+import RecordStore from 'mote/editor/common/store/recordStore';
 import { generateUuid } from 'vs/base/common/uuid';
-import { Operation } from "../operations";
-import { Role } from "../store/record";
-import RecordCacheStore from "../store/recordCacheStore";
-import CommandFacade from "./commandFacade";
+import { Operation } from '../operations';
+import { Role } from '../store/record';
+import RecordCacheStore from '../store/recordCacheStore';
+import CommandFacade from './commandFacade';
 
 
 export interface TransactionCallback {

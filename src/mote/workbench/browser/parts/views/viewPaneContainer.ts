@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IAddedViewDescriptorRef, IView, IViewContainerModel, IViewDescriptor, IViewDescriptorRef, IViewDescriptorService, IViewPaneContainer, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
@@ -90,6 +91,25 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		if (addedViews.length) {
 			this.onDidAddViewDescriptors(addedViews);
 		}
+	}
+
+	renderHeader(parent: HTMLElement) {
+
+		return false;
+	}
+
+	getTitle(): string {
+		const containerTitle = this.viewContainerModel.title;
+
+		if (this.isViewMergedWithContainer()) {
+			const paneItemTitle = this.paneItems[0].pane.title;
+			if (containerTitle === paneItemTitle) {
+				return this.paneItems[0].pane.title;
+			}
+			return paneItemTitle ? `${containerTitle}: ${paneItemTitle}` : containerTitle;
+		}
+
+		return containerTitle;
 	}
 
 	private get orientation(): Orientation {
@@ -197,6 +217,8 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		throw new Error("Method not implemented.");
 	}
 
-
+	isViewMergedWithContainer(): boolean {
+		return true;
+	}
 
 }
