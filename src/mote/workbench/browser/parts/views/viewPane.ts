@@ -1,5 +1,8 @@
+/* eslint-disable code-no-unexternalized-strings */
 import 'vs/css!./media/views';
-
+import 'vs/css!./media/paneviewlet';
+import * as nls from 'vs/nls';
+import 'vs/base/browser/ui/codicons/codiconStyles';
 import { IView, IViewContentDescriptor, IViewsRegistry, Extensions as ViewContainerExtensions } from "mote/workbench/common/views";
 import { append, $, trackFocus } from "vs/base/browser/dom";
 import { Event, Emitter } from 'vs/base/common/event';
@@ -12,6 +15,13 @@ import { parseLinkedText } from "vs/base/common/linkedText";
 import { Button } from "vs/base/browser/ui/button/button";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
+import { ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { Codicon } from 'vs/base/common/codicons';
+import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
+
+const viewPaneContainerExpandedIcon = registerIcon('view-pane-container-expanded', Codicon.chevronDown, nls.localize('viewPaneContainerExpandedIcon', 'Icon for an expanded view pane container.'));
+const viewPaneContainerCollapsedIcon = registerIcon('view-pane-container-collapsed', Codicon.chevronRight, nls.localize('viewPaneContainerCollapsedIcon', 'Icon for a collapsed view pane container.'));
+
 
 export interface IViewPaneOptions extends IPaneOptions {
 	id: string;
@@ -81,6 +91,12 @@ export abstract class ViewPane extends Pane implements IView {
 	private _isVisible: boolean = false;
 	readonly id: string;
 
+	private _title: string;
+	public get title(): string {
+		return this._title;
+	}
+
+
 	private headerContainer?: HTMLElement;
 	private titleContainer?: HTMLElement;
 	private titleDescriptionContainer?: HTMLElement;
@@ -100,8 +116,22 @@ export abstract class ViewPane extends Pane implements IView {
 		super(options);
 
 		this.id = options.id;
+		this._title = options.title;
 
 		this.viewWelcomeController = new ViewWelcomeController(this.id);
+	}
+
+	override setExpanded(expanded: boolean): boolean {
+		const changed = super.setExpanded(expanded);
+		if (changed) {
+			//this._onDidChangeBodyVisibility.fire(expanded);
+		}
+		if (this.twistiesContainer) {
+			this.twistiesContainer.style.transform = `rotateZ(${expanded ? 0 : -90}deg)`;
+			//this.twistiesContainer.classList.remove(...ThemeIcon.asClassNameArray(this.getTwistyIcon(!expanded)));
+			//this.twistiesContainer.classList.add(...ThemeIcon.asClassNameArray(this.getTwistyIcon(expanded)));
+		}
+		return changed;
 	}
 
 	override render(): void {
@@ -115,6 +145,24 @@ export abstract class ViewPane extends Pane implements IView {
 
 	protected renderHeader(container: HTMLElement): void {
 		this.headerContainer = container;
+
+		this.twistiesContainer = append(container, $(ThemeIcon.asCSSSelector(this.getTwistyIcon(this.isExpanded()))));
+		this.twistiesContainer.style.transition = 'transform 200ms ease-out 0s';
+		this.renderHeaderTitle(container, this.title);
+	}
+
+	protected getTwistyIcon(expanded: boolean): ThemeIcon {
+		return expanded ? viewPaneContainerExpandedIcon : viewPaneContainerCollapsedIcon;
+	}
+
+	protected renderHeaderTitle(container: HTMLElement, title: string): void {
+		const calculatedTitle = title;
+
+		this.iconContainer = append(container, $('.icon', undefined));
+		this.titleContainer = append(container, $('h3.title', { title: calculatedTitle }, calculatedTitle));
+
+		this.iconContainer.title = calculatedTitle;
+		this.iconContainer.setAttribute('aria-label', calculatedTitle);
 	}
 
 	private scrollableElement!: DomScrollableElement;

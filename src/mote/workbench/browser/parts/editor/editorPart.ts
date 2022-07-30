@@ -121,7 +121,13 @@ export class EditorPart extends Part implements IEditorService {
 	}
 
 	updateTitle() {
-		this.headerContainer!.store = this.pageStore!.getPropertyStore("title");
+		if (!this.headerContainer) {
+			this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
+				placeholder: 'Untitled',
+				autoFocus: false,
+			});
+		}
+		this.headerContainer!.store = this.pageStore!.getPropertyStore('title');
 	}
 
 	override createTitleArea(parent: HTMLElement, options?: object): HTMLElement | undefined {
@@ -132,11 +138,6 @@ export class EditorPart extends Part implements IEditorService {
 		this.titleContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.titleContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
 		this.titleContainer.style.width = '100%';
-
-		this.headerContainer = this.instantiationService.createInstance(EditableContainer, this.titleContainer!, {
-			placeholder: 'Untitled',
-			autoFocus: false,
-		});
 
 		titleDomNode.append(this.titleContainer);
 		setStyles(titleDomNode, this.getTitleStyle());

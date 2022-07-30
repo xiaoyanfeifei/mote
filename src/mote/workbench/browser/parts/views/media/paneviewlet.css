@@ -1,0 +1,9 @@
+.pane > .pane-header h3.title {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	font-size: 11px;
+	min-width: 3ch;
+	-webkit-margin-before: 0;
+	-webkit-margin-after: 0;
+}

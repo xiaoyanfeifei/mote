@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Dimension } from "vs/base/browser/dom";
 import { URI } from "vs/base/common/uri";
@@ -28,24 +29,32 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		this.viewPaneContainer.create(parent);
 	}
 
+	override renderHeader(parent: HTMLElement): boolean {
+		return this.viewPaneContainer?.renderHeader(parent) ?? false;
+	}
+
+	override getTitle(): string {
+		return this.viewPaneContainer?.getTitle() ?? '';
+	}
+
 	layout(dimension: Dimension): void {
 		this.viewPaneContainer?.layout(dimension);
 	}
 
 	getOptimalWidth(): number | undefined {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 	saveState(): void {
 		throw new Error("Method not implemented.");
 	}
-    
+
 	protected abstract createViewPaneContainer(parent: HTMLElement): ViewPaneContainer;
 }
 
 /**
  * A Pane Composite descriptor is a leightweight descriptor of a Pane Composite in the workbench.
  */
- export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> {
+export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> {
 
 	static create<Services extends BrandedService[]>(
 		ctor: { new(...services: Services): PaneComposite },

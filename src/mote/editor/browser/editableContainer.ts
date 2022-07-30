@@ -1,6 +1,7 @@
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { ThemedStyles } from 'mote/base/common/themes';
 import BlockStore from "mote/editor/common/store/blockStore";
+import RecordStore from 'mote/editor/common/store/recordStore';
 import { IEditorStateService } from "mote/workbench/services/editor/common/editorService";
 import { Disposable } from "vs/base/common/lifecycle";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -25,7 +26,7 @@ export class EditableContainer extends Disposable {
 
 	private editable: EditableInput;
 	private options: EditableContainerOptions;
-	private blockStore?: BlockStore;
+	private blockStore?: RecordStore;
 
 	private blockService: BlockService;
 	private operationHandler: OperationWrapper;
@@ -139,7 +140,7 @@ export class EditableContainer extends Disposable {
 		return style;
 	};
 
-	set store(value: BlockStore) {
+	set store(value: RecordStore) {
 		this.blockStore = value;
 		this._register(this.blockStore.onDidChange(() => this.update()));
 		this.operationHandler.store = value;

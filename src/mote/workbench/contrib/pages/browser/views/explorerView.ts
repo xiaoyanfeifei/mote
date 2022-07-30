@@ -77,10 +77,9 @@ export class ExplorerView extends ViewPane {
 
 	static readonly ID: string = 'workbench.explorer.pageView';
 
-	private view!: List<BlockStore>;
-	private spaceStore!: SpaceStore;
+	private bodyView!: List<BlockStore>;
 
-	private viewContainer!: HTMLDivElement;
+	private bodyViewContainer!: HTMLDivElement;
 
 	private height!: number;
 	private width!: number;
@@ -92,7 +91,7 @@ export class ExplorerView extends ViewPane {
 		@ICommandService private readonly commandService: ICommandService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
-		super(options, logService, contextMenuService);
+		super({ ...options, title: 'Private' }, logService, contextMenuService);
 	}
 
 	override renderBody(container: HTMLElement) {
@@ -100,15 +99,14 @@ export class ExplorerView extends ViewPane {
 		const that = this;
 
 		const spaceStore = this.contextService.getSpaceStore();
-		this.spaceStore = spaceStore;
 
-		this.viewContainer = document.createElement('div');
+		this.bodyViewContainer = document.createElement('div');
 
-		const treeView = new List(spaceStore.userId, this.viewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		const treeView = new List(spaceStore.userId, this.bodyViewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
-		this.view = treeView;
+		this.bodyView = treeView;
 
-		this._register(this.view.onContextMenu((e) => this.onContextMenu(e)));
+		this._register(this.bodyView.onContextMenu((e) => this.onContextMenu(e)));
 
 		const domNode = $('.list-item');
 		domNode.style.display = 'flex';
@@ -128,12 +126,12 @@ export class ExplorerView extends ViewPane {
 				transaction.postSubmitCallbacks.push(() => this.refresh());
 			}, spaceStore.userId);
 		});
-		container.append(this.viewContainer);
+		container.append(this.bodyViewContainer);
 		container.append(domNode);
 	}
 
 	private refresh() {
-		this.view.splice(0, this.view.length, this.spaceStore.getPagesStores());
+		this.bodyView.splice(0, this.bodyView.length, this.contextService.getSpaceStore().getPagesStores());
 		this.layoutOutliner();
 	}
 
@@ -192,8 +190,8 @@ export class ExplorerView extends ViewPane {
 	}
 
 	private layoutOutliner() {
-		const height = Math.min(this.view.length * OUTLINER_HEIGHT, this.height - 150);
-		this.viewContainer.style.height = `${height}px`;
-		this.view.layout(height + 20, this.width);
+		const height = Math.min(this.bodyView.length * OUTLINER_HEIGHT, this.height - 150);
+		this.bodyViewContainer.style.height = `${height}px`;
+		this.bodyView.layout(height + 20, this.width);
 	}
 }

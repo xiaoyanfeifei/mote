@@ -12,6 +12,20 @@ import { DisposableStore, dispose, IDisposable } from "vs/base/common/lifecycle"
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { ILogService } from "vs/platform/log/common/log";
+import { localize } from 'vs/nls';
+
+export interface ICompositeTitleLabel {
+
+	/**
+	 * Asks to update the title for the composite with the given ID.
+	 */
+	updateTitle(id: string, title: string, keybinding?: string): void;
+
+	/**
+	 * Called when theming information changes.
+	 */
+	updateStyles(): void;
+}
 
 interface CompositeItem {
 	composite: Composite;
@@ -23,6 +37,10 @@ export abstract class CompositePart<T extends Composite> extends Part {
 
 	protected readonly onDidCompositeOpen = this._register(new Emitter<{ composite: IComposite; focus: boolean }>());
 	protected readonly onDidCompositeClose = this._register(new Emitter<IComposite>());
+
+	protected titleLabelElement: HTMLElement | undefined;
+	private titleLabel: ICompositeTitleLabel | undefined;
+	private titleContainer: HTMLElement | undefined;
 
 	private readonly mapCompositeToCompositeContainer = new Map<string, HTMLElement>();
 	private readonly mapActionsBindingToComposite = new Map<string, () => void>();
@@ -49,6 +67,40 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		this.lastActiveCompositeId = defaultCompositeId;
 	}
 
+	override createTitleArea(parent: HTMLElement): HTMLElement {
+
+		// Title Area Container
+		const titleArea = append(parent, $('.composite'));
+		titleArea.classList.add('title');
+
+		// Left Title Label
+		this.titleLabel = this.createTitleLabel(titleArea);
+
+		return titleArea;
+	}
+
+	protected createTitleLabel(parent: HTMLElement): ICompositeTitleLabel {
+		const titleContainer = append(parent, $('.title-label'));
+		this.titleContainer = titleContainer;
+		const titleLabel = append(titleContainer, $('h2'));
+		this.titleLabelElement = titleLabel;
+
+		const $this = this;
+		return {
+			updateTitle: (id, title, keybinding) => {
+				// The title label is shared for all composites in the base CompositePart
+				if (!this.activeComposite || this.activeComposite.getId() === id) {
+					titleLabel.innerText = title;
+					titleLabel.title = keybinding ? localize('titleTooltip', "{0} ({1})", title, keybinding) : title;
+				}
+			},
+
+			updateStyles: () => {
+				//titleLabel.style.color = $this.titleForegroundColor ? $this.getColor($this.titleForegroundColor) || '' : '';
+			}
+		};
+	}
+
 	override createContentArea(parent: HTMLElement): HTMLElement {
 		const contentContainer = append(parent, $('.content'));
 
@@ -64,7 +116,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 	}
 
 	protected openComposite(id: string, focus?: boolean): Composite | undefined {
-		this.logService.debug("[compositePart] openComposite:", id);
+		this.logService.debug('[compositePart] openComposite:', id);
 		// Check if composite already visible and just focus in that case
 		if (this.activeComposite?.getId() === id) {
 			if (focus) {
@@ -195,7 +247,7 @@ export abstract class CompositePart<T extends Composite> extends Part {
 	}
 
 	protected showComposite(composite: Composite): void {
-		this.logService.debug("showComposite:", composite);
+		this.logService.debug('showComposite:', composite);
 		// Remember Composite
 		this.activeComposite = composite;
 
@@ -244,8 +296,11 @@ export abstract class CompositePart<T extends Composite> extends Part {
 
 		// Update title with composite title if it differs from descriptor
 		const descriptor = this.registry.getComposite(composite.getId());
-		if (descriptor && descriptor.name !== composite.getTitle()) {
-			//this.updateTitle(composite.getId(), composite.getTitle());
+		if (this.titleContainer) {
+			const rendered = composite.renderHeader(this.titleContainer);
+			if (!rendered && descriptor && descriptor.name !== composite.getTitle()) {
+				this.updateTitle(composite.getId(), composite.getTitle());
+			}
 		}
 
 		// Handle Composite Actions
@@ -282,6 +337,20 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		if (this.contentAreaSize) {
 			composite.layout(this.contentAreaSize);
 		}
+	}
+
+	private updateTitle(compositeId: string, compositeTitle?: string): void {
+		const compositeDescriptor = this.registry.getComposite(compositeId);
+		if (!compositeDescriptor || !this.titleLabel) {
+			return;
+		}
+
+		if (!compositeTitle) {
+			compositeTitle = compositeDescriptor.name;
+		}
+
+		this.titleLabel.updateTitle(compositeId, compositeTitle, undefined);
+
 	}
 
 	override layout(width: number, height: number, top: number, left: number): void {

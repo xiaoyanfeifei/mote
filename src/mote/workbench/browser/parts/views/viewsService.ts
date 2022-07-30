@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 import { IPaneComposite } from "mote/workbench/common/panecomposite";
@@ -5,7 +6,6 @@ import { IView, IViewDescriptor, IViewDescriptorService, IViewsService, ViewCont
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
 import { Disposable, DisposableStore, toDisposable } from "vs/base/common/lifecycle";
-import { isString } from "vs/base/common/types";
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";

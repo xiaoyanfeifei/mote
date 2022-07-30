@@ -1,6 +1,7 @@
+import fonts from 'mote/base/browser/ui/fonts';
 import { ThemedStyles } from "mote/base/common/themes";
-import RecordCacheStore from "mote/editor/common/store/recordCacheStore";
 import { IThemeService } from "mote/platform/theme/common/themeService";
+import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { PaneComposite, PaneCompositeDescriptor, PaneCompositeExtensions, PaneCompositeRegistry } from "mote/workbench/browser/panecomposite";
 import { CompositePart } from "mote/workbench/browser/parts/compositePart";
 import { IPaneCompositePart } from "mote/workbench/browser/parts/paneCompositePart";
@@ -33,6 +34,7 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
+		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
 		super(
 			logService,
@@ -40,17 +42,30 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 			themeService,
 			instantiationService,
 			Registry.as<PaneCompositeRegistry>(PaneCompositeExtensions.Viewlets),
-			"sideBar",
+			'sideBar',
 			Parts.SIDEBAR_PART, { hasTitle: false }
-		)
+		);
 	}
 
 	override create(parent: HTMLElement, options?: object): void {
-		this.logService.debug("[SidebarPart]#create");
 		this.element = parent;
 
 		super.create(parent);
 
+	}
+
+	override createTitleArea(parent: HTMLElement): HTMLElement {
+
+		const titleArea = super.createTitleArea(parent);
+
+		/*
+		titleArea.style.padding = '2px 14px';
+		titleArea.style.fontSize = '14px';
+		titleArea.style.height = '45px';
+		titleArea.style.alignItems = 'center';
+		titleArea.style.fontWeight = `${fonts.fontWeight.medium}px`;
+		*/
+		return titleArea;
 	}
 
 	override updateStyles(): void {
@@ -59,8 +74,6 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 		// Part container
 		const container = assertIsDefined(this.getContainer());
 		container.style.backgroundColor = ThemedStyles.sidebarBackground.dark;
-		//container.style.position = "absolute";
-
 	}
 
 	async openPaneComposite(id: string | undefined, focus?: boolean): Promise<IPaneComposite | undefined> {
