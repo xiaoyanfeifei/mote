@@ -80,6 +80,12 @@ export class ViewLine implements IVisibleLine {
 			case 'todo':
 				viewBlock = new TodoBlock(lineNumber, this.viewContext, this.viewController);
 				break;
+			case 'heading2':
+				viewBlock = new Heading2Block(lineNumber, this.viewContext, this.viewController);
+				break;
+			case 'heading3':
+				viewBlock = new Heading3Block(lineNumber, this.viewContext, this.viewController);
+				break;
 			default:
 				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
 
@@ -137,7 +143,11 @@ class ViewBlock extends BaseBlock {
 		viewContext: ViewContext,
 		viewController: ViewController
 	): EditableHandler {
-		return new EditableHandler(lineNumber, viewContext, viewController, { placeholder: 'Type to continue' });
+		return new EditableHandler(lineNumber, viewContext, viewController, { placeholder: this.getPlaceholder() });
+	}
+
+	getPlaceholder() {
+		return 'Type to continue';
 	}
 
 	override getStyle(): CSSProperties {
@@ -156,6 +166,42 @@ class HeaderBlock extends ViewBlock {
 			fontSize: '1.875em',
 			lineHeight: 1.3
 		}, {});
+	}
+
+	override getPlaceholder() {
+		return 'Heading 1';
+	}
+}
+
+class Heading2Block extends ViewBlock {
+	override getStyle(): CSSProperties {
+		return Object.assign({
+			display: 'flex',
+			width: '100%',
+			fontWeight: fonts.fontWeight.semibold,
+			fontSize: '1.5em',
+			lineHeight: 1.3
+		}, {});
+	}
+
+	override getPlaceholder() {
+		return 'Heading 2';
+	}
+}
+
+class Heading3Block extends ViewBlock {
+	override getStyle(): CSSProperties {
+		return Object.assign({
+			display: 'flex',
+			width: '100%',
+			fontWeight: fonts.fontWeight.semibold,
+			fontSize: '1.25em',
+			lineHeight: 1.3
+		}, {});
+	}
+
+	override getPlaceholder() {
+		return 'Heading 3';
 	}
 }
 
