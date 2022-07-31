@@ -28,7 +28,7 @@ export class Button extends Disposable implements IButton {
 
 		this.options = options || Object.create(null);
 
-		this._element = $("div");
+		this._element = $('div');
 
 		container.appendChild(this._element);
 
@@ -65,9 +65,9 @@ export class Button extends Disposable implements IButton {
 	private applyStyles(): void {
 		if (this._element) {
 			const style = Object.assign({
-				cursor: "pointer",
-				backgroundColor: "",
-			}, this.options.style)
+				cursor: 'pointer',
+				backgroundColor: '',
+			}, this.options.style);
 			setStyles(this._element, style);
 		}
 	}

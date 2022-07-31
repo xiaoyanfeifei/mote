@@ -35,6 +35,10 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		this.spaceRootStore = new SpaceRootStore('local');
 	}
 
+	getSpaceStores(): SpaceStore[] {
+		return this.spaceRootStore.getSpaceStores();
+	}
+
 	getSpaceStore(): SpaceStore {
 		const spaceStores = this.spaceRootStore.getSpaceStores();
 		if (spaceStores.length > 0) {

@@ -42,6 +42,27 @@ export interface IWorkspace {
 	readonly pages: IWorkspacePage[];
 }
 
+export interface IBaseWorkspaceIdentifier {
+
+	/**
+	 * Every workspace (multi-root, single folder or empty)
+	 * has a unique identifier. It is not possible to open
+	 * a workspace with the same `id` in multiple windows
+	 */
+	readonly id: string;
+}
+
+/**
+ * A multi-root workspace identifier is a path to a workspace file + id.
+ */
+export interface IWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
+
+	/**
+	 * Workspace config file path as `URI`.
+	 */
+	configPath: URI;
+}
+
 export const IWorkspaceContextService = createDecorator<IWorkspaceContextService>('contextService');
 
 export interface IWorkspaceContextService {
@@ -70,4 +91,6 @@ export interface IWorkspaceContextService {
 	getWorkspace(): IWorkspace;
 
 	getSpaceStore(): SpaceStore;
+
+	getSpaceStores(): SpaceStore[];
 }

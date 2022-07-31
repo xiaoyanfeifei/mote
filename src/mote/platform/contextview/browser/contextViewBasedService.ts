@@ -129,7 +129,6 @@ export abstract class BrowserContextViewBasedService extends Disposable implemen
 
 			this.contextViewService.hideContextView(true);
 		}));
-
 		return combinedDisposable(menuDisposables, menu);
 	}
 

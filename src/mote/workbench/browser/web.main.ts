@@ -24,7 +24,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { setFullscreen } from 'vs/base/browser/browser';
 import { URI } from 'vs/base/common/uri';
-import { WorkspaceService } from 'mote/workbench/services/workspace/browser/workspaceService';
+import { WorkspaceService } from 'mote/workbench/services/workspaces/browser/workspacesService';
 import { ISignService } from 'vs/platform/sign/common/sign';
 import { SignService } from 'vs/platform/sign/browser/signService';
 import { IWorkbenchConstructionOptions, IWorkbench } from 'mote/workbench/browser/web.api';
