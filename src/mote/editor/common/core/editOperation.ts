@@ -1,7 +1,7 @@
 import RecordStore from 'mote/editor/common/store/recordStore';
 import BlockStore from 'mote/editor/common/store/blockStore';
 import { Transaction } from 'mote/editor/common/core/transaction';
-import { Command } from 'mote/editor/common/operations';
+import { Command } from 'mote/platform/transaction/common/operations';
 import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
 import { generateUuid } from 'vs/base/common/uuid';
 import { BlockType } from 'mote/editor/common/store/record';

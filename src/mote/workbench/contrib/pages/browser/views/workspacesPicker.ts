@@ -3,8 +3,11 @@ import { Button } from 'mote/base/browser/ui/button/button';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { Emitter } from 'vs/base/common/event';
+import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
+import { IUserService } from 'mote/workbench/services/user/common/user';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 
 interface ILayoutInfo {
 	maxHeight: number;
@@ -16,7 +19,10 @@ interface ILayoutInfo {
 
 class PickerFooter {
 
+	get onDidJoinOrCreate(): BaseEvent<Event> { return this.joinOrCreate.onDidClick; }
+
 	protected readonly domNode: HTMLDivElement;
+	private joinOrCreate!: Button;
 
 	constructor(parent: HTMLElement,) {
 		this.domNode = document.createElement('div');
@@ -49,6 +55,7 @@ class PickerFooter {
 			}
 		});
 		btn.setChildren(actionContainer);
+		this.joinOrCreate = btn;
 		return container;
 	}
 }
@@ -69,6 +76,8 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 
 	constructor(
 		parent: HTMLElement,
+		@IUserService private readonly userService: IUserService,
+		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
 	) {
 		super();
@@ -79,16 +88,25 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 		const spaceStores = this.workspaceService.getSpaceStores();
 		spaceStores.forEach((spaceStore) => {
 			const spaceName = spaceStore.getSpaceName() || 'Untitled Space';
-			this.renderWorkspace(this.domNode, spaceName);
+			this.renderWorkspace(this.domNode, spaceStore.id, spaceName);
 		});
 
-		new PickerFooter(this.domNode);
+		const footer = new PickerFooter(this.domNode);
+		this._register(footer.onDidJoinOrCreate(() => {
+			if (userService.currentProfile) {
+				console.log(userService.currentProfile);
+				this.workspaceService.createWorkspace(userService.currentProfile.id);
+			} else {
+				this.editorService.openEditor(new LoginInput());
+			}
+			this._onDidBlur.fire();
+		}));
 	}
 	getContainer(): HTMLElement {
 		return this.domNode;
 	}
 
-	private renderWorkspace(element: HTMLElement, title: string) {
+	private renderWorkspace(element: HTMLElement, spaceId: string, title: string) {
 		const container = document.createElement('div');
 		container.style.display = 'flex';
 		container.style.padding = '4px 14px';
@@ -100,9 +118,13 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 		container.appendChild(this.createIcon(title));
 		container.appendChild(this.createWorkspaceDesc(title));
 
-
 		const btn = new Button(element, { style: this.getButtonStyle() });
 		btn.setChildren(container);
+		btn.onDidClick(() => {
+			this.editorService.closeEditor();
+			this.workspaceService.enterWorkspace(spaceId);
+			this._onDidBlur.fire();
+		});
 	}
 
 	private createIcon(label: string) {

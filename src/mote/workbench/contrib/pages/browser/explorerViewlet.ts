@@ -47,11 +47,6 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 		this.workspacesController = new WorkspacesController(parent, this.contextViewService, this.contextService, this.instantiationService);
 		return true;
 	}
-
-	override getTitle() {
-		const spaceStore = this.contextService.getSpaceStore();
-		return spaceStore.getSpaceName() || 'Untitled Space';
-	}
 }
 
 export class ExplorerViewletViewsContribution extends Disposable implements IWorkbenchContribution {

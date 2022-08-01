@@ -85,10 +85,19 @@ export interface IWorkspaceContextService {
 	readonly onDidChangeWorkspacePages: Event<void>;
 
 	/**
+	 * An event which fires on workspace pages change.
+	 */
+	readonly onDidChangeWorkspace: Event<void>;
+
+	/**
 	 * Provides access to the workspace object the window is running with.
 	 * Use `getCompleteWorkspace` to get complete workspace object.
 	 */
 	getWorkspace(): IWorkspace;
+
+	enterWorkspace(spaceId: string): void;
+
+	createWorkspace(userId: string): void;
 
 	getSpaceStore(): SpaceStore;
 

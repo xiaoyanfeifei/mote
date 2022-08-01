@@ -1,3 +1,4 @@
+import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { ILogService } from 'vs/platform/log/common/log';
@@ -24,6 +25,7 @@ export default class RecordCacheStore extends Disposable {
 
 	storageService!: IStorageService;
 	logService!: ILogService;
+	remoteService!: IRemoteService;
 
 	state = {
 		cache: new Map<string, any>(),
@@ -31,7 +33,7 @@ export default class RecordCacheStore extends Disposable {
 		appliedTransaction: !1
 	};
 
-	getRecord(e: CacheKeyProps): RecordWithRole | null {
+	getRecord(e: CacheKeyProps, sync: boolean = true): RecordWithRole | null {
 		const key = RecordCacheStore.generateCacheKey(e);
 		let record = this.state.cache.get(key);
 		if (record) {
@@ -45,6 +47,13 @@ export default class RecordCacheStore extends Disposable {
 			return record.value;
 		}
 		this.logService.debug(`[RecordCache] could not locate record<${key}>`);
+		if (sync && e.userId !== 'local') {
+			this.remoteService.syncRecordValue(e.userId!, e.pointer)
+				.then((recordWithRole) => {
+					this.setRecord(e, recordWithRole);
+					this.fire(key);
+				});
+		}
 		return null;
 	}
 
@@ -58,16 +67,17 @@ export default class RecordCacheStore extends Disposable {
 
 	getRole(e: CacheKeyProps) {
 		const t = this.getRecord(e);
-		if (t && t.role)
-			return t.role
+		if (t && t.role) {
+			return t.role;
+		}
 		return null;
 	}
 	getVersion(e: CacheKeyProps) {
 		const t = this.getRecord(e);
-		return t && t.value && t.value.version ? t.value.version : 0
+		return t && t.value && t.value.version ? t.value.version : 0;
 	}
 	setRecord(keyProps: CacheKeyProps, value: any) {
-		const key = RecordCacheStore.generateCacheKey(keyProps)
+		const key = RecordCacheStore.generateCacheKey(keyProps);
 		const cachedValue = this.state.cache.get(key);
 		if (value) {
 			const record = Object.assign({}, keyProps, {
@@ -109,5 +119,3 @@ export default class RecordCacheStore extends Disposable {
 		this.state.syncStates.delete(RecordCacheStore.generateCacheKey(e));
 	}
 }
-
-window["RecordCacheStore"] = RecordCacheStore.Default;

@@ -2,8 +2,11 @@ import { IUserProfile } from 'mote/platform/user/common/user';
 import { IRemoteService, LoginData, UserLoginPayload, UserSignupPayload } from 'mote/workbench/services/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 
 export class UserService implements IUserService {
+
+	private static STORAGE_KEY = 'userProfile';
 
 	readonly _serviceBrand: undefined;
 
@@ -11,9 +14,13 @@ export class UserService implements IUserService {
 	get currentProfile(): IUserProfile { return this._currentProfile; }
 
 	constructor(
+		@IStorageService private readonly storageService: IStorageService,
 		@IRemoteService private readonly remoteService: IRemoteService
 	) {
-
+		const profile = this.storageService.get(UserService.STORAGE_KEY, StorageScope.APPLICATION);
+		if (profile) {
+			this._currentProfile = JSON.parse(profile);
+		}
 	}
 
 	public async signup(payload: UserSignupPayload): Promise<IUserProfile> {
@@ -47,8 +54,7 @@ export class UserService implements IUserService {
 			name: data.nickname || ''
 		};
 		this._currentProfile = profile;
+		this.storageService.store(UserService.STORAGE_KEY, JSON.stringify(profile), StorageScope.APPLICATION, StorageTarget.USER);
 		return profile;
 	}
 }
-
-registerSingleton(IUserService, UserService);

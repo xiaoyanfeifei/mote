@@ -9,7 +9,7 @@ export class Lodash {
 			}
 			for (const prop in value) {
 				if (other.hasOwnProperty(prop)) {
-					if (!this.isEqual(value[prop], other[prop])) {
+					if (!Lodash.isEqual(value[prop], other[prop])) {
 						return false;
 					}
 				}
@@ -22,10 +22,26 @@ export class Lodash {
 		}
 		return false;
 	}
+
+	static throttle<T extends (...args: any) => any>(func: T, wait: number): T {
+		let waiting = false;
+		let result: any;
+		return function (...args: any) {
+			if (!waiting) {
+				result = func(...args);
+				waiting = true;
+				setTimeout(function () {
+					waiting = false;
+				}, wait);
+			}
+			return result;
+		} as any;
+	}
+
 	static uniqWith<T>(collection: ArrayLike<T>, comparator: (value: T, other: T) => boolean) {
 		const result: T[] = [];
 		for (let i = 0; i < collection.length; i++) {
-			for (let j = i + 1; i < collection.length; j++) {
+			for (let j = i + 1; j < collection.length; j++) {
 				if (comparator(collection[i], collection[j])) {
 					break;
 				}

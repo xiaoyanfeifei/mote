@@ -1,6 +1,6 @@
 import { Lodash } from "mote/base/common/lodash";
 import { TextSelectionState } from "../editorState";
-import { Command } from "../operations";
+import { Command } from "../../../platform/transaction/common/operations";
 import { combineArray, getFirstInArray, getSecondArrayInArray, IAnnotation } from "../segmentUtils";
 import BlockStore from "../store/blockStore";
 import { TextSelection } from "./selectionUtils";

@@ -30,6 +30,6 @@ export async function doFetch<T>(url: string, payload: any, method: string): Pro
 		});
 		return response.ok && response.json();
 	} catch (err) {
-		return Promise.reject();
+		return Promise.reject(err);
 	}
 }
