@@ -112,7 +112,6 @@ export default class RecordStore<T = any> extends Disposable {
 		}
 	}
 
-
 	getValue() {
 		return this.state.value;
 	}

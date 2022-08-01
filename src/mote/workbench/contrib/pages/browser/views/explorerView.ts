@@ -102,6 +102,9 @@ export class ExplorerView extends ViewPane {
 		const that = this;
 
 		const spaceStore = this.contextService.getSpaceStore();
+		this._register(this.contextService.onDidChangeWorkspace(() => {
+			this.refresh();
+		}));
 
 		this.bodyViewContainer = document.createElement('div');
 

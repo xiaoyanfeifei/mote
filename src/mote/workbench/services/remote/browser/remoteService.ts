@@ -5,8 +5,9 @@ import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
 import RequestQueue from 'mote/workbench/services/remote/common/requestQueue';
 import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UserLoginPayload, UserSignupPayload } from 'mote/workbench/services/remote/common/remote';
 import { sha1Hex } from 'vs/base/browser/hash';
-import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { generateUuid } from 'vs/base/common/uuid';
+import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 
 
 type IRecordMap = { [key: string]: { [key: string]: RecordWithRole } };
@@ -42,7 +43,13 @@ class RecordMap {
 
 const syncRecordValuesQueue = new RequestQueue<SyncRecordRequest, RecordWithRole>({
 	performRequests: async (requests: SyncRecordRequest[]) => {
-		const uniqueRequests = Lodash.uniqWith(requests, Lodash.isEqual);
+		console.log(JSON.stringify(requests));
+		const uniqueRequests = Lodash.uniqWith(requests, (value, other) => {
+			if (!other) {
+				return false;
+			}
+			return value.id === other.id && value.table === other.table && value.version === other.version;
+		});
 		const recordMap = await syncRecordValues(uniqueRequests);
 		return requests.map(request => recordMap.get(request))
 			.filter(recordWithRole => recordWithRole !== undefined) as RecordWithRole[];
@@ -71,6 +78,8 @@ const syncRecordValues = async (requests: SyncRecordRequest[]) => {
 
 export class RemoteService implements IRemoteService {
 
+	private timeout = 1200;
+
 	constructor(
 		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
@@ -79,6 +88,8 @@ export class RemoteService implements IRemoteService {
 		} else {
 			config.apiDomain = config.apiDev;
 		}
+
+		setInterval(() => this.applyTransactions(), this.timeout);
 	}
 
 	//#region user
@@ -108,12 +119,24 @@ export class RemoteService implements IRemoteService {
 	}
 
 	async syncRecordValue(userId: string, pointer: Pointer): Promise<RecordWithRole> {
-		const record = RecordCacheStore.Default.getRecord({ userId: userId, pointer: pointer });
+		const record = RecordCacheStore.Default.getRecord({ userId: userId, pointer: pointer }, false);
 		return syncRecordValuesQueue.enqueue({
 			id: pointer.id,
 			table: pointer.table,
 			version: record && record.value && record.value.version ? record.value.version : -1
 		});
+	}
+
+	private async applyTransactions() {
+		if (TransactionQueue.length === 0) {
+			return Promise.resolve();
+		}
+		const transactions = TransactionQueue.splice(0, 20);
+		const request = {
+			traceId: generateUuid(),
+			transactions: transactions
+		};
+		this.doPost('/api/applyTransactions', request);
 	}
 
 	private async doGet<T>(url: string) {
@@ -125,6 +148,7 @@ export class RemoteService implements IRemoteService {
 	}
 
 	private async doPost<T>(url: string, payload: any) {
+		console.log(doFetch);
 		const response = await doFetch<CaffeineResponse<T>>(url, payload, 'POST');
 		if (response.code === 0) {
 			return response.data;
@@ -132,6 +156,4 @@ export class RemoteService implements IRemoteService {
 		throw new Error(response.message);
 	}
 }
-
-registerSingleton(IRemoteService, RemoteService);
 

@@ -1,3 +1,4 @@
+import { Pointer, RecordWithRole } from 'mote/editor/common/store/record';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export const IRemoteService = createDecorator<IRemoteService>('remoteService');
@@ -8,6 +9,8 @@ export interface IRemoteService {
 	login(payload: UserLoginPayload): Promise<LoginData>;
 
 	signup(payload: UserSignupPayload): Promise<LoginData>;
+
+	syncRecordValue(userId: string, pointer: Pointer): Promise<RecordWithRole>;
 }
 
 //#region payload

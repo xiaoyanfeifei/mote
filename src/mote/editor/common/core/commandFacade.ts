@@ -1,4 +1,4 @@
-import { Command, Operation } from "mote/editor/common/operations";
+import { Command, Operation } from "mote/platform/transaction/common/operations";
 
 
 function findIndex(arr: any[], predict: (t: any) => boolean): number {

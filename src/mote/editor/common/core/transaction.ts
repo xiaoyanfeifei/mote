@@ -1,9 +1,10 @@
 import RecordStore from 'mote/editor/common/store/recordStore';
 import { generateUuid } from 'vs/base/common/uuid';
-import { Operation } from '../operations';
-import { Role } from '../store/record';
-import RecordCacheStore from '../store/recordCacheStore';
+import { Operation } from 'mote/platform/transaction/common/operations';
+import { Role } from 'mote/editor/common/store/record';
+import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
 import CommandFacade from './commandFacade';
+import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 
 
 export interface TransactionCallback {
@@ -40,6 +41,7 @@ export class Transaction {
 
 	private constructor(userId: string) {
 		this.userId = userId;
+		this.isLocal = userId === 'local';
 	}
 
 	done(args?: any) {
@@ -67,18 +69,36 @@ export class Transaction {
 				preSubmitAction();
 			}
 
+			if (this.operations.length > 0) {
+
+			}
+
 			for (const store of this.stores) {
 				RecordCacheStore.Default.fire(store.identify);
 			}
 
-			// Trigger postSubmitAction
-			for (const postSubmitAction of this.postSubmitActions) {
-				postSubmitAction();
+			if (this.isLocal) {
+				// Trigger postSubmitAction
+				for (const postSubmitAction of this.postSubmitActions) {
+					postSubmitAction();
+				}
+
+				this.done();
+				resolve();
+			} else {
+				TransactionQueue.push({
+					id: this.id,
+					operations: this.operations
+				});
+				// Trigger postSubmitAction
+				for (const postSubmitAction of this.postSubmitActions) {
+					postSubmitAction();
+				}
+
+				this.done();
+				resolve();
 			}
 			this.committed = true;
-			this.done();
-			resolve();
-
 		});
 	}
 

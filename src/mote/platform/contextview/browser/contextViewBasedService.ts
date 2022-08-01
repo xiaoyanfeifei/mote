@@ -61,6 +61,10 @@ export abstract class BrowserContextViewBasedService extends Disposable implemen
 		this._onDidShowContextMenu.fire();
 	}
 
+	hideContextMenu() {
+		this.contextViewService.hideContextView(false);
+	}
+
 	abstract createMenu(container: HTMLElement, actions: ReadonlyArray<IAction>, options: IMenuOptions): IMenuLike;
 
 	private renderMenu(container: HTMLElement, delegate: IContextMenuDelegate): IDisposable {
@@ -129,7 +133,6 @@ export abstract class BrowserContextViewBasedService extends Disposable implemen
 
 			this.contextViewService.hideContextView(true);
 		}));
-
 		return combinedDisposable(menuDisposables, menu);
 	}
 

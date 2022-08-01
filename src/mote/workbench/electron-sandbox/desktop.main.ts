@@ -16,7 +16,7 @@ import { NativeLogService } from "mote/workbench/services/log/electron-sandbox/l
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService';
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IStorageService } from "vs/platform/storage/common/storage";
-import { WorkspaceService } from "mote/workbench/services/workspace/browser/workspaceService";
+import { WorkspaceService } from "mote/workbench/services/workspaces/browser/workspacesService";
 import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 import { NativeWindow } from "./window";
 

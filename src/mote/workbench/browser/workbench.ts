@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import 'mote/workbench/browser/style';
 import { getSingletonServiceDescriptors } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -8,14 +9,9 @@ import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/b
 import { Layout } from "./layout";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IViewsService, ViewContainerLocation } from "../common/views";
-import { ViewsService } from "./parts/views/viewsService";
-import { EXPLORER_VIEW_CONTAINER } from "../contrib/pages/browser/explorerViewlet";
-import { IThemeService } from "mote/platform/theme/common/themeService";
-import { IStorageService } from "vs/platform/storage/common/storage";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from "../common/contribution";
 import { IWorkbenchOptions } from 'vs/workbench/browser/workbench';
-import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
 
 export class Workbench extends Layout {
 

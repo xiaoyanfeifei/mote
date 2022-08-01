@@ -24,7 +24,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { setFullscreen } from 'vs/base/browser/browser';
 import { URI } from 'vs/base/common/uri';
-import { WorkspaceService } from 'mote/workbench/services/workspace/browser/workspaceService';
+import { WorkspaceService } from 'mote/workbench/services/workspaces/browser/workspacesService';
 import { ISignService } from 'vs/platform/sign/common/sign';
 import { SignService } from 'vs/platform/sign/browser/signService';
 import { IWorkbenchConstructionOptions, IWorkbench } from 'mote/workbench/browser/web.api';
@@ -55,6 +55,10 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { IProgressService } from 'vs/platform/progress/common/progress';
 import { DelayedLogChannel } from 'vs/workbench/services/output/common/delayedLogChannel';
 import { dirname, joinPath } from 'vs/base/common/resources';
+import { UserService } from 'mote/workbench/services/user/common/userService';
+import { RemoteService } from 'mote/workbench/services/remote/browser/remoteService';
+import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
+import { IUserService } from 'mote/workbench/services/user/common/user';
 
 
 export class BrowserMain extends Disposable {
@@ -207,8 +211,16 @@ export class BrowserMain extends Disposable {
 		const storageService = await this.createStorageService({ id: 'mote' }, logService);
 		serviceCollection.set(IStorageService, storageService);
 
+		// Remote
+		const remoteService = new RemoteService(environmentService);
+		serviceCollection.set(IRemoteService, remoteService);
+
+		// User
+		const userService = new UserService(storageService, remoteService);
+		serviceCollection.set(IUserService, userService);
+
 		// Workspace
-		const workspaceService = await this.createWorkspaceService(storageService, logService);
+		const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
 		serviceCollection.set(IWorkspaceContextService, workspaceService);
 
 
@@ -300,8 +312,9 @@ export class BrowserMain extends Disposable {
 		return storageService;
 	}
 
-	private async createWorkspaceService(storageService: IStorageService, logService: ILogService) {
-		const workspaceService = new WorkspaceService('local', storageService, logService);
+	private async createWorkspaceService(userService: IUserService, remoteService: IRemoteService, storageService: IStorageService, logService: ILogService) {
+		const userId = userService.currentProfile ? userService.currentProfile.id : 'local';
+		const workspaceService = new WorkspaceService(userId, storageService, logService, remoteService);
 		await workspaceService.initialize();
 		return workspaceService;
 	}

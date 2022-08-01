@@ -1,12 +1,9 @@
-import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
 import { IMenuLike, IMenuLikeOptions } from 'mote/base/browser/ui/menu/menu';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { addDisposableListener, EventType, isAncestor } from 'vs/base/browser/dom';
 import { ActionBar, ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
 import { ActionViewItem, BaseActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
-import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
 import { IAction } from 'vs/base/common/actions';
 
 interface ISubMenuData {
