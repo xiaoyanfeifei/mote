@@ -4,7 +4,6 @@ import { ThemedStyles } from 'mote/base/common/themes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/editor/common/store/blockStore';
-import SpaceStore from 'mote/editor/common/store/spaceStore';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 import { IViewPaneOptions, ViewPane } from 'mote/workbench/browser/parts/views/viewPane';
 import { $, reset } from 'vs/base/browser/dom';
@@ -15,6 +14,9 @@ import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IAction } from 'vs/base/common/actions';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
+import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -38,7 +40,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 	templateId: string = 'sidebar-outliner';
 
 	constructor(
-		private readonly commandService: ICommandService
+		private readonly editorService: IEditorService
 	) {
 
 	}
@@ -62,7 +64,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 		templateData.appendChild(container);
 
 		item.onDidClick((e) => {
-			this.commandService.executeCommand('openPage', { id: element.id, userId: element.userId });
+			this.editorService.openEditor(new DocumentEditorInput(element));
 		});
 
 	}
@@ -89,6 +91,7 @@ export class ExplorerView extends ViewPane {
 		@ILogService logService: ILogService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@ICommandService private readonly commandService: ICommandService,
+		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
 		super({ ...options, title: 'Private' }, logService, contextMenuService);
@@ -102,7 +105,7 @@ export class ExplorerView extends ViewPane {
 
 		this.bodyViewContainer = document.createElement('div');
 
-		const treeView = new List(spaceStore.userId, this.bodyViewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.commandService)], { horizontalScrolling: true });
+		const treeView = new List(spaceStore.userId, this.bodyViewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.editorService)], { horizontalScrolling: true });
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
 		this.bodyView = treeView;
 
@@ -122,7 +125,7 @@ export class ExplorerView extends ViewPane {
 
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
-				that.commandService.executeCommand('openPage', { id: child.id });
+				that.editorService.openEditor(new DocumentEditorInput(child));
 				transaction.postSubmitCallbacks.push(() => this.refresh());
 			}, spaceStore.userId);
 		});

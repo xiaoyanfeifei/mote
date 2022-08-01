@@ -29,14 +29,23 @@ export class EditorPanes extends Disposable {
 
 	async openEditor(editor: EditorInput, options: IEditorOptions | undefined) {
 		const editorPaneDescriptor = this.getEditorPaneDescriptor(editor);
-		await this.doOpenEditor(editorPaneDescriptor, editor, options);
+		return await this.doOpenEditor(editorPaneDescriptor, editor, options);
 	}
+
+	closeEditor(editor?: EditorInput): void {
+		if (this._activeEditorPane?.input) {
+			this.doHideActiveEditorPane();
+		}
+	}
+
 
 	async doOpenEditor(descriptor: IEditorPaneDescriptor, editor: EditorInput, options: IEditorOptions | undefined) {
 		// Editor pane
 		const pane = this.doShowEditorPane(descriptor);
 
 		await this.doSetInput(pane, editor, options);
+
+		return pane;
 	}
 
 	private async doSetInput(editorPane: EditorPane, editor: EditorInput, options: IEditorOptions | undefined) {

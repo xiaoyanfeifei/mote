@@ -12,7 +12,7 @@ export interface IButton extends IDisposable {
 }
 
 export interface IButtonOptions {
-	style?: CSSProperties
+	style?: CSSProperties;
 }
 
 export class Button extends Disposable implements IButton {

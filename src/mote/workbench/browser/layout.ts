@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { Disposable } from "vs/base/common/lifecycle";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { Dimension, getClientArea, IDimension, position, size } from "vs/base/browser/dom";
@@ -8,7 +9,6 @@ import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation
 import { IPaneCompositePartService } from "../services/panecomposite/browser/panecomposite";
 import { DeferredPromise, Promises } from "vs/base/common/async";
 import { IViewDescriptorService, ViewContainerLocation } from "../common/views";
-import { FILES_VIEWLET_ID } from "../contrib/pages/common/files";
 import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
 import { IEditorService } from "../services/editor/common/editorService";
 import { mark } from "vs/base/common/performance";
