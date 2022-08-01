@@ -7,6 +7,8 @@ import { firstOrDefault } from 'vs/base/common/arrays';
  */
 export abstract class EditorInput {
 
+	hideHeader?: boolean;
+
 	/**
 	 * If a editor was registered onto multiple editor panes, this method
 	 * will be asked to return the preferred one to use.

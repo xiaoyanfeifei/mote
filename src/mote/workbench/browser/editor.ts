@@ -1,10 +1,11 @@
-import { EditorExtensions, EditorInput, IEditorDescriptor as ICommonEditorDescriptor } from 'mote/workbench/common/editor';
+import { EditorExtensions, IEditorDescriptor as ICommonEditorDescriptor } from 'mote/workbench/common/editor';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
 import { BrandedService, IConstructorSignature, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { insert } from 'vs/base/common/arrays';
 import { Registry } from 'vs/platform/registry/common/platform';
+import { EditorInput } from 'mote/workbench/common/editorInput';
 
 
 export interface IEditorPaneDescriptor extends ICommonEditorDescriptor<EditorPane> { }
