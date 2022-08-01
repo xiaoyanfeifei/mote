@@ -148,7 +148,6 @@ export class RemoteService implements IRemoteService {
 	}
 
 	private async doPost<T>(url: string, payload: any) {
-		console.log(doFetch);
 		const response = await doFetch<CaffeineResponse<T>>(url, payload, 'POST');
 		if (response.code === 0) {
 			return response.data;

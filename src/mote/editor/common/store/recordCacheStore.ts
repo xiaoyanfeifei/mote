@@ -33,7 +33,7 @@ export default class RecordCacheStore extends Disposable {
 		appliedTransaction: !1
 	};
 
-	getRecord(e: CacheKeyProps, sync: boolean = true): RecordWithRole | null {
+	getRecord(e: CacheKeyProps, sync: boolean = false): RecordWithRole | null {
 		const key = RecordCacheStore.generateCacheKey(e);
 		let record = this.state.cache.get(key);
 		if (record) {
@@ -47,6 +47,7 @@ export default class RecordCacheStore extends Disposable {
 			return record.value;
 		}
 		this.logService.debug(`[RecordCache] could not locate record<${key}>`);
+
 		if (sync && e.userId !== 'local') {
 			this.remoteService.syncRecordValue(e.userId!, e.pointer)
 				.then((recordWithRole) => {

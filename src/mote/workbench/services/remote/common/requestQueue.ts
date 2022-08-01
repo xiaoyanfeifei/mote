@@ -100,7 +100,7 @@ export default class RequestQueue<REQUEST, RESPONSE> {
 			if (this.requestTimeoutMs) {
 				const response = await requestWithTimeout<RESPONSE[]>(this.requestTimeoutMs, [this.performRequests(batchRequests)]);
 				if (response.timeout) {
-					throw new Error('Timed out.');
+					throw new Error(`Timed out reach ${this.requestTimeoutMs}.`);
 				}
 				batchResults = response.result;
 			} else {

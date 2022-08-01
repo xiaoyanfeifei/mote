@@ -127,10 +127,10 @@ export class ExplorerView extends ViewPane {
 				let child = EditOperation.createBlockStore('page', transaction, 'page');
 
 				child = EditOperation.appendToParent(
-					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
+					this.contextService.getSpaceStore().getPagesStore(), child, transaction).child as BlockStore;
 				that.editorService.openEditor(new DocumentEditorInput(child));
 				transaction.postSubmitCallbacks.push(() => this.refresh());
-			}, spaceStore.userId);
+			}, this.contextService.getSpaceStore().userId);
 		});
 		container.append(this.bodyViewContainer);
 		container.append(domNode);

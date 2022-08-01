@@ -1,6 +1,6 @@
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
-import { get } from "../core/commandFacade";
+import { get } from '../core/commandFacade';
 import { Pointer, RecordValue, Role } from 'mote/editor/common/store/record';
 import RecordCacheStore from "./recordCacheStore";
 
@@ -8,6 +8,7 @@ import RecordCacheStore from "./recordCacheStore";
 interface RecordStoreState<T> {
 	value: T;
 	role: Role;
+	ready: boolean;
 }
 
 interface RecordStoreProps {
@@ -78,8 +79,6 @@ export default class RecordStore<T = any> extends Disposable {
 		this.path = props.path || [];
 		this.instanceState = {} as any;
 
-		this.sync();
-
 		this._register(RecordCacheStore.Default.onDidChange((e) => {
 			if (this.identify === e) {
 				this.sync();
@@ -102,7 +101,7 @@ export default class RecordStore<T = any> extends Disposable {
 	}
 
 	public sync() {
-		const cachedRecord = RecordCacheStore.Default.getRecord({ pointer: this.pointer, userId: this.userId });
+		const cachedRecord = RecordCacheStore.Default.getRecord({ pointer: this.pointer, userId: this.userId }, !this.instanceState.ready);
 		if (cachedRecord) {
 			if (this.path && this.path.length > 0) {
 				this.instanceState.value = get(cachedRecord.value, this.path);
@@ -110,6 +109,7 @@ export default class RecordStore<T = any> extends Disposable {
 				this.instanceState.value = cachedRecord.value as any;
 			}
 		}
+		this.instanceState.ready = true;
 	}
 
 	getValue() {

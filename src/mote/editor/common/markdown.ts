@@ -33,10 +33,11 @@ markdownBlockParseRules.push({
 	toBlockType: () => blockTypes.todo,
 	insertTextAfter: false,
 });
-// Add H1 tag
+
+// Add H3 tag
 markdownBlockParseRules.push({
-	matchRegex: /^# $/,
-	toBlockType: () => blockTypes.header,
+	matchRegex: /^### $/,
+	toBlockType: () => blockTypes.heading3,
 	insertTextAfter: false,
 });
 
@@ -47,10 +48,10 @@ markdownBlockParseRules.push({
 	insertTextAfter: false,
 });
 
-// Add H3 tag
+// Add H1 tag
 markdownBlockParseRules.push({
-	matchRegex: /^### $/,
-	toBlockType: () => blockTypes.heading3,
+	matchRegex: /^# $/,
+	toBlockType: () => blockTypes.header,
 	insertTextAfter: false,
 });
 
@@ -92,10 +93,8 @@ export class Markdown {
 		if (!(parentStore && parentStore instanceof BlockStore)) {
 			return false;
 		}
-		const parentStoreType = parentStore.getType();
-		if (!parentStoreType) {
-			return false;
-		}
+		const parentStoreType = parentStore.getType() || 'text';
+
 		if (blockTypes.text !== parentStoreType) {
 			return false;
 		}
