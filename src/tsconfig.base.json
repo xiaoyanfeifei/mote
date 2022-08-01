@@ -40,6 +40,7 @@
 			"ES2020.String",
 			"ES2020.Symbol.WellKnown",
 			"ES2020.Intl",
+			"ESNext",
 			"DOM",
 			"DOM.Iterable",
 			"WebWorker.ImportScripts"

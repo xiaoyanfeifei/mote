@@ -477,6 +477,7 @@
 						"restrictions": [
 							"vs/base/~",
 							"mote/base/~",
+							"mote/base/parts/*/~",
 							"vs/base/parts/*/~",
 							"mote/platform/*/~",
 							"vs/platform/*/~",

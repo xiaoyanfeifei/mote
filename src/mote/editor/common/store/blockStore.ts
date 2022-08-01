@@ -1,5 +1,5 @@
-import { BlockType, Pointer } from "./record";
-import RecordStore from "./recordStore";
+import { BlockType, Pointer } from './record';
+import RecordStore from './recordStore';
 
 export default class BlockStore extends RecordStore {
 	static override keyName = 'BlockStore';
@@ -48,11 +48,11 @@ export default class BlockStore extends RecordStore {
 		return RecordStore.createChildStore(this, this.pointer, ['properties']);
 	}
 
-	getContentStores(table: string = 'block'): BlockStore[] {
+	getContentStores(table: string = 'block'): RecordStore[] {
 		const contentStore = this.getContentStore();
 		const record = this.getValue();
 		const content: string[] = record && record.content ? record.content : [];
-		return content.map(itemId => BlockStore.createChildStore(contentStore, {
+		return content.map(itemId => RecordStore.createChildStore(contentStore, {
 			table: table,
 			id: itemId,
 		}));

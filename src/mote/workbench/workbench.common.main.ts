@@ -16,6 +16,8 @@ import 'mote/workbench/contrib/pages/browser/pages.contribution';
 // DocumentEditor
 import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contribution';
 
+import 'mote/workbench/contrib/login/browser/login.contribution';
+
 //#endregion
 
 //#region --- workbench services
@@ -25,6 +27,8 @@ import 'mote/workbench/services/commands/common/commandService';
 import 'mote/workbench/services/editor/browser/editorService';
 import 'mote/workbench/services/quickmenu/browser/quickmenuService';
 import 'mote/workbench/services/views/browser/viewDescriptorService';
+import 'mote/workbench/services/user/common/userService';
+import 'mote/workbench/services/remote/browser/remoteService';
 
 //#endregion
 
