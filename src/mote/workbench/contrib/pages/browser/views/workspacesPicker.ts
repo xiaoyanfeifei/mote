@@ -20,9 +20,11 @@ interface ILayoutInfo {
 class PickerFooter {
 
 	get onDidJoinOrCreate(): BaseEvent<Event> { return this.joinOrCreate.onDidClick; }
+	get onDidLogOut(): BaseEvent<Event> { return this.logOut.onDidClick; }
 
 	protected readonly domNode: HTMLDivElement;
 	private joinOrCreate!: Button;
+	private logOut!: Button;
 
 	constructor(parent: HTMLElement,) {
 		this.domNode = document.createElement('div');
@@ -30,11 +32,12 @@ class PickerFooter {
 		this.domNode.style.paddingBottom = '6px';
 		this.domNode.style.boxShadow = 'rgb(255 255 255 / 9%) 0px -1px 0px';
 
-		this.domNode.appendChild(this.createAction('Join or create workspace'));
+		this.joinOrCreate = this.createAction(this.domNode, 'Join or create workspace');
+		this.logOut = this.createAction(this.domNode, 'Log out');
 		parent.append(this.domNode);
 	}
 
-	private createAction(name: string) {
+	private createAction(parent: HTMLElement, name: string) {
 		const container = document.createElement('div');
 
 		const span = document.createElement('span');
@@ -55,8 +58,9 @@ class PickerFooter {
 			}
 		});
 		btn.setChildren(actionContainer);
-		this.joinOrCreate = btn;
-		return container;
+
+		parent.appendChild(container);
+		return btn;
 	}
 }
 
@@ -93,12 +97,11 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 
 		const footer = new PickerFooter(this.domNode);
 		this._register(footer.onDidJoinOrCreate(() => {
-			if (userService.currentProfile) {
-				console.log(userService.currentProfile);
-				this.workspaceService.createWorkspace(userService.currentProfile.id);
-			} else {
-				this.editorService.openEditor(new LoginInput());
-			}
+			this.workspaceService.createWorkspace();
+			this._onDidBlur.fire();
+		}));
+		this._register(footer.onDidLogOut(() => {
+			this.userService.logout();
 			this._onDidBlur.fire();
 		}));
 	}

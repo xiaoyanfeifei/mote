@@ -11,6 +11,14 @@ import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { generateUuid } from 'vs/base/common/uuid';
 import { Lodash } from 'mote/base/common/lodash';
 import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
+import { IUserService } from 'mote/workbench/services/user/common/user';
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import Severity from 'vs/base/common/severity';
+import { localize } from 'vs/nls';
+import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
+import { IUserProfile } from 'mote/platform/user/common/user';
 
 export class WorkspaceService extends Disposable implements IWorkspaceContextService {
 	_serviceBrand: undefined;
@@ -34,18 +42,30 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	private currentSpaceId!: string;
 
 	constructor(
-		userId: string,
 		@IStorageService storageService: IStorageService,
 		@ILogService logService: ILogService,
 		@IRemoteService remoteService: IRemoteService,
+		@IUserService private readonly userService: IUserService,
+		@IDialogService private readonly dialogService: IDialogService,
+		@IEditorService private readonly editorService: IEditorService,
 	) {
 		super();
+
+		const userId = userService.currentProfile ? userService.currentProfile.id : 'local';
 
 		RecordCacheStore.Default.storageService = storageService;
 		RecordCacheStore.Default.logService = logService;
 		RecordCacheStore.Default.remoteService = remoteService;
 
 		this.spaceRootStores = [];
+
+		this._register(userService.onDidChangeCurrentProfile((profile) => this.onProfileChange(profile)));
+
+		if (!userService.currentProfile) {
+			editorService.openEditor(new LoginInput());
+			return;
+		}
+
 		if (userId !== 'local') {
 			const spaceRootStore = new SpaceRootStore(userId);
 			this._register(spaceRootStore.onDidChange(() => {
@@ -53,25 +73,39 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 			}));
 			this.spaceRootStores.push(spaceRootStore);
 		}
-		this.spaceRootStores.push(new SpaceRootStore('local'));
+	}
+
+	onProfileChange(profile: IUserProfile | undefined) {
+		if (!profile) {
+			this.spaceRootStores = [];
+			this.editorService.openEditor(new LoginInput());
+			this._onDidChangeWorkspace.fire();
+			return;
+		}
+		const spaceRootStore = new SpaceRootStore(profile.id);
+		this._register(spaceRootStore.onDidChange(() => {
+			this._onDidChangeWorkspace.fire();
+		}));
+		this.spaceRootStores.push(spaceRootStore);
+		this._onDidChangeWorkspace.fire();
 	}
 
 	getSpaceStores(): SpaceStore[] {
 		return this.spaceRootStores.flatMap(store => store.getSpaceStores());
 	}
 
-	getSpaceStore(): SpaceStore {
+	getSpaceStore(): SpaceStore | undefined {
 		const spaceStores = this.getSpaceStores();
 		if (spaceStores.length > 0) {
 			if (this.currentSpaceId) {
 				const idx = Lodash.findIndex(spaceStores, (store) => store.id === this.currentSpaceId);
-				return spaceStores[idx];
+				if (idx >= 0) {
+					return spaceStores[idx];
+				}
 			}
 			return spaceStores[0];
 		}
-
-		// Generate a local space
-		return this.createSpaceStore('local', 'local', 'Local Space');
+		return undefined;
 	}
 
 	enterWorkspace(spaceId: string) {
@@ -87,9 +121,32 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 
 	}
 
-	async createWorkspace(userId: string) {
-		const id = generateUuid();
-		this.createSpaceStore(userId, id, 'Untitled Space');
+	async createWorkspace() {
+		if (this.userService.currentProfile) {
+			console.log(this.userService.currentProfile);
+			const spaceId = generateUuid();
+			this.createSpaceStore(this.userService.currentProfile.id, spaceId, 'Untitled Space');
+		} else {
+			//this.editorService.openEditor(new LoginInput());
+			const payload = { username: '', password: '' };
+			const result = await this.dialogService.input(
+				Severity.Info,
+				'Login Required',
+				[
+					localize({ key: 'loginButton', comment: ['&& denotes a mnemonic'] }, "&&Log In"),
+					localize({ key: 'cancelButton', comment: ['&& denotes a mnemonic'] }, "&&Cancel")
+				],
+				[
+					{ placeholder: localize('username', "Username"), value: payload.username },
+					{ placeholder: localize('password', "Password"), type: 'password', value: payload.password }
+				],
+			);
+
+			if (result.values) {
+				const [username, password] = result.values;
+				this.userService.login({ username: username, password: password });
+			}
+		}
 	}
 
 	async deleteWorkspace() {
@@ -113,3 +170,5 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		return child;
 	}
 }
+
+registerSingleton(IWorkspaceContextService, WorkspaceService);

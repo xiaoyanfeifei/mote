@@ -3,10 +3,11 @@ import { IThemeService } from "mote/platform/theme/common/themeService";
 import { Component } from "mote/workbench/common/component";
 import { IAddedViewDescriptorRef, IView, IViewContainerModel, IViewDescriptor, IViewDescriptorRef, IViewDescriptorService, IViewPaneContainer, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService } from "mote/workbench/services/layout/browser/layoutService";
-import { Dimension } from "vs/base/browser/dom";
+import { addDisposableListener, Dimension } from "vs/base/browser/dom";
 import { Orientation } from "vs/base/browser/ui/sash/sash";
 import { IPaneViewOptions, PaneView } from "vs/base/browser/ui/splitview/paneview";
-import { combinedDisposable, IDisposable } from "vs/base/common/lifecycle";
+import { Emitter, Event } from 'vs/base/common/event';
+import { combinedDisposable, dispose, IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { assertIsDefined } from "vs/base/common/types";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
@@ -33,16 +34,31 @@ type BoundingRect = { top: number; left: number; bottom: number; right: number }
 
 export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
+	private readonly _onDidAddViews = this._register(new Emitter<IView[]>());
+	readonly onDidAddViews = this._onDidAddViews.event;
+
+	private readonly _onDidRemoveViews = this._register(new Emitter<IView[]>());
+	readonly onDidRemoveViews = this._onDidRemoveViews.event;
+
+	private readonly _onTitleAreaUpdate: Emitter<void> = this._register(new Emitter<void>());
+	readonly onTitleAreaUpdate: Event<void> = this._onTitleAreaUpdate.event;
+
+	private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
+	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
+
 	readonly viewContainer: ViewContainer;
 	private lastFocusedPane: ViewPane | undefined;
 	private lastMergedCollapsedPane: ViewPane | undefined;
 	private paneItems: IViewPaneItem[] = [];
 	private paneview?: PaneView;
 
+	private visible: boolean = false;
+
 	private didLayout = false;
 	private dimension: Dimension | undefined;
 
 	protected readonly viewContainerModel: IViewContainerModel;
+	private viewDisposables: IDisposable[] = [];
 
 	get panes(): ViewPane[] {
 		return this.paneItems.map(i => i.pane);
@@ -74,6 +90,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 		this.viewContainer = container;
 		this.viewContainerModel = this.viewDescriptorService.getViewContainerModel(container);
+		this._register(toDisposable(() => this.viewDisposables = dispose(this.viewDisposables)));
 	}
 
 	create(parent: HTMLElement): void {
@@ -124,6 +141,19 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		return Orientation.VERTICAL;
 	}
 
+	focus(): void {
+		if (this.lastFocusedPane) {
+			this.lastFocusedPane.focus();
+		} else if (this.paneItems.length > 0) {
+			for (const { pane: pane } of this.paneItems) {
+				if (pane.isExpanded()) {
+					pane.focus();
+					return;
+				}
+			}
+		}
+	}
+
 	layout(dimension: Dimension): void {
 		if (this.paneview) {
 			if (this.paneview.orientation !== this.orientation) {
@@ -150,6 +180,10 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 	}
 
+	protected updateTitleArea(): void {
+		this._onTitleAreaUpdate.fire();
+	}
+
 	protected createView(viewDescriptor: IViewDescriptor, options: IViewPaneOptions): ViewPane {
 		return (this.instantiationService as any).createInstance(viewDescriptor.ctorDescriptor.ctor, ...(viewDescriptor.ctorDescriptor.staticArguments || []), options) as ViewPane;
 	}
@@ -168,6 +202,17 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 			pane.render();
 
+			const contextMenuDisposable = addDisposableListener(pane.draggableElement, 'contextmenu', e => {
+				e.stopPropagation();
+				e.preventDefault();
+				//this.onContextMenu(new StandardMouseEvent(e), pane);
+			});
+
+			const collapseDisposable = Event.latch(Event.map(pane.onDidChange, () => !pane.isExpanded()))(collapsed => {
+				this.viewContainerModel.setCollapsed(viewDescriptor.id, collapsed);
+			});
+
+			this.viewDisposables.splice(index, 0, combinedDisposable(contextMenuDisposable, collapseDisposable));
 			panesToAdd.push({ pane, size: size || pane.minimumSize, index });
 		}
 
@@ -176,7 +221,7 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 		const panes: ViewPane[] = [];
 		for (const { pane } of panesToAdd) {
-			//pane.setVisible(this.isVisible());
+			pane.setVisible(this.isVisible());
 			panes.push(pane);
 		}
 		return panes;
@@ -186,21 +231,30 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		removed = removed.sort((a, b) => b.index - a.index);
 		const panesToRemove: ViewPane[] = [];
 		for (const { index } of removed) {
-			//const [disposable] = this.viewDisposables.splice(index, 1);
-			//disposable.dispose();
+			const [disposable] = this.viewDisposables.splice(index, 1);
+			disposable.dispose();
 			panesToRemove.push(this.panes[index]);
 		}
-		//this.removePanes(panesToRemove);
+		this.removePanes(panesToRemove);
 
 		for (const pane of panesToRemove) {
-			//pane.setVisible(false);
+			pane.setVisible(false);
 		}
 	}
 
 	addPanes(panes: { pane: ViewPane; size: number; index?: number }[]): void {
+		const wasMerged = this.isViewMergedWithContainer();
+
 		for (const { pane: pane, size, index } of panes) {
 			this.addPane(pane, size, index);
 		}
+
+		this.updateViewHeaders();
+		if (this.isViewMergedWithContainer() !== wasMerged) {
+			this.updateTitleArea();
+		}
+
+		this._onDidAddViews.fire(panes.map(({ pane }) => pane));
 	}
 
 	private addPane(pane: ViewPane, size: number, index = this.paneItems.length - 1) {
@@ -212,13 +266,85 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		assertIsDefined(this.paneview).addPane(pane, size, index);
 	}
 
+	removePanes(panes: ViewPane[]): void {
+		const wasMerged = this.isViewMergedWithContainer();
+
+		panes.forEach(pane => this.removePane(pane));
+
+		this.updateViewHeaders();
+		if (wasMerged !== this.isViewMergedWithContainer()) {
+			this.updateTitleArea();
+		}
+
+		this._onDidRemoveViews.fire(panes);
+	}
+
+	private removePane(pane: ViewPane): void {
+		const index = this.paneItems.findIndex(i => i.pane === pane);
+
+		if (index === -1) {
+			return;
+		}
+
+		if (this.lastFocusedPane === pane) {
+			this.lastFocusedPane = undefined;
+		}
+
+		assertIsDefined(this.paneview).removePane(pane);
+		const [paneItem] = this.paneItems.splice(index, 1);
+		paneItem.disposable.dispose();
+
+	}
+
 
 	getView(viewId: string): IView | undefined {
 		throw new Error("Method not implemented.");
 	}
 
-	isViewMergedWithContainer(): boolean {
-		return true;
+	setVisible(visible: boolean): void {
+		if (this.visible !== !!visible) {
+			this.visible = visible;
+
+			this._onDidChangeVisibility.fire(visible);
+		}
+
+		this.panes.filter(view => view.isVisible() !== visible)
+			.map((view) => view.setVisible(visible));
 	}
 
+	isVisible(): boolean {
+		return this.visible;
+	}
+
+	private updateViewHeaders(): void {
+		if (this.isViewMergedWithContainer()) {
+			if (this.paneItems[0].pane.isExpanded()) {
+				this.lastMergedCollapsedPane = undefined;
+			} else {
+				this.lastMergedCollapsedPane = this.paneItems[0].pane;
+				this.paneItems[0].pane.setExpanded(true);
+			}
+			this.paneItems[0].pane.headerVisible = false;
+		} else {
+			this.paneItems.forEach(i => {
+				i.pane.headerVisible = true;
+				if (i.pane === this.lastMergedCollapsedPane) {
+					i.pane.setExpanded(false);
+				}
+			});
+			this.lastMergedCollapsedPane = undefined;
+		}
+	}
+
+	isViewMergedWithContainer(): boolean {
+		return false;
+	}
+
+	override dispose(): void {
+		super.dispose();
+		this.paneItems.forEach(i => i.disposable.dispose());
+		if (this.paneview) {
+			this.paneview.dispose();
+		}
+	}
 }

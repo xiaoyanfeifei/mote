@@ -8,6 +8,7 @@ import { alert } from 'vs/base/browser/ui/aria/aria';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IUserProfile } from 'mote/platform/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { CaffeineError } from 'mote/base/common/errors';
 
 export class LoginPage extends EditorPane {
 	public static readonly ID = 'loginPage';
@@ -15,6 +16,8 @@ export class LoginPage extends EditorPane {
 	private login = true;
 
 	private container: HTMLElement;
+
+	private error: HTMLElement;
 
 	private inputMap = new Map<String, HTMLInputElement>();
 
@@ -26,12 +29,19 @@ export class LoginPage extends EditorPane {
 		super(LoginPage.ID, themeService);
 
 		const container = $('.login');
+		const error = $('.error');
+		this.error = error;
 		this.container = container;
 
 		container.style.display = 'flex';
 		container.style.alignItems = 'center';
 		container.style.flexDirection = 'column';
 		container.style.height = 'calc(100% - 11px)';
+
+		error.style.display = 'flex';
+		error.style.justifyContent = 'center';
+		error.style.color = '#ff4d4f';
+		error.style.marginTop = '10px';
 	}
 
 	protected createEditor(parent: HTMLElement): void {
@@ -57,6 +67,8 @@ export class LoginPage extends EditorPane {
 			this.createInput(body, 'confirm password', 'Enter your password');
 		}
 
+		body.appendChild(this.error);
+
 		const submitBtn = this.createButton(body, 'Continue with email');
 		submitBtn.onDidClick((e) => {
 			const password = this.inputMap.get('password')?.value;
@@ -65,6 +77,7 @@ export class LoginPage extends EditorPane {
 				return;
 			}
 			let userProfile: Promise<IUserProfile>;
+
 			if (this.login) {
 				userProfile = this.userService.login({
 					email: this.inputMap.get('email')?.value,
@@ -76,9 +89,18 @@ export class LoginPage extends EditorPane {
 					password: password,
 				});
 			}
+
 			userProfile.then((user) => {
+				this.error.innerText = '';
 				this.editorService.closeEditor();
+			}).catch((err) => {
+				if (err instanceof CaffeineError) {
+					this.error.innerText = err.message;
+				} else {
+					this.error.innerText = 'Request failed';
+				}
 			});
+
 		});
 		if (this.login) {
 			const registerBtn = this.createButton(body, 'Register to create a new user');
@@ -102,7 +124,7 @@ export class LoginPage extends EditorPane {
 
 	private createHeader() {
 		const header = document.createElement('div');
-		header.style.marginTop = '5vh';
+		header.style.marginTop = '15vh';
 		header.style.fontWeight = `${fonts.fontWeight.semibold}`;
 		header.style.fontSize = '50px';
 		header.innerText = 'Login';

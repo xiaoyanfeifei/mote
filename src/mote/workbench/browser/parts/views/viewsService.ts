@@ -5,6 +5,7 @@ import { IPaneComposite } from "mote/workbench/common/panecomposite";
 import { IView, IViewDescriptor, IViewDescriptorService, IViewsService, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
+import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable, DisposableStore, toDisposable } from "vs/base/common/lifecycle";
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
@@ -15,6 +16,11 @@ import { ViewPaneContainer } from "./viewPaneContainer";
 
 export class ViewsService extends Disposable implements IViewsService {
 
+	private readonly _onDidChangeViewVisibility: Emitter<{ id: string; visible: boolean }> = this._register(new Emitter<{ id: string; visible: boolean }>());
+	readonly onDidChangeViewVisibility: Event<{ id: string; visible: boolean }> = this._onDidChangeViewVisibility.event;
+
+	private readonly _onDidChangeViewContainerVisibility = this._register(new Emitter<{ id: string; visible: boolean; location: ViewContainerLocation }>());
+	readonly onDidChangeViewContainerVisibility = this._onDidChangeViewContainerVisibility.event;
 
 	declare readonly _serviceBrand: undefined;
 
@@ -39,6 +45,23 @@ export class ViewsService extends Disposable implements IViewsService {
 		);
 		this._register(this.viewDescriptorService.onDidChangeViewContainers(({ added, removed }) => this.onDidChangeContainers(added, removed)));
 
+	}
+
+	private onViewsAdded(added: IView[]): void {
+		for (const view of added) {
+			this.onViewsVisibilityChanged(view, view.isBodyVisible());
+		}
+	}
+
+	private onViewsVisibilityChanged(view: IView, visible: boolean): void {
+		//this.getOrCreateActiveViewContextKey(view).set(visible);
+		this._onDidChangeViewVisibility.fire({ id: view.id, visible: visible });
+	}
+
+	private onViewsRemoved(removed: IView[]): void {
+		for (const view of removed) {
+			this.onViewsVisibilityChanged(view, false);
+		}
 	}
 
 	private onDidChangeContainers(added: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>, removed: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>): void {
@@ -153,11 +176,12 @@ export class ViewsService extends Disposable implements IViewsService {
 
 		this.viewPaneContainers.set(viewPaneContainer.getId(), viewPaneContainer);
 		disposables.add(toDisposable(() => this.viewPaneContainers.delete(viewPaneContainer.getId())));
-		/*
+
 		disposables.add(viewPaneContainer.onDidAddViews(views => this.onViewsAdded(views)));
-		disposables.add(viewPaneContainer.onDidChangeViewVisibility(view => this.onViewsVisibilityChanged(view, view.isBodyVisible())));
+		//disposables.add(viewPaneContainer.onDidChangeViewVisibility(view => this.onViewsVisibilityChanged(view, view.isBodyVisible())));
 		disposables.add(viewPaneContainer.onDidRemoveViews(views => this.onViewsRemoved(views)));
-		disposables.add(viewPaneContainer.onDidFocusView(view => this.focusedViewContextKey.set(view.id)));
+		//disposables.add(viewPaneContainer.onDidFocusView(view => this.focusedViewContextKey.set(view.id)));
+		/*
 		disposables.add(viewPaneContainer.onDidBlurView(view => {
 			if (this.focusedViewContextKey.get() === view.id) {
 				this.focusedViewContextKey.reset();

@@ -85,6 +85,9 @@ export abstract class ViewPane extends Pane implements IView {
 	private _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur: Event<void> = this._onDidBlur.event;
 
+	private _onDidChangeBodyVisibility = this._register(new Emitter<boolean>());
+	readonly onDidChangeBodyVisibility: Event<boolean> = this._onDidChangeBodyVisibility.event;
+
 	protected _onDidChangeViewWelcomeState = this._register(new Emitter<void>());
 	readonly onDidChangeViewWelcomeState: Event<void> = this._onDidChangeViewWelcomeState.event;
 
@@ -204,11 +207,22 @@ export abstract class ViewPane extends Pane implements IView {
 			this._onDidFocus.fire();
 		}
 	}
+
+	setVisible(visible: boolean): void {
+		if (this._isVisible !== visible) {
+			this._isVisible = visible;
+
+			if (this.isExpanded()) {
+				this._onDidChangeBodyVisibility.fire(visible);
+			}
+		}
+	}
+
 	isVisible(): boolean {
 		return this._isVisible;
 	}
 	isBodyVisible(): boolean {
-		throw new Error("Method not implemented.");
+		return this._isVisible && this.isExpanded();
 	}
 
 	private updateViewWelcome(): void {

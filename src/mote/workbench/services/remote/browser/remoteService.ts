@@ -8,6 +8,7 @@ import { sha1Hex } from 'vs/base/browser/hash';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { generateUuid } from 'vs/base/common/uuid';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
+import { CaffeineError } from 'mote/base/common/errors';
 
 
 type IRecordMap = { [key: string]: { [key: string]: RecordWithRole } };
@@ -152,7 +153,7 @@ export class RemoteService implements IRemoteService {
 		if (response.code === 0) {
 			return response.data;
 		}
-		throw new Error(response.message);
+		throw new CaffeineError(response.message, response.code);
 	}
 }
 

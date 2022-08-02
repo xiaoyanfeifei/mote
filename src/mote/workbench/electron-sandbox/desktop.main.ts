@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { domContentLoaded } from "vs/base/browser/dom";
 import { Disposable } from "vs/base/common/lifecycle";
@@ -16,8 +17,6 @@ import { NativeLogService } from "mote/workbench/services/log/electron-sandbox/l
 import { BrowserStorageService } from 'vs/workbench/services/storage/browser/storageService';
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IStorageService } from "vs/platform/storage/common/storage";
-import { WorkspaceService } from "mote/workbench/services/workspaces/browser/workspacesService";
-import { IWorkspaceContextService } from "mote/platform/workspace/common/workspace";
 import { NativeWindow } from "./window";
 
 export class DesktopMain extends Disposable {
@@ -83,9 +82,6 @@ export class DesktopMain extends Disposable {
 		const storageService = await this.createStorageService(logService);
 		serviceCollection.set(IStorageService, storageService);
 
-		const workspaceService = await this.createWorkspaceService(storageService, logService);
-		serviceCollection.set(IWorkspaceContextService, workspaceService);
-
 		return { serviceCollection, logService };
 	}
 
@@ -102,12 +98,6 @@ export class DesktopMain extends Disposable {
 		}
 
 		return storageService;
-	}
-
-	private async createWorkspaceService(storageService: IStorageService, logService: ILogService) {
-		const workspaceService = new WorkspaceService('local', storageService, logService);
-		await workspaceService.initialize();
-		return workspaceService;
 	}
 
 }

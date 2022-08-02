@@ -1,4 +1,3 @@
-import { ThemedStyles } from 'mote/base/common/themes';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
 import { Extensions, IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation } from "mote/workbench/common/views";
@@ -11,7 +10,7 @@ import { ILogService } from 'vs/platform/log/common/log';
 import { Registry } from 'vs/platform/registry/common/platform';
 import { FILES_VIEWLET_ID } from '../common/files';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { IWorkbenchContribution } from 'mote/workbench/common/contribution';
+import { IWorkbenchContribution } from 'mote/workbench/common/contributions';
 import { EmptyView } from './views/emptyView';
 import { ExplorerView } from './views/explorerView';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -51,9 +50,12 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 
 export class ExplorerViewletViewsContribution extends Disposable implements IWorkbenchContribution {
 
-	constructor() {
+	constructor(
+		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+	) {
 		super();
 		this.registerView();
+		this._register(workspaceContextService.onDidChangeWorkspace(() => this.registerView()));
 	}
 
 	private registerView() {
@@ -68,14 +70,22 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 		const emptyViewDescriptor = this.createEmptyViewDescriptor();
 		const registeredEmptyViewDescriptor = viewDescriptors.find(v => v.id === emptyViewDescriptor.id);
 
-		// for empty state
-		if (registeredExplorerViewDescriptor) {
-			viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
+		if (this.workspaceContextService.getSpaceStores().length === 0) {
+			if (registeredExplorerViewDescriptor) {
+				viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
+			}
+			if (!registeredEmptyViewDescriptor) {
+				viewDescriptorsToRegister.push(emptyViewDescriptor);
+			}
+		} else {
+			if (registeredEmptyViewDescriptor) {
+				viewDescriptorsToDeregister.push(registeredEmptyViewDescriptor);
+			}
+			if (!registeredExplorerViewDescriptor) {
+				viewDescriptorsToRegister.push(explorerViewDescriptor);
+			}
 		}
-		if (!registeredEmptyViewDescriptor) {
-			//viewDescriptorsToRegister.push(emptyViewDescriptor);
-			viewDescriptorsToRegister.push(explorerViewDescriptor);
-		}
+
 
 		if (viewDescriptorsToRegister.length) {
 			viewsRegistry.registerViews(viewDescriptorsToRegister, EXPLORER_VIEW_CONTAINER);
@@ -88,7 +98,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 	private createEmptyViewDescriptor(): IViewDescriptor {
 		return {
 			id: EmptyView.ID,
-			name: 'No Folder Opened', //EmptyView.NAME,
+			name: 'No Workspace Opened', //EmptyView.NAME,
 			//containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(EmptyView),
 			order: 1,

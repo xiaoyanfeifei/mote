@@ -29,6 +29,8 @@ import 'mote/workbench/services/quickmenu/browser/quickmenuService';
 import 'mote/workbench/services/views/browser/viewDescriptorService';
 import 'mote/workbench/services/user/common/userService';
 import 'mote/workbench/services/remote/browser/remoteService';
+import 'mote/workbench/services/dialogs/common/dialogService';
+import 'mote/workbench/services/workspaces/browser/workspacesService';
 
 //#endregion
 
