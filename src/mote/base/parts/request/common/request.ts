@@ -28,7 +28,7 @@ export async function doFetch<T>(url: string, payload: any, method: string): Pro
 			method: method,
 			body: payload && JSON.stringify(payload)
 		});
-		return response.ok && response.json();
+		return response.json();
 	} catch (err) {
 		return Promise.reject(err);
 	}

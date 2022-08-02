@@ -1,7 +1,11 @@
-import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { ILifecycleService, LifecyclePhase } from "mote/workbench/services/lifecycle/common/lifecycle";
-import { runWhenIdle } from "vs/base/common/async";
-import { Registry } from "vs/platform/registry/common/platform";
+import { ILifecycleService, LifecyclePhase } from 'mote/workbench/services/lifecycle/common/lifecycle';
+import { runWhenIdle } from 'vs/base/common/async';
+import { BrandedService, IConstructorSignature, IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { Registry } from 'vs/platform/registry/common/platform';
+
+export namespace WorkbenchExtensions {
+	export const Workbench = 'workbench.contributions.kind';
+}
 
 /**
  * A workbench contribution that will be loaded when the workbench starts and disposed when the workbench shuts down.
@@ -10,12 +14,7 @@ export interface IWorkbenchContribution {
 	// Marker Interface
 }
 
-export namespace Extensions {
-	export const Workbench = 'workbench.contributions.kind';
-}
-
 type IWorkbenchContributionSignature<Service extends BrandedService[]> = new (...services: Service) => IWorkbenchContribution;
-
 
 export interface IWorkbenchContributionsRegistry {
 
@@ -121,4 +120,4 @@ class WorkbenchContributionsRegistry implements IWorkbenchContributionsRegistry 
 	}
 }
 
-Registry.add(Extensions.Workbench, new WorkbenchContributionsRegistry());
+Registry.add(WorkbenchExtensions.Workbench, new WorkbenchContributionsRegistry());

@@ -62,6 +62,6 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 
 	getTitle() {
 		const spaceStore = this.workspaceService.getSpaceStore();
-		return spaceStore.getSpaceName() || 'Untitled Space';
+		return spaceStore && spaceStore.getSpaceName() || 'Untitled Space';
 	}
 }

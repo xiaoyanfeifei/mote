@@ -24,7 +24,6 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { setFullscreen } from 'vs/base/browser/browser';
 import { URI } from 'vs/base/common/uri';
-import { WorkspaceService } from 'mote/workbench/services/workspaces/browser/workspacesService';
 import { ISignService } from 'vs/platform/sign/common/sign';
 import { SignService } from 'vs/platform/sign/browser/signService';
 import { IWorkbenchConstructionOptions, IWorkbench } from 'mote/workbench/browser/web.api';
@@ -38,27 +37,25 @@ import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier } from 'vs/w
 import { coalesce } from 'vs/base/common/arrays';
 import { InMemoryFileSystemProvider } from 'vs/platform/files/common/inMemoryFilesystemProvider';
 import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IndexedDBFileSystemProviderErrorDataClassification, IndexedDBFileSystemProvider, IndexedDBFileSystemProviderErrorData } from 'vs/platform/files/browser/indexedDBFileSystemProvider';
+import { IndexedDBFileSystemProvider } from 'vs/platform/files/browser/indexedDBFileSystemProvider';
 import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { localize } from 'vs/nls';
 import { BrowserWindow } from 'mote/workbench/browser/window';
 import { HTMLFileSystemProvider } from 'vs/platform/files/browser/htmlFileSystemProvider';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
 import { mixin, safeStringify } from 'vs/base/common/objects';
 import { ICredentialsService } from 'vs/platform/credentials/common/credentials';
 import { IndexedDB } from 'vs/base/browser/indexedDB';
 import { BrowserCredentialsService } from 'vs/workbench/services/credentials/browser/credentialsService';
 import { IWorkspace } from 'vs/workbench/services/host/browser/browserHostService';
 import { WebFileSystemAccess } from 'vs/platform/files/browser/webFileSystemAccess';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IProgressService } from 'vs/platform/progress/common/progress';
 import { DelayedLogChannel } from 'vs/workbench/services/output/common/delayedLogChannel';
 import { dirname, joinPath } from 'vs/base/common/resources';
 import { UserService } from 'mote/workbench/services/user/common/userService';
 import { RemoteService } from 'mote/workbench/services/remote/browser/remoteService';
 import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
+import { WorkspaceService } from 'mote/workbench/services/workspaces/browser/workspacesService';
 
 
 export class BrowserMain extends Disposable {
@@ -149,7 +146,7 @@ export class BrowserMain extends Disposable {
 		//this._register(workbench.onDidShutdown(() => this.dispose()));
 	}
 
-	private async initServices(): Promise<{ serviceCollection: ServiceCollection; workspaceService: IWorkspaceContextService; logService: ILogService }> {
+	private async initServices(): Promise<{ serviceCollection: ServiceCollection; logService: ILogService }> {
 		const serviceCollection = new ServiceCollection();
 
 
@@ -220,8 +217,8 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IUserService, userService);
 
 		// Workspace
-		const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
-		serviceCollection.set(IWorkspaceContextService, workspaceService);
+		//const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
+		//serviceCollection.set(IWorkspaceContextService, workspaceService);
 
 
 		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -238,7 +235,7 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(ICredentialsService, credentialsService);
 
 
-		return { serviceCollection, workspaceService, logService };
+		return { serviceCollection, logService };
 	}
 
 	private async registerFileSystemProviders(environmentService: IWorkbenchEnvironmentService, fileService: IWorkbenchFileService, remoteAgentService: IRemoteAgentService, logService: BufferLogService, logsPath: URI): Promise<void> {
@@ -310,13 +307,6 @@ export class BrowserMain extends Disposable {
 		}
 
 		return storageService;
-	}
-
-	private async createWorkspaceService(userService: IUserService, remoteService: IRemoteService, storageService: IStorageService, logService: ILogService) {
-		const userId = userService.currentProfile ? userService.currentProfile.id : 'local';
-		const workspaceService = new WorkspaceService(userId, storageService, logService, remoteService);
-		await workspaceService.initialize();
-		return workspaceService;
 	}
 
 	private resolveWorkspaceInitializationPayload(): any {

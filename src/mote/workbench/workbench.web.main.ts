@@ -17,6 +17,8 @@ import 'mote/workbench/workbench.common.main';
 
 //#endregion
 
+import 'mote/workbench/browser/parts/dialogs/dialog.web.contribution';
+
 //#region --- workbench (web main)
 
 import 'mote/workbench/browser/web.main';

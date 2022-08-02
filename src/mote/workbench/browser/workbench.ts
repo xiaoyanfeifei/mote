@@ -10,7 +10,7 @@ import { Layout } from "./layout";
 import { onUnexpectedError } from "vs/base/common/errors";
 import { IViewsService, ViewContainerLocation } from "../common/views";
 import { Registry } from "vs/platform/registry/common/platform";
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from "../common/contribution";
+import { IWorkbenchContributionsRegistry, WorkbenchExtensions } from "mote/workbench/common/contributions";
 import { IWorkbenchOptions } from 'vs/workbench/browser/workbench';
 
 export class Workbench extends Layout {

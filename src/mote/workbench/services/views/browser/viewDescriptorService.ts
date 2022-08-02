@@ -1,7 +1,7 @@
 import { ViewPaneContainer } from 'mote/workbench/browser/parts/views/viewPaneContainer';
 import { IViewContainersRegistry, IViewDescriptor, IViewDescriptorService, IViewsRegistry, ViewContainer, ViewContainerLocation, Extensions as ViewExtensions, ViewContainerLocationToString } from "mote/workbench/common/views";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable, DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { generateUuid } from 'vs/base/common/uuid';
 import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
@@ -56,6 +56,7 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 		this.viewContainers.forEach(viewContainer => this.onDidRegisterViewContainer(viewContainer));
 
 		this._register(this.viewsRegistry.onViewsRegistered(views => this.onDidRegisterViews(views)));
+		this._register(this.viewsRegistry.onViewsDeregistered(({ views, viewContainer }) => this.onDidDeregisterViews(views, viewContainer)));
 		this._register(this.viewContainersRegistry.onDidRegister(({ viewContainer }) => {
 			this.onDidRegisterViewContainer(viewContainer);
 			this._onDidChangeViewContainers.fire({ added: [{ container: viewContainer, location: this.getViewContainerLocation(viewContainer) }], removed: [] });
@@ -154,6 +155,25 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 		}
 	}
 
+	private deregisterGroupedViews(groupedViews: Map<string, { cachedContainerInfo?: ICachedViewContainerInfo; views: IViewDescriptor[] }>): void {
+		// Register views that have already been registered to their correct view containers
+		for (const viewContainerId of groupedViews.keys()) {
+			const viewContainer = this.viewContainersRegistry.get(viewContainerId);
+
+			// The container has not been registered yet
+			if (!viewContainer || !this.viewContainerModels.has(viewContainer)) {
+				continue;
+			}
+
+			this.removeViews(viewContainer, groupedViews.get(viewContainerId)!.views);
+		}
+	}
+
+	private removeViews(container: ViewContainer, views: IViewDescriptor[]): void {
+		// Remove the views
+		this.getViewContainerModel(container).remove(views);
+	}
+
 	// Generated Container Id Format
 	// {Common Prefix}.{Location}.{Uniqueness Id}
 	// Old Format (deprecated)
@@ -199,6 +219,12 @@ export class ViewDescriptorService extends Disposable implements IViewDescriptor
 
 	private isGeneratedContainerId(id: string): boolean {
 		return id.startsWith(ViewDescriptorService.COMMON_CONTAINER_ID_PREFIX);
+	}
+
+	private onDidDeregisterViews(views: IViewDescriptor[], viewContainer: ViewContainer): void {
+		// When views are registered, we need to regroup them based on the cache
+		const regroupedViews = this.regroupViews(viewContainer.id, views);
+		this.deregisterGroupedViews(regroupedViews);
 	}
 
 	private onDidRegisterViewContainer(viewContainer: ViewContainer): void {
