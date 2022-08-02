@@ -31,11 +31,17 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 		container.style.display = 'flex';
 		container.style.cursor = 'pointer';
 
-		this.headerView = new WorkspaceHeaderView();
-		this.headerView.create(container, this.getTitle());
-
+		const spaceStore = this.workspaceService.getSpaceStore();
+		if (spaceStore) {
+			this.headerView = new WorkspaceHeaderView();
+			this.headerView.create(container, this.getTitle());
+		}
 		this._register(workspaceService.onDidChangeWorkspace(() => {
 			clearNode(container);
+			const spaceStore = this.workspaceService.getSpaceStore();
+			if (!spaceStore) {
+				return;
+			}
 			this.headerView = new WorkspaceHeaderView();
 			this.headerView.create(container, this.getTitle());
 		}));

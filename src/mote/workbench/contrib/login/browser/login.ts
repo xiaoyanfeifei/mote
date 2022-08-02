@@ -124,7 +124,7 @@ export class LoginPage extends EditorPane {
 
 	private createHeader() {
 		const header = document.createElement('div');
-		header.style.marginTop = '5vh';
+		header.style.marginTop = '15vh';
 		header.style.fontWeight = `${fonts.fontWeight.semibold}`;
 		header.style.fontSize = '50px';
 		header.innerText = 'Login';

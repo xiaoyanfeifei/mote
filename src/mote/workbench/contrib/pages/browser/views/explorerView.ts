@@ -140,7 +140,11 @@ export class ExplorerView extends ViewPane {
 	}
 
 	private refresh() {
-		this.bodyView.splice(0, this.bodyView.length, this.contextService.getSpaceStore().getPagesStores());
+		const spaceStore = this.contextService.getSpaceStore();
+		if (!spaceStore) {
+			return;
+		}
+		this.bodyView.splice(0, this.bodyView.length, spaceStore.getPagesStores());
 		this.layoutOutliner();
 	}
 

@@ -98,14 +98,6 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 		const footer = new PickerFooter(this.domNode);
 		this._register(footer.onDidJoinOrCreate(() => {
 			this.workspaceService.createWorkspace();
-			/*
-			if (userService.currentProfile) {
-				console.log(userService.currentProfile);
-				this.workspaceService.createWorkspace();
-			} else {
-				this.editorService.openEditor(new LoginInput());
-			}
-			*/
 			this._onDidBlur.fire();
 		}));
 		this._register(footer.onDidLogOut(() => {
