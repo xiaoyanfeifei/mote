@@ -18,6 +18,8 @@ import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contributio
 
 import 'mote/workbench/contrib/login/browser/login.contribution';
 
+import 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspace.contribution';
+
 //#endregion
 
 //#region --- workbench services

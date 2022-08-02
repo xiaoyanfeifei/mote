@@ -97,7 +97,7 @@ export interface IWorkspaceContextService {
 
 	enterWorkspace(spaceId: string): void;
 
-	createWorkspace(): void;
+	createWorkspace(userId: string, spaceName: string): void;
 
 	getSpaceStore(): SpaceStore | undefined;
 

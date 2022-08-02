@@ -13,6 +13,7 @@ export interface IButton extends IDisposable {
 
 export interface IButtonOptions {
 	style?: CSSProperties;
+	hoverStyle?: CSSProperties;
 }
 
 export class Button extends Disposable implements IButton {
@@ -59,7 +60,10 @@ export class Button extends Disposable implements IButton {
 	}
 
 	private setHoverBackground(): void {
-		this._element.style.backgroundColor = ThemedStyles.buttonHoveredBackground.dark;
+		const style = Object.assign({
+			backgroundColor: ThemedStyles.buttonHoveredBackground.dark
+		}, this.options.hoverStyle);
+		setStyles(this._element, style);
 	}
 
 	private applyStyles(): void {

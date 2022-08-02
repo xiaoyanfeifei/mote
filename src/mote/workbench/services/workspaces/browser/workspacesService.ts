@@ -66,13 +66,15 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 			return;
 		}
 
-		if (userId !== 'local') {
+		const userIdSet = [userService.currentProfile.id, 'local'];
+
+		userIdSet.forEach((userId) => {
 			const spaceRootStore = new SpaceRootStore(userId);
 			this._register(spaceRootStore.onDidChange(() => {
 				this._onDidChangeWorkspace.fire();
 			}));
 			this.spaceRootStores.push(spaceRootStore);
-		}
+		});
 	}
 
 	onProfileChange(profile: IUserProfile | undefined) {
@@ -121,32 +123,11 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 
 	}
 
-	async createWorkspace() {
-		if (this.userService.currentProfile) {
-			console.log(this.userService.currentProfile);
-			const spaceId = generateUuid();
-			this.createSpaceStore(this.userService.currentProfile.id, spaceId, 'Untitled Space');
-		} else {
-			//this.editorService.openEditor(new LoginInput());
-			const payload = { username: '', password: '' };
-			const result = await this.dialogService.input(
-				Severity.Info,
-				'Login Required',
-				[
-					localize({ key: 'loginButton', comment: ['&& denotes a mnemonic'] }, "&&Log In"),
-					localize({ key: 'cancelButton', comment: ['&& denotes a mnemonic'] }, "&&Cancel")
-				],
-				[
-					{ placeholder: localize('username', "Username"), value: payload.username },
-					{ placeholder: localize('password', "Password"), type: 'password', value: payload.password }
-				],
-			);
+	async createWorkspace(userId: string, spaceName: string) {
 
-			if (result.values) {
-				const [username, password] = result.values;
-				this.userService.login({ username: username, password: password });
-			}
-		}
+		console.log(this.userService.currentProfile);
+		const spaceId = generateUuid();
+		this.createSpaceStore(userId, spaceId, spaceName || 'Untitled Space');
 	}
 
 	async deleteWorkspace() {
@@ -158,15 +139,15 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	 * @param spaceName
 	 * @returns
 	 */
-	private createSpaceStore(userId: string, spaceId: string, spaceName: string) {
+	private async createSpaceStore(userId: string, spaceId: string, spaceName: string) {
 		const spaceRootStore = new SpaceRootStore(userId);
 		const transaction = Transaction.create(userId);
 		let child = new SpaceStore({ table: 'space', id: spaceId }, { userId: userId });
 		EditOperation.addSetOperationForStore(child, { name: spaceName }, transaction);
 		child = EditOperation.appendToParent(spaceRootStore.getSpacesStore(), child, transaction).child as SpaceStore;
 		this.currentSpaceId = spaceId;
+		await transaction.commit();
 		this._onDidChangeWorkspace.fire();
-		transaction.commit();
 		return child;
 	}
 }

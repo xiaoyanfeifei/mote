@@ -8,6 +8,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
+import { OnboardWorkspaceInput } from 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspaceInput';
 
 interface ILayoutInfo {
 	maxHeight: number;
@@ -97,7 +98,8 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 
 		const footer = new PickerFooter(this.domNode);
 		this._register(footer.onDidJoinOrCreate(() => {
-			this.workspaceService.createWorkspace();
+			//this.workspaceService.createWorkspace();
+			this.editorService.openEditor(new OnboardWorkspaceInput());
 			this._onDidBlur.fire();
 		}));
 		this._register(footer.onDidLogOut(() => {

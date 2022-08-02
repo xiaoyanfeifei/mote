@@ -25,6 +25,9 @@ export default class RecordStore<T = any> extends Disposable {
 	private _onDidChange = this._register(new Emitter<void>());
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
+	private _onDidUpdate = this._register(new Emitter<void>());
+	public readonly onDidUpdate: Event<void> = this._onDidUpdate.event;
+
 	userId: string;
 	pointer: Pointer;
 	table: string;
@@ -83,6 +86,11 @@ export default class RecordStore<T = any> extends Disposable {
 			if (this.identify === e) {
 				this.sync();
 				this._onDidChange.fire();
+			}
+		}));
+		this._register(RecordCacheStore.Default.onDidUpdate((e) => {
+			if (this.identify === e) {
+				this._onDidUpdate.fire();
 			}
 		}));
 	}

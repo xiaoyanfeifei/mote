@@ -55,7 +55,7 @@ const syncRecordValuesQueue = new RequestQueue<SyncRecordRequest, RecordWithRole
 		return requests.map(request => recordMap.get(request))
 			.filter(recordWithRole => recordWithRole !== undefined) as RecordWithRole[];
 	},
-	batchSize: 50,
+	batchSize: 5,
 	maxWorkers: 2,
 	requestDelayMs: 200,
 	requestTimeoutMs: 3000

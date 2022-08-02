@@ -23,6 +23,9 @@ export default class RecordCacheStore extends Disposable {
 	private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
+	private _onDidUpdate = this._register(new Emitter<string>());
+	public readonly onDidUpdate: Event<string> = this._onDidUpdate.event;
+
 	storageService!: IStorageService;
 	logService!: ILogService;
 	remoteService!: IRemoteService;
@@ -53,6 +56,7 @@ export default class RecordCacheStore extends Disposable {
 				.then((recordWithRole) => {
 					this.setRecord(e, recordWithRole);
 					this.fire(key);
+					this._onDidUpdate.fire(key);
 				});
 		}
 		return null;

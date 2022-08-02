@@ -108,6 +108,9 @@ export class ExplorerView extends ViewPane {
 		this._register(this.contextService.onDidChangeWorkspace(() => {
 			this.refresh();
 		}));
+		this._register(spaceStore.onDidChange(() => {
+			this.refresh();
+		}));
 
 		this.bodyViewContainer = document.createElement('div');
 
@@ -127,13 +130,16 @@ export class ExplorerView extends ViewPane {
 		addPageBtn.create();
 		addPageBtn.onDidClick((e) => {
 			Transaction.createAndCommit((transaction) => {
+				const spaceStore = this.contextService.getSpaceStore();
+				if (!spaceStore) {
+					return;
+				}
 				let child = EditOperation.createBlockStore('page', transaction, 'page');
 
 				child = EditOperation.appendToParent(
-					this.contextService.getSpaceStore().getPagesStore(), child, transaction).child as BlockStore;
+					spaceStore.getPagesStore(), child, transaction).child as BlockStore;
 				that.editorService.openEditor(new DocumentEditorInput(child));
-				transaction.postSubmitCallbacks.push(() => this.refresh());
-			}, this.contextService.getSpaceStore().userId);
+			}, spaceStore.userId);
 		});
 		container.append(this.bodyViewContainer);
 		container.append(domNode);

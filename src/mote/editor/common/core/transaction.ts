@@ -54,7 +54,7 @@ export class Transaction {
 	commit() {
 		if (this.committed) {
 			console.debug(`commit on a committed transaction [${this.id}].`);
-			return;
+			return Promise.resolve();
 		}
 
 		return new Promise<void>((resolve, reject) => {
