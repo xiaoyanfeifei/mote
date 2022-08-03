@@ -7,7 +7,6 @@ import { Color } from 'vs/base/common/color';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IThemable, styleFn } from 'vs/base/common/styler';
 import * as themeColors from 'mote/platform/theme/common/themeColors';
-import { isHighContrast } from 'mote/platform/theme/common/theme';
 import { IColorTheme, IThemeService } from 'mote/platform/theme/common/themeService';
 import { ColorIdentifier, ColorTransform, ColorValue, resolveColorValue } from 'mote/platform/theme/common/colorRegistry';
 

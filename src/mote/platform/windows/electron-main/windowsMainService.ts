@@ -1,4 +1,6 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { nativeTheme } from "electron";
+import { hostname, release } from 'os';
 import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { IAppWindow } from "mote/platform/window/electron-main/window";
 import { distinct } from "vs/base/common/arrays";
@@ -19,7 +21,7 @@ interface IOpenBrowserWindowOptions {
 
 export class WindowsMainService extends Disposable implements IWindowsMainService {
 	constructor(
-		@ILogService private readonly logService: ILogService,
+		@ILogService logService: ILogService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
 	) {
@@ -54,9 +56,13 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			}
 		}
 
+		if (filesOpenedInWindow) {
+
+		}
+
 		addUsedWindow(this.openInBrowserWindow({}));
 
-		return { windows: distinct(usedWindows) }
+		return { windows: distinct(usedWindows) };
 	}
 
 	private openInBrowserWindow(options: IOpenBrowserWindowOptions): IAppWindow {
@@ -80,7 +86,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			userEnv: { ...options.userEnv },
 
 			product,
-			//os: { release: release(), hostname: hostname() },
+			os: { release: release(), hostname: hostname() },
 			colorScheme: {
 				dark: nativeTheme.shouldUseDarkColors,
 				highContrast: nativeTheme.shouldUseInvertedColorScheme || nativeTheme.shouldUseHighContrastColors
@@ -90,7 +96,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 		let window: IAppWindow | undefined;
 
 		if (!window) {
-			const createdWindow = window = this.instantiationService.createInstance(AppWindow);
+			window = this.instantiationService.createInstance(AppWindow);
 		}
 
 		this.doOpenInBrowserWindow(window!, configuration, options);

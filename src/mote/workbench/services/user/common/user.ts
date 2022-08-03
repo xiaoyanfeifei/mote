@@ -1,9 +1,9 @@
 import { Event } from 'vs/base/common/event';
 import { IUserProfile } from 'mote/platform/user/common/user';
-import { UserLoginPayload, UserSignupPayload } from 'mote/workbench/services/remote/common/remote';
+import { UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const IUserService = createDecorator<IUserService>('IUserService');
+export const IUserService = createDecorator<IUserService>('userService');
 export interface IUserService {
 
 	readonly _serviceBrand: undefined;

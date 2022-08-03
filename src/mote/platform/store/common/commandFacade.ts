@@ -1,4 +1,4 @@
-import { Command, Operation } from "mote/platform/transaction/common/operations";
+import { Command, Operation } from 'mote/platform/transaction/common/operations';
 
 
 function findIndex(arr: any[], predict: (t: any) => boolean): number {
@@ -12,29 +12,29 @@ function findIndex(arr: any[], predict: (t: any) => boolean): number {
 
 
 
-export function get(object, path) {
+export function get(object: any, path: string[]) {
 
-	let index = 0
-	const length = path.length
+	let index = 0;
+	const length = path.length;
 
-	while (object != null && index < length) {
-		object = object[path[index++]]
+	while (object !== null && index < length) {
+		object = object[path[index++]];
 	}
-	return (index && index == length) ? object : undefined
+	return (index && index === length) ? object : undefined;
 }
 
 function filterAllNotEqId(record: any, value: any[]) {
 	value = value || [];
 	value = value.filter(t => t !== record.id);
-	return value
+	return value;
 }
 
-type CommandHandler = (args, value: any, version: number) => any;
+type CommandHandler = (args: any, value: any, version: number) => any;
 
 const UpdateCommand: CommandHandler = (args, value: any, version: number) => {
 	value = value || {};
 	return Object.assign({}, value, {}, args);
-}
+};
 
 const SetCommand = (args: any, value: any, version: number) => args;
 
@@ -44,8 +44,8 @@ const ListAfterCommand = (args: any, value: any[], version: number) => {
 	}, value);
 	const index = findIndex(value, t => t === args.after);
 	index >= 0 ? value.splice(index + 1, 0, args.id) : value.push(args.id);
-	return value
-}
+	return value;
+};
 
 const ListBeforeCommand = (args: any, value: any[], version: number) => {
 	value = filterAllNotEqId({
@@ -53,8 +53,8 @@ const ListBeforeCommand = (args: any, value: any[], version: number) => {
 	}, value);
 	const index = findIndex(value, t => t === args.before);
 	index >= 0 ? value.splice(index, 0, args.id) : value.unshift(args.id);
-	return value
-}
+	return value;
+};
 
 const ListRemoveCommand = filterAllNotEqId;
 
@@ -62,7 +62,7 @@ function calcVersion(operation: Operation) {
 	return void 0 === operation.size ? 1 : operation.size;
 };
 
-function updateValueByPath(record: { [key: string]: any }, path: string[], value) {
+function updateValueByPath(record: { [key: string]: any }, path: string[], value: any) {
 	if (0 === path.length)
 		throw new Error("Empty path to set");
 	record = Object.assign({}, record);

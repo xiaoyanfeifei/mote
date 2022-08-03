@@ -1,7 +1,7 @@
 import 'vs/css!./viewLines';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import { IVisibleLinesHost, RenderedLinesCollection } from 'mote/editor/browser/view/viewLayer';
+import { IVisibleLinesHost } from 'mote/editor/browser/view/viewLayer';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { EmptyViewLine, ViewLine } from 'mote/editor/browser/viewParts/lines/viewLine';
 import { ViewLinesChangedEvent, ViewLinesDeletedEvent, ViewLinesInsertedEvent } from 'mote/editor/common/viewEvents';
@@ -9,19 +9,18 @@ import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportDat
 import { clearNode } from 'vs/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { StoreUtils } from 'mote/editor/common/store/storeUtils';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 
 export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
 	private domNode: FastDomNode<HTMLElement>;
 
 	private lines: ViewLine[] = [];
-	private lineCollection: RenderedLinesCollection<ViewLine>;
 
 	constructor(
 		context: ViewContext,
 		private readonly viewController: ViewController,
-		private readonly linesContent: FastDomNode<HTMLElement>,
+		linesContent: FastDomNode<HTMLElement>,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super(context);
@@ -29,8 +28,6 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-lines');
 		this.domNode.setAttribute('data-root', '');
-
-		this.lineCollection = new RenderedLinesCollection<ViewLine>(() => this.createVisibleLine());
 	}
 
 	public getDomNode(): FastDomNode<HTMLElement> {

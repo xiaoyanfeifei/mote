@@ -1,59 +1,23 @@
 import * as assert from 'assert';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
-import BlockStore from 'mote/editor/common/store/blockStore';
-import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
-import RecordStore from 'mote/editor/common/store/recordStore';
-import { StoreUtils } from 'mote/editor/common/store/storeUtils';
-import { ILogService, LogLevel } from 'vs/platform/log/common/log';
-import { InMemoryStorageService, WillSaveStateReason } from 'vs/platform/storage/common/storage';
-import { Event } from 'vs/base/common/event';
+import BlockStore from 'mote/platform/store/common/blockStore';
+import { Pointer } from 'mote/platform/store/common/record';
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
+import { IStoreService } from 'mote/platform/store/common/store';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 
-class TestStorageService extends InMemoryStorageService {
 
-	override emitWillSaveState(reason: WillSaveStateReason): void {
-		super.emitWillSaveState(reason);
-	}
-}
-
-class TestLogService implements ILogService {
-	_serviceBrand: undefined;
-	onDidChangeLogLevel: Event<LogLevel> = null as any;
-	getLevel(): LogLevel {
-		throw new Error('Method not implemented.');
-	}
-	setLevel(level: LogLevel): void {
-		throw new Error('Method not implemented.');
-	}
-	trace(message: string, ...args: any[]): void {
-
-	}
-	debug(message: string, ...args: any[]): void {
-
-	}
-	info(message: string, ...args: any[]): void {
-
-	}
-	warn(message: string, ...args: any[]): void {
-		throw new Error('Method not implemented.');
-	}
-	error(message: string | Error, ...args: any[]): void {
-		throw new Error('Method not implemented.');
-	}
-	critical(message: string | Error, ...args: any[]): void {
-		throw new Error('Method not implemented.');
-	}
-	flush(): void {
-		throw new Error('Method not implemented.');
-	}
-	dispose(): void {
-		throw new Error('Method not implemented.');
+class TestStoreService implements IStoreService {
+	addSubscription(userId: string, pointer: Pointer): void {
 	}
 
 }
 
-RecordCacheStore.Default.storageService = new TestStorageService();
-RecordCacheStore.Default.logService = new TestLogService();
+
+const storeService = new TestStoreService();
+
 
 suite('Editor Controller - View Controller Commands', () => {
 	test('view controller type command', () => {
@@ -87,7 +51,7 @@ suite('Editor Controller - View Controller Commands', () => {
 });
 
 function createViewController(): [ViewController, RecordStore<string[]>] {
-	const store = new BlockStore({ table: 'page', id: '1' }, '1');
+	const store = new BlockStore({ table: 'page', id: '1' }, '1', [], RecordCacheStore.Default, storeService);
 	const contentStore = store.getContentStore();
 	const viewController = new ViewController(contentStore);
 	return [viewController, contentStore];

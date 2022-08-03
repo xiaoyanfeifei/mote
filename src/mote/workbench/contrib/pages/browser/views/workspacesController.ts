@@ -14,7 +14,7 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 
 	static readonly HEIGHT = 45;
 
-	private headerView: WorkspaceHeaderView;
+	private headerView!: WorkspaceHeaderView;
 
 	private picker!: WorkspacesPicker;
 

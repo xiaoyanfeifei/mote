@@ -1,5 +1,5 @@
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 
 export class ViewContext {

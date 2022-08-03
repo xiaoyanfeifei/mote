@@ -163,10 +163,10 @@ export class EditableInput extends Disposable {
 	private currentComposition: CompositionContext | null = null;
 
 	constructor(
-		private readonly host: IEditableInputHost,
+		host: IEditableInputHost,
 		private readonly editable: ICompleteEditableWrapper,
 		private readonly OS: OperatingSystem,
-		private readonly browser: IBrowser,
+		browser: IBrowser,
 		options: EditableOptions
 	) {
 		super();
@@ -230,6 +230,10 @@ export class EditableInput extends Disposable {
 		this._register(this.editable.onClick(() => {
 			this._onClick.fire();
 		}));
+
+		if (lastKeyDown) {
+
+		}
 	}
 
 	private installSelectionChangeListener(): IDisposable {

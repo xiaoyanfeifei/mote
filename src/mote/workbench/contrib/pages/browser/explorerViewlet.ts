@@ -22,8 +22,6 @@ const viewContainerRegistry = Registry.as<IViewContainersRegistry>(Extensions.Vi
 
 export class ExplorerViewPaneContainer extends ViewPaneContainer {
 
-	private workspacesController!: WorkspacesController;
-
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@ILogService logService: ILogService,
@@ -43,7 +41,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 	}
 
 	override renderHeader(parent: HTMLElement) {
-		this.workspacesController = new WorkspacesController(parent, this.contextViewService, this.contextService, this.instantiationService);
+		new WorkspacesController(parent, this.contextViewService, this.contextService, this.instantiationService);
 		return true;
 	}
 }

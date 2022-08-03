@@ -3,7 +3,7 @@ import SVGIcon from 'mote/base/browser/ui/svgicon/svgicon';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { Transaction } from 'mote/editor/common/core/transaction';
-import BlockStore from 'mote/editor/common/store/blockStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 import { IViewPaneOptions, ViewPane } from 'mote/workbench/browser/parts/views/viewPane';
 import { $, reset } from 'vs/base/browser/dom';
@@ -14,9 +14,8 @@ import { List } from 'vs/base/browser/ui/list/listWidget';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IAction } from 'vs/base/common/actions';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
-import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
-import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
+import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -90,7 +89,7 @@ export class ExplorerView extends ViewPane {
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@ICommandService private readonly commandService: ICommandService,
+		@ICommandService commandService: ICommandService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
@@ -134,7 +133,7 @@ export class ExplorerView extends ViewPane {
 				if (!spaceStore) {
 					return;
 				}
-				let child = EditOperation.createBlockStore('page', transaction, 'page');
+				let child = EditOperation.createBlockStore('page', transaction, spaceStore.getPagesStore(), 'page');
 
 				child = EditOperation.appendToParent(
 					spaceStore.getPagesStore(), child, transaction).child as BlockStore;

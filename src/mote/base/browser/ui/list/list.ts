@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { CSSProperties } from 'mote/base/browser/jsx';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedStyles } from 'mote/base/common/themes';
@@ -130,13 +131,9 @@ export class ListItem extends Disposable {
 		}
 	}
 
-	private setHoverBackground(): void {
-		this._element.style.backgroundColor = ThemedStyles.buttonHoveredBackground.dark;
-	}
-
 	getStyle() {
 		const style = Object.assign({}, styles.column_wrapStyle) as CSSProperties;
-		if (this.options.style?.paddingLeft && "number" == typeof (this.options.style.paddingLeft)) {
+		if (this.options.style?.paddingLeft && "number" === typeof (this.options.style.paddingLeft)) {
 			style.paddingLeft = this.options.style.paddingLeft;
 		}
 		return Object.assign({}, style, this.options.style);
@@ -167,11 +164,7 @@ export class ListItem extends Disposable {
 			width: this.options.isMobile ? "28px" : "22px",
 			height: this.options.isMobile ? "24px" : "18px",
 			marginRight: "4px"
-		}
-	}
-
-	private applyStyles() {
-
+		};
 	}
 }
 

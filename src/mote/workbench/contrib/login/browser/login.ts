@@ -1,4 +1,3 @@
-import { Event as BaseEvent } from 'vs/base/common/event';
 import { Button } from 'mote/base/browser/ui/button/button';
 import fonts from 'mote/base/browser/ui/fonts';
 import { IThemeService } from 'mote/platform/theme/common/themeService';

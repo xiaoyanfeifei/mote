@@ -1,4 +1,6 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { setStyles } from 'mote/base/browser/jsx/createElement';
+import { CSSProperties } from 'mote/base/browser/jsx/style';
 import fonts from 'mote/base/browser/ui/fonts';
 import { ThemedBase, ThemedColors } from 'mote/base/common/themes';
 import { isBrNode, isTextMentionNode, isTextNode } from './htmlElementUtils';
@@ -62,7 +64,7 @@ function buildText(text: string) {
 	return document.createTextNode(text);
 }
 
-const inlineStyles = {
+const inlineStyles: { [key: string]: CSSProperties } = {
 	b: {
 		fontWeight: fonts.fontWeight.semibold
 	},
@@ -98,7 +100,7 @@ const inlineStyles = {
 	"-": {
 		opacity: .4,
 		marginBottom: 6,
-		textDecoration: "line-through"
+		textDecoration: 'line-through'
 	},
 	z: {
 		//background: b.q,
@@ -110,13 +112,15 @@ const inlineStyles = {
 		//background: themes.f.selectionColor,
 		//boxShadow: "0 0 0 3px ".concat(themes.f.selectionColor)
 	}
-}
+};
 
 const buildStyles = (annotations: string[][]) => {
 	const styles = {};
 	for (const annotation of annotations) {
 		const inlineStyle = inlineStyles[annotation[0]];
-		inlineStyle && Object.assign(styles, inlineStyle);
+		if (inlineStyle) {
+			Object.assign(styles, inlineStyle);
+		}
 	}
 	return styles;
-}
+};

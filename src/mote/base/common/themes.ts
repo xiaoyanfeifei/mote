@@ -1,9 +1,10 @@
+/* eslint-disable code-no-unexternalized-strings */
 import * as Chroma from 'chroma-js';
 
 const defaultLightWithAlpha = (alapha: number) => `rgba(55, 53, 47, ${alapha})`;
 const defaultDarkWithAlpha = (alapha: number) => `rgba(255, 255, 255, ${alapha})`;
 const darkenWithAlpha = (color: string | number | Chroma.Color, alapha: number) => Chroma(color).darken(alapha).css();
-const brightenWithAlpha = (color: string | number | Chroma.Color, alapha: number) => Chroma(color).brighten(alapha).css();
+//const brightenWithAlpha = (color: string | number | Chroma.Color, alapha: number) => Chroma(color).brighten(alapha).css();
 
 const redWithAlpha = (alapha: number) => `rgba(235, 87, 87, ${alapha})`;
 
@@ -17,7 +18,7 @@ function m(e: number) {
 		gray: t(Chroma.hsl(0, .01, .5), .06),
 		lightgray: t(Chroma.hsl(0, .01, .8), .04),
 		white: t(Chroma.hsl(0, .01, 1), .02)
-	}
+	};
 }
 
 interface ColorWith {
@@ -43,30 +44,31 @@ function l(props: ColorWith) {
 export const ThemedBase = {
 	light: m(45),
 	dark: m(205)
-}
+};
 
 const a = {
 	light: Chroma("rgb(15, 15, 15)"),
 	dark: Chroma("rgb(15, 15, 15)")
-}
+};
 
 export function mixColors(colors: string[]) {
-	const t = colors.map(e => Chroma(e)).reverse();
-	let n = t.shift();
-	if (!n)
+	const reverseColors = colors.map(e => Chroma(e)).reverse();
+	let n = reverseColors.shift();
+	if (!n) {
 		return "red";
-	for (const o of t) {
-		const e = o.alpha()
-			, t = n.alpha();
-		if (1 === e) {
-			n = o;
-			continue
-		}
-		const i = Math.min(e + t, 1)
-			, a = e / t;
-		n = Chroma.mix(n.alpha(1), o.alpha(1), a).alpha(i)
 	}
-	return n.css()
+	for (const reverseColor of reverseColors) {
+		const e = reverseColor.alpha();
+		const t: number = n.alpha();
+		if (1 === e) {
+			n = reverseColor;
+			continue;
+		}
+		const i = Math.min(e + t, 1);
+		const a = e / t;
+		n = Chroma.mix(n.alpha(1), reverseColor.alpha(1), a).alpha(i);
+	}
+	return n.css();
 }
 
 export const ThemedColors = {

@@ -30,7 +30,7 @@ import 'mote/workbench/browser/web.main';
 import 'mote/workbench/services/lifecycle/browser/lifecycleService';
 
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { ILoggerService, LogLevel } from 'vs/platform/log/common/log';
+import { ILoggerService } from 'vs/platform/log/common/log';
 import { FileLoggerService } from 'vs/platform/log/common/fileLog';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { BrowserContextMenuService } from 'mote/platform/contextview/browser/contextMenuService';
@@ -59,8 +59,8 @@ registerSingleton(IContextMenuService, BrowserContextMenuService);
 //
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import { create, commands, env, window, logger } from 'mote/workbench/browser/web.factory';
-import { IWorkbench, ICommand, ICommonTelemetryPropertiesResolver, IDefaultEditor, IDefaultLayout, IDefaultView, IDevelopmentOptions, IExternalUriResolver, IExternalURLOpener, IHomeIndicator, IInitialColorTheme, IPosition, IProductQualityChangeHandler, IRange, IResourceUriProvider, ISettingsSyncOptions, IShowPortCandidate, ITunnel, ITunnelFactory, ITunnelOptions, ITunnelProvider, IWelcomeBanner, IWelcomeBannerAction, IWindowIndicator, IWorkbenchConstructionOptions, Menu } from 'vs/workbench/browser/web.api';
+import { create, } from 'mote/workbench/browser/web.factory';
+import { IWorkbench, IWorkbenchConstructionOptions } from 'vs/workbench/browser/web.api';
 import { ICredentialsProvider } from 'vs/platform/credentials/common/credentials';
 // eslint-disable-next-line no-duplicate-imports
 import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';

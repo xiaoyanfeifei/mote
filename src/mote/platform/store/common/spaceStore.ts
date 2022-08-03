@@ -1,3 +1,5 @@
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
+import { IStoreService } from 'mote/platform/store/common/store';
 import BlockStore from './blockStore';
 import { Pointer, RecordValue } from './record';
 import RecordStore from './recordStore';
@@ -18,20 +20,30 @@ export default class SpaceStore extends RecordStore<SpaceRecord> {
 	static override createChildStore(parentStore: RecordStore, pointer: Pointer): SpaceStore {
 		const childStoreKey = RecordStore.getChildStoreKey(pointer, SpaceStore.keyName);
 		const childStoreInCache = parentStore.getRecordStoreChildStore(childStoreKey) as SpaceStore;
-		const childStore = childStoreInCache || new SpaceStore(pointer, {
-			userId: parentStore.userId,
-		});
+		const childStore = childStoreInCache || new SpaceStore(
+			pointer,
+			{
+				userId: parentStore.userId,
+			},
+			parentStore.storeService,
+			parentStore.inMemoryRecordCacheStore,
+		);
 		if (!childStoreInCache) {
 			childStore.setRecordStoreParent(childStoreKey, parentStore);
 		}
 		return childStore;
 	}
 
-	constructor(pointer: Pointer, props: SpaceStoreProps) {
+	constructor(
+		pointer: Pointer, props: SpaceStoreProps,
+		@IStoreService storeService: IStoreService,
+		inMemoryRecordCacheStore?: RecordCacheStore,
+	) {
 		super({
 			pointer: pointer,
 			userId: props.userId,
-		});
+			inMemoryRecordCacheStore
+		}, storeService);
 	}
 
 	getSpaceId() {
@@ -65,6 +77,6 @@ export default class SpaceStore extends RecordStore<SpaceRecord> {
 	}
 
 	override clone() {
-		return new SpaceStore(this.pointer, { userId: this.userId });
+		return new SpaceStore(this.pointer, { userId: this.userId }, this.storeService, this.inMemoryRecordCacheStore);
 	}
 }

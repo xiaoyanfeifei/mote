@@ -1,5 +1,5 @@
 import { getDataRootInParent, getTextMention, isTextBufferElement, isTextNode, removeBOM } from "mote/editor/common/htmlElementUtils";
-import RecordStore from 'mote/editor/common/store/recordStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 import { serializeNode } from 'mote/editor/common/textSerialize';
 import { RangeUtils } from './rangeUtils';
 

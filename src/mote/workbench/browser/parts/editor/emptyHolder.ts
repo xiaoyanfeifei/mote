@@ -5,7 +5,7 @@ import { $, addDisposableListener } from "vs/base/browser/dom";
 import { Disposable } from "vs/base/common/lifecycle";
 import * as DOM from 'vs/base/browser/dom';
 import { Transaction } from "mote/editor/common/core/transaction";
-import BlockStore from "mote/editor/common/store/blockStore";
+import BlockStore from "mote/platform/store/common/blockStore";
 import { EditOperation } from "mote/editor/common/core/editOperation";
 
 export class EmptyHolder extends Disposable {

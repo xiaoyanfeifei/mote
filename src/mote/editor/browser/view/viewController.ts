@@ -2,21 +2,20 @@ import * as viewEvents from 'mote/editor/common/viewEvents';
 import { Event } from 'vs/base/common/event';
 import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
-import BlockStore from 'mote/editor/common/store/blockStore';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
 import { OutgoingViewEvent, SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
-import { Lodash } from 'mote/base/common/lodash';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import blockTypes, { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';
-import { StoreUtils } from 'mote/editor/common/store/storeUtils';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -109,7 +108,7 @@ export class ViewController {
 		// before the content store has any children
 		this.withViewEventsCollector(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				let child: BlockStore = EditOperation.createBlockStore('text', transaction);
+				let child: BlockStore = EditOperation.createBlockStore('text', transaction, this.contentStore);
 				let lineNumber: number;
 				// create first child
 				if (this.selection.lineNumber < 0) {
@@ -269,6 +268,13 @@ export class ViewController {
 					}
 			}
 		}
+
+		if (needChange) {
+
+		}
+		if (deleteFlag) {
+
+		}
 	}
 
 	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
@@ -334,7 +340,7 @@ export class ViewController {
 
 			const rootStore = store.getRecordStoreAtRootPath();
 			if ('block' === rootStore.table) {
-				const removedRecord = segmentUtils.slice(storeValue, selection.startIndex, selection.endIndex);
+				segmentUtils.slice(storeValue, selection.startIndex, selection.endIndex);
 			}
 
 

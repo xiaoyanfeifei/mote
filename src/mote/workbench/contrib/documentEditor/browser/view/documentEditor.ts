@@ -1,6 +1,6 @@
 import { EditorView } from 'mote/editor/browser/editorView';
 import { ICommandDelegate, ViewController } from 'mote/editor/browser/view/viewController';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 import { IEditorOptions } from 'mote/platform/editor/common/editor';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
@@ -12,13 +12,12 @@ import { DisposableStore } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { OutgoingViewEventKind, SelectionChangedEvent } from 'mote/editor/common/viewEventDispatcher';
 import { IQuickMenuService } from 'mote/workbench/services/quickmenu/browser/quickmenu';
-import { StoreUtils } from 'mote/editor/common/store/storeUtils';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 import { TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { IAction } from 'vs/base/common/actions';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { EditableContainer } from 'mote/editor/browser/editableContainer';
-import { setStyles } from 'mote/base/browser/jsx/createElement';
+import BlockStore from 'mote/platform/store/common/blockStore';
 
 
 export class DocumentEditor extends EditorPane {
@@ -29,9 +28,7 @@ export class DocumentEditor extends EditorPane {
 	private readonly _disposables = new DisposableStore();
 
 	private container: HTMLElement;
-	private headerContainer: HTMLElement | undefined;
 
-	private titleContainer: EditableContainer | undefined;
 	private viewController!: ViewController;
 
 	constructor(
@@ -49,20 +46,6 @@ export class DocumentEditor extends EditorPane {
 		reset(parent, this.container);
 	}
 
-	createHeader(parent: HTMLElement) {
-		this.createCover(parent);
-		const headerDomNode = $('.editor-header');
-		this.headerContainer = $('');
-
-		this.headerContainer.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-		this.headerContainer.style.paddingRight = this.getSafePaddingRightCSS(96);
-		this.headerContainer.style.width = '100%';
-
-		headerDomNode.append(this.headerContainer);
-		setStyles(headerDomNode, this.getTitleStyle());
-		parent.append(headerDomNode);
-	}
-
 	createCover(parent: HTMLElement) {
 		const coverDomNode = $('');
 		coverDomNode.style.height = '100px';
@@ -76,25 +59,19 @@ export class DocumentEditor extends EditorPane {
 
 		await super.setInput(input, options);
 
-		const [view, hasRealView] = this.createView(input.pageStore.getContentStore());
+		const [view, hasRealView] = this.createView(input.pageStore);
 		if (hasRealView) {
 			clearNode(this.container);
-			this.createHeader(this.container);
+
 			view.domNode.domNode.style.paddingTop = '25px';
 			this.container.appendChild(view.domNode.domNode);
 
 			view.render(false, false);
 		}
 
-
-		this.titleContainer = this.instantiationService.createInstance(EditableContainer, this.headerContainer!, {
-			placeholder: 'Untitled',
-			autoFocus: false,
-		});
-		this.titleContainer!.store = input.pageStore!.getPropertyStore('title');
 	}
 
-	private createView(contentStore: RecordStore): [EditorView, boolean] {
+	private createView(pageStore: BlockStore): [EditorView, boolean] {
 		const commandDelegate: ICommandDelegate = {
 			type: (text: string) => {
 				//this._type('keyboard', text);
@@ -104,7 +81,7 @@ export class DocumentEditor extends EditorPane {
 			},
 		};
 
-		const viewController = new ViewController(contentStore);
+		const viewController = new ViewController(pageStore.getContentStore());
 		this.viewController = viewController;
 
 		this._disposables.dispose();
@@ -112,12 +89,12 @@ export class DocumentEditor extends EditorPane {
 		this._disposables.add(viewController.onEvent((e) => {
 			switch (e.kind) {
 				case OutgoingViewEventKind.SelectionChanged:
-					this.showQuickMenu(e, contentStore);
+					this.showQuickMenu(e, pageStore.getContentStore());
 					break;
 			}
 		}));
 
-		const editorView = this.instantiationService.createInstance(EditorView, commandDelegate, viewController, contentStore);
+		const editorView = this.instantiationService.createInstance(EditorView, commandDelegate, viewController, pageStore);
 		return [editorView, true];
 	}
 

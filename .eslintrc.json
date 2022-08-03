@@ -590,6 +590,22 @@
 						]
 					},
 					{
+						"target": "src/mote/client/~",
+						"restrictions": [
+							"mote/base/~",
+							"vs/base/~",
+							"mote/base/parts/*/~",
+							"vs/base/parts/*/~",
+							"vs/platform/*/~",
+							"vs/workbench/~",
+							"vs/workbench/api/~",
+							"vs/workbench/services/*/~",
+							"vs/workbench/contrib/*/~",
+							"mote/client/~",
+							"vs/server/~"
+						]
+					},
+					{
 						"target": "src/vs/server/~",
 						"restrictions": [
 							"vs/base/~",

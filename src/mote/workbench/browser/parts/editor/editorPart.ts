@@ -7,13 +7,10 @@ import { IEditorPane } from 'mote/workbench/common/editor';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { assertIsDefined } from 'vs/base/common/types';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { EditableContainer } from 'mote/editor/browser/editableContainer';
-import BlockStore from 'mote/editor/common/store/blockStore';
 import { IStorageService } from 'vs/platform/storage/common/storage';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { EmptyHolder } from './emptyHolder';
-import { IDisposable } from 'vs/base/common/lifecycle';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { EditorPanes } from 'mote/workbench/browser/parts/editor/editorPanes';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
@@ -52,15 +49,13 @@ export class EditorPart extends Part implements IEditorService {
 
 	private container: HTMLElement | undefined;
 
-	private emptyHolder!: EmptyHolder;
-
 	private editorPanes: EditorPanes;
 
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@ILogService private logService: ILogService,
+		@ILogService logService: ILogService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super(Parts.EDITOR_PART, { hasTitle: false }, themeService, layoutService);
@@ -98,7 +93,7 @@ export class EditorPart extends Part implements IEditorService {
 		this.container!.classList.add('content');
 		parent.appendChild(this.container!);
 
-		this.emptyHolder = new EmptyHolder(this.container!);
+		new EmptyHolder(this.container!);
 
 		return this.container;
 	}

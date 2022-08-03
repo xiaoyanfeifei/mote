@@ -4,13 +4,16 @@ import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ICommandDelegate, ViewController } from 'mote/editor/browser/view/viewController';
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { ViewLines } from 'mote/editor/browser/viewParts/lines/viewLines';
-import RecordStore from 'mote/editor/common/store/recordStore';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
+import { CSSProperties } from 'mote/base/browser/jsx/style';
+import { ThemedStyles } from 'mote/base/common/themes';
+import { setStyles } from 'mote/base/browser/jsx/createElement';
+import BlockStore from 'mote/platform/store/common/blockStore';
 
 export class EditorView extends ViewEventHandler {
 
@@ -26,7 +29,7 @@ export class EditorView extends ViewEventHandler {
 	constructor(
 		commandDelegate: ICommandDelegate,
 		viewController: ViewController,
-		contentStore: RecordStore,
+		pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super();
@@ -39,6 +42,7 @@ export class EditorView extends ViewEventHandler {
 		this.linesContent.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		this.linesContent.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
+		const contentStore = pageStore.getContentStore();
 		this.context = new ViewContext(contentStore, viewController);
 
 		// Ensure the view is the first event handler in order to update the layout
@@ -50,7 +54,32 @@ export class EditorView extends ViewEventHandler {
 
 
 		this.linesContent.appendChild(this.viewLines.getDomNode());
+
+		this.createHeader(this.domNode, viewController);
 		this.domNode.appendChild(this.linesContent);
+	}
+
+	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
+		this.createCover(parent);
+		const headerDomNode = createFastDomNode(dom.$('.editor-header'));
+		const headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
+
+		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
+		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
+		headerContainer.domNode.style.width = '100%';
+
+
+
+		headerDomNode.appendChild(headerContainer);
+		setStyles(headerDomNode.domNode, this.getTitleStyle());
+		parent.appendChild(headerDomNode);
+	}
+
+
+	createCover(parent: FastDomNode<HTMLElement>) {
+		const coverDomNode = createFastDomNode(dom.$(''));
+		coverDomNode.domNode.style.height = '100px';
+		parent.appendChild(coverDomNode);
 	}
 
 	//#region event handlers
@@ -150,6 +179,18 @@ export class EditorView extends ViewEventHandler {
 
 	getSafePaddingRightCSS(padding: number) {
 		return `calc(${padding}px + env(safe-area-inset-right))`;
+	}
+
+	getTitleStyle(): CSSProperties {
+		return {
+			color: ThemedStyles.regularTextColor.dark,
+			fontWeight: 700,
+			lineHeight: 1.2,
+			fontSize: '40px',
+			cursor: 'text',
+			display: 'flex',
+			alignItems: 'center',
+		};
 	}
 }
 

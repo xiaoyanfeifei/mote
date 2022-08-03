@@ -1,5 +1,4 @@
 import { IComposite } from 'mote/workbench/common/composite';
-import { firstOrDefault } from 'vs/base/common/arrays';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 

@@ -2,7 +2,7 @@ import * as dom from 'vs/base/browser/dom';
 import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import BlockStore from 'mote/editor/common/store/blockStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { segmentsToElement } from 'mote/editor/common/textSerialize';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -45,7 +45,7 @@ export class ViewLine implements IVisibleLine {
 	constructor(
 		private readonly viewContext: ViewContext,
 		private readonly viewController: ViewController,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 
 	}

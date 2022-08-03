@@ -22,16 +22,6 @@ interface IViewPaneItem {
 	disposable: IDisposable;
 }
 
-const enum DropDirection {
-	UP,
-	DOWN,
-	LEFT,
-	RIGHT
-}
-
-type BoundingRect = { top: number; left: number; bottom: number; right: number };
-
-
 export class ViewPaneContainer extends Component implements IViewPaneContainer {
 
 	private readonly _onDidAddViews = this._register(new Emitter<IView[]>());
@@ -169,6 +159,9 @@ export class ViewPaneContainer extends Component implements IViewPaneContainer {
 		} else {
 			this.didLayout = true;
 			this.restoreViewSizes();
+		}
+		if (this.dimension) {
+
 		}
 	}
 

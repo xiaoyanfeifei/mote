@@ -1,27 +1,21 @@
 import { Transaction } from 'mote/editor/common/core/transaction';
-import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
-import SpaceRootStore from 'mote/editor/common/store/spaceRootStore';
-import SpaceStore from 'mote/editor/common/store/spaceStore';
 import { IWorkspace, IWorkspaceContextService, WorkbenchState } from 'mote/platform/workspace/common/workspace';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IStorageService } from 'vs/platform/storage/common/storage';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { generateUuid } from 'vs/base/common/uuid';
 import { Lodash } from 'mote/base/common/lodash';
-import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
-import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
-import Severity from 'vs/base/common/severity';
-import { localize } from 'vs/nls';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 import { IUserProfile } from 'mote/platform/user/common/user';
+import SpaceRootStore from 'mote/platform/store/common/spaceRootStore';
+import SpaceStore from 'mote/platform/store/common/spaceStore';
+import { IStoreService } from 'mote/platform/store/common/store';
 
 export class WorkspaceService extends Disposable implements IWorkspaceContextService {
-	_serviceBrand: undefined;
+	declare _serviceBrand: undefined;
 
 	private readonly _onDidChangeWorkbenchState: Emitter<WorkbenchState> = this._register(new Emitter<WorkbenchState>());
 	public readonly onDidChangeWorkbenchState: Event<WorkbenchState> = this._onDidChangeWorkbenchState.event;
@@ -42,20 +36,11 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	private currentSpaceId!: string;
 
 	constructor(
-		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService,
-		@IRemoteService remoteService: IRemoteService,
 		@IUserService private readonly userService: IUserService,
-		@IDialogService private readonly dialogService: IDialogService,
 		@IEditorService private readonly editorService: IEditorService,
+		@IStoreService private readonly storeService: IStoreService,
 	) {
 		super();
-
-		const userId = userService.currentProfile ? userService.currentProfile.id : 'local';
-
-		RecordCacheStore.Default.storageService = storageService;
-		RecordCacheStore.Default.logService = logService;
-		RecordCacheStore.Default.remoteService = remoteService;
 
 		this.spaceRootStores = [];
 
@@ -69,7 +54,7 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		const userIdSet = [userService.currentProfile.id, 'local'];
 
 		userIdSet.forEach((userId) => {
-			const spaceRootStore = new SpaceRootStore(userId);
+			const spaceRootStore = new SpaceRootStore(userId, this.storeService);
 			this._register(spaceRootStore.onDidChange(() => {
 				this._onDidChangeWorkspace.fire();
 			}));
@@ -77,14 +62,16 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		});
 	}
 
-	onProfileChange(profile: IUserProfile | undefined) {
+	async onProfileChange(profile: IUserProfile | undefined) {
 		if (!profile) {
 			this.spaceRootStores = [];
 			this.editorService.openEditor(new LoginInput());
 			this._onDidChangeWorkspace.fire();
 			return;
 		}
-		const spaceRootStore = new SpaceRootStore(profile.id);
+		const spaceRootStore = new SpaceRootStore(profile.id, this.storeService);
+		// Need to load space root load into cache
+		await spaceRootStore.load();
 		this._register(spaceRootStore.onDidChange(() => {
 			this._onDidChangeWorkspace.fire();
 		}));
@@ -140,9 +127,9 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	 * @returns
 	 */
 	private async createSpaceStore(userId: string, spaceId: string, spaceName: string) {
-		const spaceRootStore = new SpaceRootStore(userId);
+		const spaceRootStore = new SpaceRootStore(userId, this.storeService);
 		const transaction = Transaction.create(userId);
-		let child = new SpaceStore({ table: 'space', id: spaceId }, { userId: userId });
+		let child = new SpaceStore({ table: 'space', id: spaceId }, { userId }, this.storeService);
 		EditOperation.addSetOperationForStore(child, { name: spaceName }, transaction);
 		child = EditOperation.appendToParent(spaceRootStore.getSpacesStore(), child, transaction).child as SpaceStore;
 		this.currentSpaceId = spaceId;
@@ -152,4 +139,4 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 	}
 }
 
-registerSingleton(IWorkspaceContextService, WorkspaceService);
+registerSingleton(IWorkspaceContextService, WorkspaceService as any);

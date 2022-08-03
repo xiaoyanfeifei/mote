@@ -85,7 +85,6 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		const titleLabel = append(titleContainer, $('h2'));
 		this.titleLabelElement = titleLabel;
 
-		const $this = this;
 		return {
 			updateTitle: (id, title, keybinding) => {
 				// The title label is shared for all composites in the base CompositePart
@@ -208,6 +207,14 @@ export abstract class CompositePart<T extends Composite> extends Part {
 		}
 
 		throw new Error(`Unable to find composite with id ${id}`);
+	}
+
+	protected getActiveComposite(): IComposite | undefined {
+		return this.activeComposite;
+	}
+
+	protected getLastActiveCompositetId(): string {
+		return this.lastActiveCompositeId;
 	}
 
 	protected hideActiveComposite(): Composite | undefined {

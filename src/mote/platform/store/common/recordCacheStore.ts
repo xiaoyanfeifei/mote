@@ -1,8 +1,5 @@
-import { IRemoteService } from 'mote/workbench/services/remote/common/remote';
 import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 import { Pointer, RecordWithRole } from './record';
 
 interface CacheKeyProps {
@@ -10,6 +7,9 @@ interface CacheKeyProps {
 	userId?: string;
 }
 
+interface Listener {
+	(): void;
+}
 
 export default class RecordCacheStore extends Disposable {
 
@@ -20,15 +20,13 @@ export default class RecordCacheStore extends Disposable {
 		return `${table}:${id}:${userId || ''}`;
 	};
 
+	private listerers: Map<String, Set<Listener>> = new Map();
+
 	private _onDidChange = this._register(new Emitter<string>());
 	public readonly onDidChange: Event<string> = this._onDidChange.event;
 
 	private _onDidUpdate = this._register(new Emitter<string>());
 	public readonly onDidUpdate: Event<string> = this._onDidUpdate.event;
-
-	storageService!: IStorageService;
-	logService!: ILogService;
-	remoteService!: IRemoteService;
 
 	state = {
 		cache: new Map<string, any>(),
@@ -36,30 +34,13 @@ export default class RecordCacheStore extends Disposable {
 		appliedTransaction: !1
 	};
 
-	getRecord(e: CacheKeyProps, sync: boolean = false): RecordWithRole | null {
+	getRecord(e: CacheKeyProps): RecordWithRole | undefined {
 		const key = RecordCacheStore.generateCacheKey(e);
-		let record = this.state.cache.get(key);
+		const record = this.state.cache.get(key);
 		if (record) {
 			return record.value;
 		}
-
-		record = this.storageService.get(key, StorageScope.WORKSPACE);
-		if (record) {
-			record = JSON.parse(record);
-			this.state.cache.set(key, record);
-			return record.value;
-		}
-		this.logService.debug(`[RecordCache] could not locate record<${key}>`);
-
-		if (sync && e.userId !== 'local') {
-			this.remoteService.syncRecordValue(e.userId!, e.pointer)
-				.then((recordWithRole) => {
-					this.setRecord(e, recordWithRole);
-					this.fire(key);
-					this._onDidUpdate.fire(key);
-				});
-		}
-		return null;
+		return undefined;
 	}
 
 	getRecordValue(e: CacheKeyProps) {
@@ -77,11 +58,13 @@ export default class RecordCacheStore extends Disposable {
 		}
 		return null;
 	}
+
 	getVersion(e: CacheKeyProps) {
 		const t = this.getRecord(e);
 		return t && t.value && t.value.version ? t.value.version : 0;
 	}
-	setRecord(keyProps: CacheKeyProps, value: any) {
+
+	setRecord(keyProps: CacheKeyProps, value: RecordWithRole) {
 		const key = RecordCacheStore.generateCacheKey(keyProps);
 		const cachedValue = this.state.cache.get(key);
 		if (value) {
@@ -89,10 +72,10 @@ export default class RecordCacheStore extends Disposable {
 				value: value
 			});
 			if (cachedValue && cachedValue.pointer.spaceId && !record.pointer.spaceId) {
-				record.pointer.spaceId = cachedValue.pointer.spaceId
+				record.pointer.spaceId = cachedValue.pointer.spaceId;
 			}
 			this.state.cache.set(key, record);
-			this.storageService.store(key, JSON.stringify(record), StorageScope.WORKSPACE, StorageTarget.USER);
+			this.emit(key);
 		} else {
 			this.deleteRecord(keyProps);
 		}
@@ -101,14 +84,17 @@ export default class RecordCacheStore extends Disposable {
 	fire(key: string) {
 		this._onDidChange.fire(key);
 	}
+
 	deleteRecord(e: CacheKeyProps) {
 		const key = RecordCacheStore.generateCacheKey(e);
 		this.state.cache.delete(key);
-		this.storageService.remove(key, StorageScope.WORKSPACE);
 	}
+
 	forEachRecord(e: string, callback: any) {
 		for (const { pointer, value, userId } of this.state.cache.values()) {
-			value && "none" !== value.role && userId === e && callback(pointer, value);
+			if (value && 'none' !== value.role && userId === e) {
+				callback(pointer, value);
+			}
 		}
 	}
 
@@ -122,5 +108,36 @@ export default class RecordCacheStore extends Disposable {
 
 	clearSyncState(e: CacheKeyProps) {
 		this.state.syncStates.delete(RecordCacheStore.generateCacheKey(e));
+	}
+
+	emit(key: string) {
+		const listenerSet = this.listerers.get(key);
+		if (listenerSet) {
+			listenerSet.forEach((listener) => {
+				listener();
+			});
+		}
+	}
+
+	addListener(userId: string, pointer: Pointer, listener: () => void): IDisposable {
+		const key = RecordCacheStore.generateCacheKey({ userId, pointer });
+		let listenerSet = this.listerers.get(key);
+		if (!listenerSet) {
+			listenerSet = new Set();
+			this.listerers.set(key, listenerSet);
+		}
+		listenerSet.add(listener);
+		return { dispose: () => this.removeListener(userId, pointer, listener) };
+	}
+
+	removeListener(userId: string, pointer: Pointer, listener: () => void) {
+		const key = RecordCacheStore.generateCacheKey({ userId, pointer });
+		const listenerSet = this.listerers.get(key);
+		if (listenerSet) {
+			listenerSet.delete(listener);
+			if (listenerSet.size === 0) {
+				this.listerers.delete(key);
+			}
+		}
 	}
 }

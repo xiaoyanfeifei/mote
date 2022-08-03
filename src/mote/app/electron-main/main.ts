@@ -1,4 +1,5 @@
-import { app, dialog } from "electron";
+/* eslint-disable code-no-unexternalized-strings */
+import { app } from "electron";
 import { Schemas } from "mote/base/common/network";
 import { ILifecycleMainService, LifecycleMainService } from "mote/platform/lifecycle/electron-main/lifecycleMainService";
 import { ConsoleLoggerService } from "mote/platform/log/common/consoleLog";
@@ -30,7 +31,7 @@ import { MoteApplication } from "./app";
 
 class MoteMain {
 
-    main(): void {
+	main(): void {
 		try {
 			this.startup();
 		} catch (error) {
@@ -39,46 +40,46 @@ class MoteMain {
 		}
 	}
 
-    private async startup(): Promise<void> {
-        const [instantiationService] = this.createServices();
+	private async startup(): Promise<void> {
+		const [instantiationService] = this.createServices();
 
-        // Startup
+		// Startup
 		await instantiationService.invokeFunction(async accessor => {
-            console.log("startup...");
+			console.log("startup...");
 
-            return instantiationService.createInstance(MoteApplication).startup();
-        });
-    }
+			return instantiationService.createInstance(MoteApplication).startup();
+		});
+	}
 
-    private createServices() {
-        const services = new ServiceCollection();
+	private createServices() {
+		const services = new ServiceCollection();
 
-         // Product
+		// Product
 		const productService = { _serviceBrand: undefined, ...product };
 		services.set(IProductService, productService);
 
 		// Environment
 		const environmentMainService = new EnvironmentMainService(this.resolveArgs(), productService);
-		const instanceEnvironment = this.patchEnvironment(environmentMainService); // Patch `process.env` with the instance's environment
+		this.patchEnvironment(environmentMainService); // Patch `process.env` with the instance's environment
 		services.set(IEnvironmentMainService, environmentMainService);
 
-        const logService = new LogService(new ConsoleMainLogger(LogLevel.Debug));
-        services.set(ILogService, logService);
+		const logService = new LogService(new ConsoleMainLogger(LogLevel.Debug));
+		services.set(ILogService, logService);
 
-        // Files
+		// Files
 		const fileService = new FileService(logService);
 		services.set(IFileService, fileService);
 		const diskFileSystemProvider = new DiskFileSystemProvider(logService);
 		fileService.registerProvider(Schemas.file, diskFileSystemProvider);
 
-        // Logger
+		// Logger
 		services.set(ILoggerService, new ConsoleLoggerService(logService));
 
 		// Configuration
 		//const configurationService = new ConfigurationService(environmentMainService.settingsResource, fileService);
 		//services.set(IConfigurationService, configurationService);
 
-        // Lifecycle
+		// Lifecycle
 		services.set(ILifecycleMainService, new SyncDescriptor(LifecycleMainService));
 
 		// State
@@ -88,13 +89,13 @@ class MoteMain {
 		// Themes
 		services.set(IThemeMainService, new SyncDescriptor(ThemeMainService));
 
-        // Protocol
+		// Protocol
 		services.set(IProtocolMainService, new SyncDescriptor(ProtocolMainService));
 
-        return [new InstantiationService(services, true)];
-    }
+		return [new InstantiationService(services, true)];
+	}
 
-    private patchEnvironment(environmentMainService: IEnvironmentMainService): IProcessEnvironment {
+	private patchEnvironment(environmentMainService: IEnvironmentMainService): IProcessEnvironment {
 		const instanceEnvironment: IProcessEnvironment = {
 			VSCODE_IPC_HOOK: environmentMainService.mainIPCHandle
 		};
@@ -111,7 +112,7 @@ class MoteMain {
 		return instanceEnvironment;
 	}
 
-    private resolveArgs(): NativeParsedArgs {
+	private resolveArgs(): NativeParsedArgs {
 
 		// Parse arguments
 		const args = this.validatePaths(parseMainProcessArgv(process.argv));
@@ -134,7 +135,7 @@ class MoteMain {
 		return args;
 	}
 
-    private validatePaths(args: NativeParsedArgs): NativeParsedArgs {
+	private validatePaths(args: NativeParsedArgs): NativeParsedArgs {
 
 		// Track URLs if they're going to be used
 		if (args['open-url']) {
@@ -151,7 +152,7 @@ class MoteMain {
 		return args;
 	}
 
-    private doValidatePaths(args: string[], gotoLineMode?: boolean): string[] {
+	private doValidatePaths(args: string[], gotoLineMode?: boolean): string[] {
 		const currentWorkingDir = cwd();
 		const result = args.map(arg => {
 			let pathCandidate = String(arg);
@@ -188,7 +189,7 @@ class MoteMain {
 		return coalesce(distinctPaths);
 	}
 
-    private preparePath(cwd: string, path: string): string {
+	private preparePath(cwd: string, path: string): string {
 
 		// Trim trailing quotes
 		if (isWindows) {

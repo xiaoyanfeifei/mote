@@ -6,7 +6,7 @@ import { IView, IViewDescriptor, IViewDescriptorService, IViewsService, ViewCont
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { IPaneCompositePartService } from "mote/workbench/services/panecomposite/browser/panecomposite";
 import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { Disposable, DisposableStore, IDisposable, toDisposable } from "vs/base/common/lifecycle";
 import { registerSingleton } from "vs/platform/instantiation/common/extensions";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ILogService } from "vs/platform/log/common/log";
@@ -24,18 +24,19 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	declare readonly _serviceBrand: undefined;
 
-	//private readonly viewDisposable: Map<IViewDescriptor, IDisposable>;
+	private readonly viewDisposable: Map<IViewDescriptor, IDisposable>;
 	private readonly viewPaneContainers: Map<string, ViewPaneContainer>;
 
 	constructor(
 		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
 		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
 		//@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILogService private readonly logService: ILogService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService
+		@ILogService logService: ILogService,
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService
 	) {
 		super();
 
+		this.viewDisposable = new Map<IViewDescriptor, IDisposable>();
 		this.viewPaneContainers = new Map<string, ViewPaneContainer>();
 
 		this.viewDescriptorService.viewContainers.forEach(viewContainer =>
@@ -92,13 +93,13 @@ export class ViewsService extends Disposable implements IViewsService {
 			return;
 		}
 
-		const composite = this.getComposite(container.id, location);
+		this.getComposite(container.id, location);
 		for (const viewDescriptor of views) {
 			const disposables = new DisposableStore();
 			//disposables.add(this.registerOpenViewAction(viewDescriptor));
 			//disposables.add(this.registerFocusViewAction(viewDescriptor, composite?.name && composite.name !== composite.id ? composite.name : CATEGORIES.View));
 			//disposables.add(this.registerResetViewLocationAction(viewDescriptor));
-			//this.viewDisposable.set(viewDescriptor, disposables);
+			this.viewDisposable.set(viewDescriptor, disposables);
 		}
 	}
 
@@ -123,7 +124,8 @@ export class ViewsService extends Disposable implements IViewsService {
 		throw new Error("Method not implemented.");
 	}
 	openView<T extends IView>(id: string, focus?: boolean): Promise<T | null> {
-		throw new Error("Method not implemented.");
+		this.openComposite('', null as any);
+		return Promise.resolve(null);
 	}
 	closeView(id: string): void {
 		throw new Error("Method not implemented.");
@@ -204,10 +206,10 @@ function getPaneCompositeExtension(viewContainerLocation: ViewContainerLocation)
 	}
 }
 
-export function getPartByLocation(viewContainerLocation: ViewContainerLocation): Parts.AUXILIARYBAR_PART | Parts.SIDEBAR_PART | Parts.PANEL_PART {
+export function getPartByLocation(viewContainerLocation: ViewContainerLocation): Parts.SIDEBAR_PART | Parts.PANEL_PART {
 	switch (viewContainerLocation) {
 		case ViewContainerLocation.AuxiliaryBar:
-			return Parts.AUXILIARYBAR_PART;
+		//return Parts.AUXILIARYBAR_PART;
 		case ViewContainerLocation.Panel:
 			return Parts.PANEL_PART;
 		case ViewContainerLocation.Sidebar:

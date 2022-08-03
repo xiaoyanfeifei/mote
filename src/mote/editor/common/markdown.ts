@@ -4,8 +4,8 @@ import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
-import BlockStore from 'mote/editor/common/store/blockStore';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 
 export interface ICommandExecutor {
 	readonly store: RecordStore;

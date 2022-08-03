@@ -8,7 +8,7 @@ import { ILogService } from "vs/platform/log/common/log";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { Layout } from "./layout";
 import { onUnexpectedError } from "vs/base/common/errors";
-import { IViewsService, ViewContainerLocation } from "../common/views";
+import { IViewsService } from "../common/views";
 import { Registry } from "vs/platform/registry/common/platform";
 import { IWorkbenchContributionsRegistry, WorkbenchExtensions } from "mote/workbench/common/contributions";
 import { IWorkbenchOptions } from 'vs/workbench/browser/workbench';
@@ -17,7 +17,7 @@ export class Workbench extends Layout {
 
 	constructor(
 		parent: HTMLElement,
-		private readonly options: IWorkbenchOptions | undefined,
+		options: IWorkbenchOptions | undefined,
 		private readonly serviceCollection: ServiceCollection,
 		logService: ILogService
 	) {

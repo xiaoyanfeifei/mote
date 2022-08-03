@@ -1,10 +1,10 @@
-import RecordStore from 'mote/editor/common/store/recordStore';
 import { generateUuid } from 'vs/base/common/uuid';
 import { Operation } from 'mote/platform/transaction/common/operations';
-import { Role } from 'mote/editor/common/store/record';
-import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
-import CommandFacade from './commandFacade';
+import CommandFacade from '../../../platform/store/common/commandFacade';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
+import RecordStore from 'mote/platform/store/common/recordStore';
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
+import { Role } from 'mote/platform/store/common/record';
 
 
 export interface TransactionCallback {
@@ -114,8 +114,6 @@ export class Transaction {
 			value: record,
 			role: role || Role.Editor
 		});
-
-		store.sync();
 
 		this.operations.push(operation);
 		this.stores.push(store);

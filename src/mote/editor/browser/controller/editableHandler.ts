@@ -4,7 +4,6 @@ import { ClipboardDataToCopy, EditableInput, EditableWrapper, IEditableInputHost
 import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
-import { ViewController } from 'mote/editor/browser/view/viewController';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
@@ -17,6 +16,17 @@ interface EditableHandlerOptions {
 	placeholder?: string;
 }
 
+export interface ICommandDelegate {
+
+	isEmpty(lineNumber: number): boolean;
+	getSelection(): TextSelection;
+	type(text: string): void;
+	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
+	select(e: TextSelection): void;
+	backspace(): void;
+	enter(): void;
+}
+
 export class EditableHandler extends ViewPart {
 
 	public readonly editable: FastDomNode<HTMLDivElement>;
@@ -26,7 +36,7 @@ export class EditableHandler extends ViewPart {
 	constructor(
 		private readonly lineNumber: number,
 		context: ViewContext,
-		private readonly viewController: ViewController,
+		private readonly command: ICommandDelegate,
 		private readonly options: EditableHandlerOptions,
 	) {
 		super(context);
@@ -46,10 +56,10 @@ export class EditableHandler extends ViewPart {
 	}
 
 	public prepareRender(): void {
-		throw new Error('Method not implemented.');
+
 	}
 	public render(): void {
-		throw new Error('Method not implemented.');
+
 	}
 
 	public applyStyles(style: CSSProperties) {
@@ -62,14 +72,14 @@ export class EditableHandler extends ViewPart {
 
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
-		const selection = this.viewController.getSelection();
+		const selection = this.command.getSelection();
 		if (this.editableInput.isFocused() && selection.startIndex > 0) {
 			this.ensureSelection(selection);
 		}
 	}
 
 	private isEmpty() {
-		return this.viewController.isEmpty(this.lineNumber);
+		return this.command.isEmpty(this.lineNumber);
 	}
 
 	//#region view event handlers
@@ -83,12 +93,12 @@ export class EditableHandler extends ViewPart {
 				if (_debugComposition) {
 					console.log(` => compositionType: <<${e.type}>>, ${e.replacePrevCharCnt}, ${e.replaceNextCharCnt}, ${e.positionDelta}`);
 				}
-				this.viewController.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
+				this.command.compositionType(e.text, e.replacePrevCharCnt, e.replaceNextCharCnt, e.positionDelta);
 			} else {
 				if (_debugComposition) {
 					console.log(` => type: <<${e.type}>>`);
 				}
-				this.viewController.type(e.text);
+				this.command.type(e.text);
 			}
 			if (!this.isEmpty() && this.options.placeholder) {
 				// remove placeholder text style
@@ -98,21 +108,21 @@ export class EditableHandler extends ViewPart {
 		this._register(this.editableInput.onKeyDown((e) => {
 			const event = e as StandardKeyboardEvent;
 			if (event.equals(KeyCode.Enter)) {
-				this.viewController.enter();
+				this.command.enter();
 			}
 			if (event.equals(KeyCode.Backspace)) {
-				this.viewController.backspace();
+				this.command.backspace();
 			}
 		}));
 		this._register(this.editableInput.onSelectionChange((e) => {
 			e.lineNumber = this.lineNumber;
-			this.viewController.select(e);
+			this.command.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
 			setTimeout(() => {
 				// force focus to set range
 				this.editable.domNode.focus();
-				const selection = this.viewController.getSelection();
+				const selection = this.command.getSelection();
 				// line number less than 0 means view controller not initialized yet
 				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
 					this.ensureSelection(selection);

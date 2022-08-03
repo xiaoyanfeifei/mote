@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { PerformanceMark } from 'vs/base/common/performance';
 import type { UriComponents, URI } from 'vs/base/common/uri';
 import type { IWebSocketFactory } from 'vs/platform/remote/browser/browserSocketFactory';
 import type { IURLCallbackProvider } from 'vs/workbench/services/url/browser/urlService';

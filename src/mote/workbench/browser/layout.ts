@@ -3,16 +3,14 @@ import { Disposable } from "vs/base/common/lifecycle";
 import { IWorkbenchLayoutService, Parts } from "mote/workbench/services/layout/browser/layoutService";
 import { Dimension, getClientArea, IDimension, position, size } from "vs/base/browser/dom";
 import { Part } from "./part";
-import { Emitter, Event } from "vs/base/common/event";
+import { Emitter } from "vs/base/common/event";
 import { ILogService } from "vs/platform/log/common/log";
 import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
 import { IPaneCompositePartService } from "../services/panecomposite/browser/panecomposite";
 import { DeferredPromise, Promises } from "vs/base/common/async";
 import { IViewDescriptorService, ViewContainerLocation } from "../common/views";
 import { ISerializableView, ISerializedGrid, ISerializedLeafNode, ISerializedNode, Orientation, SerializableGrid } from "vs/base/browser/ui/grid/grid";
-import { IEditorService } from "../services/editor/common/editorService";
 import { mark } from "vs/base/common/performance";
-import { IThemeService } from "mote/platform/theme/common/themeService";
 
 export abstract class Layout extends Disposable implements IWorkbenchLayoutService {
 
@@ -29,7 +27,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	private _dimension!: IDimension;
 	get dimension(): IDimension { return this._dimension; }
 
-	offset?: { top: number; } | undefined;
+	offset?: { top: number } | undefined;
 
 	//#endregion
 
@@ -42,7 +40,6 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 
 	//#region workbench services
 	private paneCompositeService!: IPaneCompositePartService;
-	private editorService!: IEditorService;
 	private viewDescriptorService!: IViewDescriptorService;
 
 	//#endregion
@@ -56,20 +53,22 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 	}
 
 	isVisible(part: Parts): boolean {
+		if (this.initialized) {
+
+		}
 		return true;
 	}
 
-	setPartHidden(hidden: boolean, part: Parts.BANNER_PART | Parts.ACTIVITYBAR_PART | Parts.SIDEBAR_PART | Parts.PANEL_PART | Parts.AUXILIARYBAR_PART | Parts.EDITOR_PART): void {
+	setPartHidden(hidden: boolean, part: Parts.SIDEBAR_PART | Parts.EDITOR_PART): void {
 		//throw new Error("Method not implemented.");
 	}
 
 	protected initLayout(accessor: ServicesAccessor): void {
 		this.logService.debug("[Layout] initLayout");
 		// Services
-		const themeService = accessor.get(IThemeService);
+		//const themeService = accessor.get(IThemeService);
 
 		this.paneCompositeService = accessor.get(IPaneCompositePartService);
-		this.editorService = accessor.get(IEditorService);
 		this.viewDescriptorService = accessor.get(IViewDescriptorService);
 	}
 
@@ -95,10 +94,10 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const sideBar = this.getPart(Parts.SIDEBAR_PART);
 		const editorPart = this.getPart(Parts.EDITOR_PART);
 
-		const viewMap = {
+		const viewMap: { [key: string]: Part } = {
 			[Parts.SIDEBAR_PART]: sideBar,
 			[Parts.EDITOR_PART]: editorPart,
-		}
+		};
 
 		const fromJSON = ({ type }: { type: Parts }) => viewMap[type];
 		const workbenchGrid = SerializableGrid.deserialize(
@@ -186,7 +185,7 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		const width = 1080;
 		const height = 800;
 		const sideBarSize = 200;
-		const panelSize = 300;
+		//const panelSize = 300;
 
 		const titleBarHeight = 0;
 		const middleSectionHeight = height - titleBarHeight;

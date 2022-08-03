@@ -1,4 +1,4 @@
-import { BrowserWindow, nativeTheme } from 'electron';
+import { nativeTheme } from 'electron';
 import { Emitter, Event } from 'vs/base/common/event';
 import { IColorScheme } from "mote/platform/window/common/window";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
@@ -14,7 +14,7 @@ const DEFAULT_BG_HC_LIGHT = '#FFFFFF';
 
 const THEME_STORAGE_KEY = 'theme';
 const THEME_BG_STORAGE_KEY = 'themeBackground';
-const THEME_WINDOW_SPLASH = 'windowSplash';
+//const THEME_WINDOW_SPLASH = 'windowSplash';
 
 export const IThemeMainService = createDecorator<IThemeMainService>('themeMainService');
 
@@ -40,9 +40,9 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
 	constructor(
-        @IStateMainService private stateMainService: IStateMainService, 
-        //@IConfigurationService private configurationService: IConfigurationService
-    ) {
+		@IStateMainService private stateMainService: IStateMainService,
+		//@IConfigurationService private configurationService: IConfigurationService
+	) {
 		super();
 
 		// Color Scheme changes
@@ -50,10 +50,10 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 			this._onDidChangeColorScheme.fire(this.getColorScheme());
 		});
 	}
-    getBackgroundColor(): string {
-        const colorScheme = this.getColorScheme();
+	getBackgroundColor(): string {
+		const colorScheme = this.getColorScheme();
 		//if (colorScheme.highContrast && this.configurationService.getValue('window.autoDetectHighContrast')) {
-        if (colorScheme.highContrast){
+		if (colorScheme.highContrast) {
 			return colorScheme.dark ? DEFAULT_BG_HC_BLACK : DEFAULT_BG_HC_LIGHT;
 		}
 
@@ -73,12 +73,12 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 		}
 
 		return background;
-    }
-    saveWindowSplash(windowId: number | undefined, splash: IPartsSplash): void {
-        throw new Error('Method not implemented.');
-    }
+	}
+	saveWindowSplash(windowId: number | undefined, splash: IPartsSplash): void {
+		throw new Error('Method not implemented.');
+	}
 
-    getColorScheme(): IColorScheme {
+	getColorScheme(): IColorScheme {
 		if (isWindows) {
 			// high contrast is refelected by the shouldUseInvertedColorScheme property
 			if (nativeTheme.shouldUseHighContrastColors) {
@@ -103,23 +103,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 		};
 	}
 
-    getWindowSplash(): IPartsSplash | undefined {
+	getWindowSplash(): IPartsSplash | undefined {
 		return undefined;
-		//return this.stateMainService.getItem<IPartsSplash>(THEME_WINDOW_SPLASH);
-        return {
-            baseTheme: "light",
-            colorInfo: {
-                background: DEFAULT_BG_LIGHT,
-                foreground: undefined,
-                editorBackground: undefined,
-                titleBarBackground: undefined,
-                activityBarBackground: undefined,
-                sideBarBackground:  undefined,
-                statusBarBackground:  undefined,
-                statusBarNoFolderBackground: undefined,
-                windowBorder: undefined
-            },
-            layoutInfo: undefined
-        }
 	}
 }

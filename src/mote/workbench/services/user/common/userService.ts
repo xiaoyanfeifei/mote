@@ -1,5 +1,5 @@
 import { IUserProfile } from 'mote/platform/user/common/user';
-import { IRemoteService, LoginData, UserLoginPayload, UserSignupPayload } from 'mote/workbench/services/remote/common/remote';
+import { IRemoteService, LoginData, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Emitter } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';

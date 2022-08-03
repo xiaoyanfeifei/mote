@@ -1,5 +1,5 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { ipcMain } from "electron";
-import { ILifecycleMainService } from "mote/platform/lifecycle/electron-main/lifecycleMainService";
 import { IWindowsMainService, OpenContext } from "mote/platform/windows/electron-main/windows";
 import { WindowsMainService } from "mote/platform/windows/electron-main/windowsMainService";
 import { onUnexpectedError, setUnexpectedErrorHandler } from "vs/base/common/errors";
@@ -43,7 +43,7 @@ export class MoteApplication extends Disposable {
 		const appInstantiationService = await this.initServices();
 
 		// Open Windows
-		const windows = appInstantiationService.invokeFunction(
+		appInstantiationService.invokeFunction(
 			accessor => this.openFirstWindow(accessor)
 		);
 	}
@@ -52,10 +52,12 @@ export class MoteApplication extends Disposable {
 		if (error) {
 
 			// take only the message and stack property
+			/*
 			const friendlyError = {
 				message: `[uncaught exception in main]: ${error.message}`,
 				stack: error.stack
 			};
+			*/
 
 			// handle on client side
 			//this.windowsMainService?.sendToFocused('vscode:reportError', JSON.stringify(friendlyError));
@@ -77,9 +79,9 @@ export class MoteApplication extends Disposable {
 	}
 
 	private openFirstWindow(accessor: ServicesAccessor) {
-		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
+		this.windowsMainService = accessor.get(IWindowsMainService);
 
-		return windowsMainService.open({
+		return this.windowsMainService.open({
 			context: OpenContext.DESKTOP
 		});
 	}
