@@ -1,4 +1,4 @@
-import { ColorExtensions, ColorIdentifier, ColorValue, IColorRegistry } from 'mote/platform/theme/common/colorRegistry';
+import { ColorExtensions, ColorIdentifier, IColorRegistry } from 'mote/platform/theme/common/colorRegistry';
 import { ColorScheme } from 'mote/platform/theme/common/theme';
 import { IColorTheme } from 'mote/platform/theme/common/themeService';
 import { Color } from 'vs/base/common/color';

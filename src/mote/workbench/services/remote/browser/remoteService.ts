@@ -1,9 +1,8 @@
 import { Lodash } from 'mote/base/common/lodash';
 import { doFetch, config } from 'mote/base/parts/request/common/request';
-import { Pointer, RecordWithRole } from 'mote/editor/common/store/record';
-import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
+import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import RequestQueue from 'mote/workbench/services/remote/common/requestQueue';
-import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UserLoginPayload, UserSignupPayload } from 'mote/workbench/services/remote/common/remote';
+import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { sha1Hex } from 'vs/base/browser/hash';
 import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { generateUuid } from 'vs/base/common/uuid';
@@ -44,7 +43,6 @@ class RecordMap {
 
 const syncRecordValuesQueue = new RequestQueue<SyncRecordRequest, RecordWithRole>({
 	performRequests: async (requests: SyncRecordRequest[]) => {
-		console.log(JSON.stringify(requests));
 		const uniqueRequests = Lodash.uniqWith(requests, (value, other) => {
 			if (!other) {
 				return false;
@@ -78,6 +76,8 @@ const syncRecordValues = async (requests: SyncRecordRequest[]) => {
 };
 
 export class RemoteService implements IRemoteService {
+
+	readonly _serviceBrand: undefined;
 
 	private timeout = 1200;
 
@@ -119,12 +119,11 @@ export class RemoteService implements IRemoteService {
 		return this.doPost<RecordWithRole[]>('/api/getSpaces', { userId: userId });
 	}
 
-	async syncRecordValue(userId: string, pointer: Pointer): Promise<RecordWithRole> {
-		const record = RecordCacheStore.Default.getRecord({ userId: userId, pointer: pointer }, false);
+	async syncRecordValue(userId: string, pointer: Pointer, version?: number): Promise<RecordWithRole> {
 		return syncRecordValuesQueue.enqueue({
 			id: pointer.id,
 			table: pointer.table,
-			version: record && record.value && record.value.version ? record.value.version : -1
+			version: version ?? -1
 		});
 	}
 

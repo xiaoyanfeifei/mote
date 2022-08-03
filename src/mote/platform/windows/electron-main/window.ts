@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import { FileAccess } from "mote/base/common/network";
 import { IProtocolMainService } from "mote/platform/protocol/electron-main/protocol";
@@ -6,6 +7,7 @@ import { INativeWindowConfiguration } from "mote/platform/window/common/window";
 import { IAppWindow } from "mote/platform/window/electron-main/window";
 import { Disposable } from "vs/base/common/lifecycle";
 import { mark } from "vs/base/common/performance";
+import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
 import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 import { isLaunchedFromCli } from "vs/platform/environment/node/argvHelper";
 import { ILogService } from "vs/platform/log/common/log";
@@ -39,7 +41,7 @@ const enum ReadyState {
 
 export class AppWindow extends Disposable implements IAppWindow {
 
-    //#region Properties
+	//#region Properties
 
 	private _id: number;
 	get id(): number { return this._id; }
@@ -50,7 +52,7 @@ export class AppWindow extends Disposable implements IAppWindow {
 	private _lastFocusTime = -1;
 	get lastFocusTime(): number { return this._lastFocusTime; }
 
-    get backupPath(): string | undefined { return undefined; }
+	get backupPath(): string | undefined { return undefined; }
 
 	get openedWorkspace(): any | undefined { return undefined; }
 
@@ -68,53 +70,77 @@ export class AppWindow extends Disposable implements IAppWindow {
 
 	get isExtensionDevelopmentTestFromCli(): boolean { return false; }
 
-    //#endregion
+	//#endregion
+
+	private readonly whenReadyCallbacks: { (window: IAppWindow): void }[] = [];
 
 	private readonly configObjectUrl = this._register(this.protocolMainService.createIPCObjectUrl<INativeWindowConfiguration>());
-    private pendingLoadConfig: INativeWindowConfiguration | undefined;
-    private wasLoaded = false;
+	private pendingLoadConfig: INativeWindowConfiguration | undefined;
+	//private wasLoaded = false;
 
-    constructor(
+	constructor(
 		@ILogService private readonly logService: ILogService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
-        @IProtocolMainService private readonly protocolMainService: IProtocolMainService,
-        @IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
+		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
 	) {
-        super();
+		super();
 
-        //#region create browser window
-        {
-            const options: BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
+		//#region create browser window
+		{
+			const options: BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } = {
 				webPreferences: {
-                    preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
+					preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-browser/preload.js', require).fsPath,
 					additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
 					enableWebSQL: false,
 					spellcheck: false,
 					//nativeWindowOpen: true,
-                    enableBlinkFeatures: 'HighlightAPI',
-					...this.environmentMainService.sandbox ?
+					enableBlinkFeatures: 'HighlightAPI',
 
-						// Sandbox
-						{
-							sandbox: true
-						} :
+					nodeIntegration: true,
+					contextIsolation: false
 
-						// No Sandbox
-						{
-							nodeIntegration: true,
-							contextIsolation: false
-						}
 				},
-                experimentalDarkMode: true
-            }
+				experimentalDarkMode: true
+			};
 
-            this._win = new BrowserWindow(options);
-            this._id = this._win.id;
-        }
+			this._win = new BrowserWindow(options);
+			this._id = this._win.id;
+		}
 
 		// Eventing
 		this.registerListeners();
-    }
+	}
+	onWillLoad(arg0: (e: any) => void) {
+		throw new Error('Method not implemented.');
+	}
+
+	private readyState = ReadyState.NONE;
+
+	ready(): Promise<IAppWindow> {
+		return new Promise<IAppWindow>(resolve => {
+			if (this.isReady) {
+				return resolve(this);
+			}
+
+			// otherwise keep and call later when we are ready
+			this.whenReadyCallbacks.push(resolve);
+		});
+	}
+
+	get isReady(): boolean {
+		return this.readyState === ReadyState.READY;
+	}
+
+	reload(cli?: NativeParsedArgs | undefined): void {
+		throw new Error('Method not implemented.');
+	}
+	send(channel: string, ...args: any[]): void {
+		throw new Error('Method not implemented.');
+	}
+	close(): void {
+		throw new Error('Method not implemented.');
+	}
 
 	private registerListeners() {
 
@@ -169,20 +195,20 @@ export class AppWindow extends Disposable implements IAppWindow {
 		// Update in config object URL for usage in renderer
 		this.configObjectUrl.update(configuration);
 	}
-    
-    load(config: INativeWindowConfiguration, options: ILoadOptions = Object.create(null)): void {
-		
-       	this.logService.info(`window#load: attempt to load window (id: ${this._id})`);
 
-        // Update configuration values based on our window context
+	load(config: INativeWindowConfiguration, options: ILoadOptions = Object.create(null)): void {
+
+		this.logService.info(`window#load: attempt to load window (id: ${this._id})`);
+
+		// Update configuration values based on our window context
 		// and set it into the config object URL for usage.
 		this.updateConfiguration(config, options);
 
-        const url = FileAccess.asBrowserUri(
-            'mote/app/electron-browser/workbench/workbench.html', require
-        ).toString();
+		const url = FileAccess.asBrowserUri(
+			'mote/app/electron-browser/workbench/workbench.html', require
+		).toString();
 
-        // Load URL
+		// Load URL
 		this._win.loadURL(url);
-    }
+	}
 }

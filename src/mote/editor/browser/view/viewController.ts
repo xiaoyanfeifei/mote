@@ -2,21 +2,20 @@ import * as viewEvents from 'mote/editor/common/viewEvents';
 import { Event } from 'vs/base/common/event';
 import { TextSelection, TextSelectionMode } from 'mote/editor/common/core/selectionUtils';
 import { Transaction } from 'mote/editor/common/core/transaction';
-import BlockStore from 'mote/editor/common/store/blockStore';
-import RecordStore from 'mote/editor/common/store/recordStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
 import * as segmentUtils from 'mote/editor/common/segmentUtils';
 import { OutgoingViewEvent, SelectionChangedEvent, ViewEventDispatcher, ViewEventsCollector } from 'mote/editor/common/viewEventDispatcher';
 import { textChange } from 'mote/editor/common/core/textChange';
 import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/common/segmentUtils';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
-import { Lodash } from 'mote/base/common/lodash';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import blockTypes, { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';
-import { StoreUtils } from 'mote/editor/common/store/storeUtils';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -32,7 +31,7 @@ export class ViewController {
 	constructor(
 		private readonly contentStore: RecordStore<string[]>,
 	) {
-		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -1 };
+		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
 		this.eventDispatcher = new ViewEventDispatcher();
 		this.onEvent = this.eventDispatcher.onEvent;
 	}
@@ -80,8 +79,8 @@ export class ViewController {
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -89,8 +88,8 @@ export class ViewController {
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -98,8 +97,8 @@ export class ViewController {
 	public backspace() {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onBackspace(eventsCollector, store.getTitleStore(), transaction, this.selection);
+				const titleStore = this.getTitleStore();
+				this.onBackspace(eventsCollector, titleStore, transaction, this.selection);
 			}, this.contentStore.userId);
 		});
 	}
@@ -109,7 +108,7 @@ export class ViewController {
 		// before the content store has any children
 		this.withViewEventsCollector(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				let child: BlockStore = EditOperation.createBlockStore('text', transaction);
+				let child: BlockStore = EditOperation.createBlockStore('text', transaction, this.contentStore);
 				let lineNumber: number;
 				// create first child
 				if (this.selection.lineNumber < 0) {
@@ -136,7 +135,7 @@ export class ViewController {
 	 * @param selection
 	 */
 	private setSelection(selection: TextSelection) {
-		if (selection.lineNumber < 0) {
+		if (selection.lineNumber < -1) {
 			throw new BugIndicatingError('lineNumber should never be negative');
 		}
 		this.selection = Object.assign({}, this.selection);
@@ -150,12 +149,21 @@ export class ViewController {
 	}
 
 	public isEmpty(lineNumber: number) {
-		const value: any[] = StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore).getTitleStore().getValue() || [];
+		let titleStore: RecordStore;
+		// header
+		if (lineNumber === -1) {
+			const pageStore = this.getPageStore();
+			titleStore = pageStore.getTitleStore();
+		} else {
+			const store = StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore);
+			titleStore = store.getTitleStore();
+		}
+		const value: any[] = titleStore.getValue() || [];
 		return value.length === 0;
 	}
 
 	private executeCursorEdit(callback: (eventsCollector: ViewEventsCollector) => void) {
-		if (this.selection === null || this.selection.lineNumber < 0) {
+		if (this.selection === null || this.selection.lineNumber < -1) {
 			return;
 		}
 		const contents = this.contentStore.getValue() || [];
@@ -174,6 +182,23 @@ export class ViewController {
 		} finally {
 			this.eventDispatcher.endEmitViewEvents();
 		}
+	}
+
+	private getTitleStore() {
+		let titleStore: RecordStore;
+		// header
+		if (this.selection.lineNumber === -1) {
+			const pageStore = this.getPageStore();
+			titleStore = pageStore.getTitleStore();
+		} else {
+			const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
+			titleStore = store.getTitleStore();
+		}
+		return titleStore;
+	}
+
+	private getPageStore() {
+		return this.contentStore.recordStoreParentStore as BlockStore;
 	}
 
 	//#region line handle
@@ -269,6 +294,13 @@ export class ViewController {
 					}
 			}
 		}
+
+		if (needChange) {
+
+		}
+		if (deleteFlag) {
+
+		}
 	}
 
 	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
@@ -334,7 +366,7 @@ export class ViewController {
 
 			const rootStore = store.getRecordStoreAtRootPath();
 			if ('block' === rootStore.table) {
-				const removedRecord = segmentUtils.slice(storeValue, selection.startIndex, selection.endIndex);
+				segmentUtils.slice(storeValue, selection.startIndex, selection.endIndex);
 			}
 
 

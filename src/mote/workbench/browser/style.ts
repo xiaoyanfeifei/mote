@@ -1,4 +1,3 @@
-import { foreground } from 'mote/platform/theme/common/themeColors';
 import 'vs/css!./media/style';
 
 /*

@@ -1,12 +1,11 @@
 import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
-import { attachMenuStyler } from 'mote/platform/theme/common/styler';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { $, addDisposableListener, EventType, isHTMLElement } from 'vs/base/browser/dom';
 import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
-import { Menu, IMenuOptions } from 'vs/base/browser/ui/menu/menu';
+import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
 import { ActionRunner, IAction, IRunEvent } from 'vs/base/common/actions';
-import { Emitter, Event } from 'vs/base/common/event';
+import { Emitter } from 'vs/base/common/event';
 import { combinedDisposable, Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { IContextMenuService, IContextViewService } from './contextView';
 
@@ -31,7 +30,7 @@ export abstract class BrowserContextViewBasedService extends Disposable implemen
 	private options: IContextViewHandlerOptions = { blockMouse: true };
 
 	constructor(
-		@IThemeService private readonly themeService: IThemeService,
+		@IThemeService themeService: IThemeService,
 		@IContextViewService private readonly contextViewService: IContextViewService,
 	) {
 		super();

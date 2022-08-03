@@ -1,19 +1,24 @@
-import RecordStore from 'mote/editor/common/store/recordStore';
-import BlockStore from 'mote/editor/common/store/blockStore';
+import RecordStore from 'mote/platform/store/common/recordStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import { Command } from 'mote/platform/transaction/common/operations';
-import RecordCacheStore from 'mote/editor/common/store/recordCacheStore';
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 import { generateUuid } from 'vs/base/common/uuid';
-import { BlockType } from 'mote/editor/common/store/record';
+import { BlockType } from 'mote/platform/store/common/record';
 
 export class EditOperation {
 
-	public static createBlockStore(type: string, transaction: Transaction, table: string = 'block') {
+	public static createBlockStore(
+		type: string,
+		transaction: Transaction,
+		parent: RecordStore,
+		table: string = 'block',
+	) {
 		const id = generateUuid();
 		const blockStore = new BlockStore({
 			table: table,
 			id: id
-		}, transaction.userId);
+		}, transaction.userId, [], parent.inMemoryRecordCacheStore, parent.storeService);
 		this.addSetOperationForStore(blockStore, {
 			type: type
 		}, transaction);
@@ -34,7 +39,7 @@ export class EditOperation {
 	}
 
 	public static createChild(parent: BlockStore, transaction: Transaction) {
-		const child = this.createBlockStore('text', transaction);
+		const child = this.createBlockStore('text', transaction, parent);
 		this.appendToParent(parent.getContentStore(), child, transaction);
 		return {
 			parent: parent,

@@ -47,10 +47,11 @@ export class BrowserThemeService extends Disposable implements IThemeService {
 		return this.currentProductIconTheme;
 	}
 
-
+	/*
 	private installPreferredSchemeListener() {
 		this.hostColorSchemeService.onDidChangeColorScheme(() => this.handlePreferredSchemeUpdated());
 	}
+	*/
 
 	private handlePreferredSchemeUpdated() {
 		const scheme = this.getPreferredColorScheme();

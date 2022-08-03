@@ -5,7 +5,7 @@
 
 import { PerformanceMark } from 'vs/base/common/performance';
 import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
-import { IColorScheme, INativeWindowConfiguration, IOSConfiguration, IPath, IPathsToWaitFor } from 'mote/platform/window/common/window';
+import { IColorScheme, INativeWindowConfiguration, IOSConfiguration } from 'mote/platform/window/common/window';
 import { IEnvironmentService, INativeEnvironmentService } from 'vs/platform/environment/common/environment';
 import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
 import { AbstractNativeEnvironmentService } from 'vs/platform/environment/common/environmentService';
@@ -48,7 +48,7 @@ export interface INativeWorkbenchEnvironmentService extends IBrowserWorkbenchEnv
 	readonly crashReporterId?: string;
 
 	// --- Editors to --wait
-	readonly filesToWait?: IPathsToWaitFor;
+	//readonly filesToWait?: IPathsToWaitFor;
 }
 
 export class NativeWorkbenchEnvironmentService extends AbstractNativeEnvironmentService implements INativeWorkbenchEnvironmentService {
@@ -75,14 +75,14 @@ export class NativeWorkbenchEnvironmentService extends AbstractNativeEnvironment
 			colorScheme: null as any,
 			maximized: this.configuration.maximized,
 			accessibilitySupport: this.configuration.accessibilitySupport,
-			perfMarks: this.configuration.perfMarks,
+			perfMarks: null as any, //this.configuration.perfMarks,
 			isInitialStartup: true,
 			isCodeCaching: typeof this.configuration.codeCachePath === 'string'
 		};
 	}
 
 	@memoize
-	override get userRoamingDataHome(): URI { return this.appSettingsHome.with({ scheme: Schemas.userData }); }
+	override get userRoamingDataHome(): URI { return this.appSettingsHome; }
 
 	@memoize
 	get logFile(): URI { return URI.file(join(this.logsPath, `renderer${this.configuration.windowId}.log`)); }
@@ -117,15 +117,6 @@ export class NativeWorkbenchEnvironmentService extends AbstractNativeEnvironment
 
 	@memoize
 	get os(): IOSConfiguration { return this.configuration.os; }
-
-	@memoize
-	get filesToOpenOrCreate(): IPath[] | undefined { return undefined }
-
-	@memoize
-	get filesToDiff(): IPath[] | undefined { return undefined; }
-
-	@memoize
-	get filesToWait(): IPathsToWaitFor | undefined { return undefined }
 
 	constructor(
 		private readonly configuration: INativeWindowConfiguration,

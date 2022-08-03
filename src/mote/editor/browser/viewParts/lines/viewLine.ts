@@ -1,8 +1,8 @@
 import * as dom from 'vs/base/browser/dom';
-import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
+import { EditableHandler, EditableHandlerOptions } from 'mote/editor/browser/controller/editableHandler';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import BlockStore from 'mote/editor/common/store/blockStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { segmentsToElement } from 'mote/editor/common/textSerialize';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -45,7 +45,7 @@ export class ViewLine implements IVisibleLine {
 	constructor(
 		private readonly viewContext: ViewContext,
 		private readonly viewController: ViewController,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 
 	}
@@ -105,7 +105,8 @@ abstract class BaseBlock extends Disposable {
 	constructor(
 		lineNumber: number,
 		viewContext: ViewContext,
-		viewController: ViewController
+		viewController: ViewController,
+		protected readonly options?: EditableHandlerOptions,
 	) {
 		super();
 		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
@@ -129,10 +130,6 @@ abstract class BaseBlock extends Disposable {
 	setValue(store: BlockStore) {
 		const html = segmentsToElement(store.getTitleStore().getValue()).join('');
 		this.editableHandler.setValue(html);
-		this._register(store.onDidUpdate(() => {
-			const html = segmentsToElement(store.getTitleStore().getValue()).join('');
-			this.editableHandler.setValue(html);
-		}));
 	}
 
 	getDomNode() {
@@ -140,17 +137,20 @@ abstract class BaseBlock extends Disposable {
 	}
 }
 
-class ViewBlock extends BaseBlock {
+export class ViewBlock extends BaseBlock {
 
 	override renderPersisted(
 		lineNumber: number,
 		viewContext: ViewContext,
-		viewController: ViewController
+		viewController: ViewController,
 	): EditableHandler {
-		return new EditableHandler(lineNumber, viewContext, viewController, { placeholder: this.getPlaceholder() });
+		return new EditableHandler(lineNumber, viewContext, viewController, { placeholder: this.getPlaceholder(), forcePlaceholder: this.options?.forcePlaceholder });
 	}
 
 	getPlaceholder() {
+		if (this.options) {
+			return this.options.placeholder ?? 'Type to continue';
+		}
 		return 'Type to continue';
 	}
 

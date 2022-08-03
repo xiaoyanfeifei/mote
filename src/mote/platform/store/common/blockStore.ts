@@ -1,3 +1,5 @@
+import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
+import { IStoreService } from 'mote/platform/store/common/store';
 import { BlockType, Pointer } from './record';
 import RecordStore from './recordStore';
 
@@ -5,15 +7,27 @@ export default class BlockStore extends RecordStore {
 	static override keyName = 'BlockStore';
 
 	static override createChildStore(parentStore: RecordStore, pointer: Pointer, path?: string[]): BlockStore {
-		const childStoreKey = BlockStore.getChildStoreKey(pointer, BlockStore.keyName, path);
+		const childStoreKey = RecordStore.getChildStoreKey(pointer, BlockStore.keyName, path);
 		const cachedChildStore = parentStore.getRecordStoreChildStore(childStoreKey) as BlockStore;
-		const childStore = cachedChildStore || new BlockStore(pointer, parentStore.userId, path);
-		cachedChildStore || childStore.setRecordStoreParent(childStoreKey, parentStore);
+		const childStore = cachedChildStore || new BlockStore(
+			pointer, parentStore.userId, path || [],
+			parentStore.inMemoryRecordCacheStore,
+			parentStore.storeService,
+		);
+		if (!cachedChildStore) {
+			childStore.setRecordStoreParent(childStoreKey, parentStore);
+		}
 		return childStore;
 	}
 
-	constructor(pointer: Pointer, userId?: string, path?: string[]) {
-		super({ pointer: pointer, userId: userId, path: path });
+	constructor(
+		pointer: Pointer,
+		userId: string,
+		path: string[],
+		inMemoryRecordCacheStore: RecordCacheStore,
+		@IStoreService storeService: IStoreService,
+	) {
+		super({ pointer, userId, path, inMemoryRecordCacheStore }, storeService);
 	}
 
 	getType(): BlockType | undefined {
@@ -62,7 +76,9 @@ export default class BlockStore extends RecordStore {
 		return new BlockStore(
 			this.pointer,
 			this.userId,
-			this.path
+			this.path,
+			this.inMemoryRecordCacheStore,
+			this.storeService
 		);
 	}
 }

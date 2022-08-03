@@ -1,5 +1,5 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { CSSProperties } from 'mote/base/browser/jsx';
-import { createElement } from 'mote/base/browser/jsx/createElement';
 import SVGContainer from './svgcontainer';
 
 interface SVGIconProps {
@@ -7,9 +7,9 @@ interface SVGIconProps {
 	style?: CSSProperties;
 }
 
-type SVGProperties = typeof SVGContainer;
+//type SVGProperties = typeof SVGContainer;
 
-export type SVGProperty = keyof SVGProperties;
+export type SVGProperty = keyof typeof container;
 
 const container = {
 	page: () => {
@@ -24,7 +24,7 @@ const container = {
 		path.setAttribute("d", "M7.977 14.963c.407 0 .747-.324.747-.723V8.72h5.362c.399 0 .74-.34.74-.747a.746.746 0 00-.74-.738H8.724V1.706c0-.398-.34-.722-.747-.722a.732.732 0 00-.739.722v5.529h-5.37a.746.746 0 00-.74.738c0 .407.341.747.74.747h5.37v5.52c0 .399.332.723.739.723z");
 		return path;
 	}
-}
+};
 
 export default function SVGIcon(props: SVGIconProps) {
 	const property = SVGContainer[props.name];

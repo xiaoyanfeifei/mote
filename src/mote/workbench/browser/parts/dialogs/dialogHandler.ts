@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from 'vs/nls';
-import * as themeColors from 'mote/platform/theme/common/themeColors';
 import { IDialogOptions, IConfirmation, IConfirmationResult, DialogType, IShowResult, IInputResult, ICheckbox, IInput, IDialogHandler, ICustomDialogOptions } from 'vs/platform/dialogs/common/dialogs';
 import { ILayoutService } from 'mote/platform/layout/browser/layoutService';
 import { ILogService } from 'vs/platform/log/common/log';
@@ -16,26 +15,16 @@ import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { IProductService } from 'vs/platform/product/common/productService';
 import { fromNow } from 'vs/base/common/date';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { attachDialogStyler } from 'mote/platform/theme/common/styler';
 import { Color, RGBA } from 'vs/base/common/color';
 
 export class BrowserDialogHandler implements IDialogHandler {
 
-	private static readonly ALLOWABLE_COMMANDS = [
-		'copy',
-		'cut',
-		'editor.action.selectAll',
-		'editor.action.clipboardCopyAction',
-		'editor.action.clipboardCutAction',
-		'editor.action.clipboardPasteAction'
-	];
-
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IThemeService private readonly themeService: IThemeService,
+		@IThemeService themeService: IThemeService,
 		//@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService,
 		//@IClipboardService private readonly clipboardService: IClipboardService
 	) {
@@ -162,6 +151,7 @@ export class BrowserDialogHandler implements IDialogHandler {
 		const { choice } = await this.show(Severity.Info, this.productService.nameLong, [localize('copy', "Copy"), localize('ok', "OK")], { detail, cancelId: 1 });
 
 		if (choice === 0) {
+			console.log(detailToCopy);
 			//this.writeText(detailToCopy);
 		}
 	}

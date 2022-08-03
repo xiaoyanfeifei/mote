@@ -1,3 +1,4 @@
+/* eslint-disable code-no-unexternalized-strings */
 import { Lodash } from "mote/base/common/lodash";
 import { TextSelectionState } from "../editorState";
 import { Command } from "../../../platform/transaction/common/operations";
@@ -7,15 +8,6 @@ import { Transaction } from "./transaction";
 
 export class Segment {
 
-	private type: string;
-	private annotations?: IAnnotation[];
-
-	constructor(segment: ISegment) {
-		this.type = segment[0];
-		if (segment.length > 1) {
-			this.annotations = segment.slice(1, segment.length) as any;
-		}
-	}
 
 	private static afterSelect(segments: ISegment[], selection: TextSelection) {
 		const segmentsBeforeRange: ISegment[] = [];
@@ -27,9 +19,9 @@ export class Segment {
 
 		for (const segment of segments) {
 			// segment = [text, [annotation, annotation]]
-			let text: string = segment[0];
-			let annotations: string[] = getSecondArrayInArray(segment);
-			let currentEndIdx = currentIdx + text.length;
+			const text: string = segment[0];
+			const annotations: string[] = getSecondArrayInArray(segment);
+			const currentEndIdx = currentIdx + text.length;
 
 			// [ means currentIdx, ] means currentEndIdx, | | means startIndex and endIndex
 			// Case 1: [ ] | |  sort as currentIdx, currentEndIdx, startIndex, endIndex
@@ -105,7 +97,7 @@ export class Segment {
 		const containTargetAnnotation = Lodash.every(segmentsInsideRange, (segment) => {
 			const annotations: IAnnotation[] = getSecondArrayInArray(segment);
 			// TODO: use deep equal later
-			return annotations.some(e => e[0] == annotation[0]);
+			return annotations.some(e => e[0] === annotation[0]);
 		});
 
 		let newSegments: ISegment[];
@@ -113,7 +105,7 @@ export class Segment {
 		if (containTargetAnnotation) {
 			newSegments = segmentsInsideRange.map(segment => {
 				const text = getFirstInArray(segment);
-				const annotations = getSecondArrayInArray(segment).filter(e => e[0] !== annotation[0]);
+				const annotations = getSecondArrayInArray(segment).filter((e: any) => e[0] !== annotation[0]);
 				return combineArray(text, annotations) as ISegment;
 			});
 		}

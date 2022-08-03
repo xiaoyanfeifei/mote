@@ -1,4 +1,4 @@
-import SpaceStore from 'mote/editor/common/store/spaceStore';
+import SpaceStore from 'mote/platform/store/common/spaceStore';
 import { Event } from 'vs/base/common/event';
 import { URI } from 'vs/base/common/uri';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';

@@ -7,7 +7,6 @@ import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
-import { LoginInput } from 'mote/workbench/contrib/login/browser/loginInput';
 import { OnboardWorkspaceInput } from 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspaceInput';
 
 interface ILayoutInfo {
@@ -112,6 +111,9 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 	}
 
 	private renderWorkspace(element: HTMLElement, spaceId: string, title: string) {
+		if (this.cancelHasListener) {
+
+		}
 		const container = document.createElement('div');
 		container.style.display = 'flex';
 		container.style.padding = '4px 14px';

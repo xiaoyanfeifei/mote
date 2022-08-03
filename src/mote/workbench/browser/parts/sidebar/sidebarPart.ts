@@ -1,4 +1,4 @@
-import fonts from 'mote/base/browser/ui/fonts';
+/* eslint-disable code-no-unexternalized-strings */
 import { ThemedStyles } from "mote/base/common/themes";
 import { IThemeService } from "mote/platform/theme/common/themeService";
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -34,7 +34,7 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService contextService: IWorkspaceContextService,
 	) {
 		super(
 			logService,

@@ -125,4 +125,4 @@ class WorkbenchContributionsRegistry implements IWorkbenchContributionsRegistry 
 	}
 }
 
-//Registry.add(Extensions.Workbench, new WorkbenchContributionsRegistry());
+Registry.add(Extensions.Workbench, new WorkbenchContributionsRegistry());

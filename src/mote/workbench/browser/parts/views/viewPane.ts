@@ -168,6 +168,18 @@ export abstract class ViewPane extends Pane implements IView {
 		this.iconContainer.setAttribute('aria-label', calculatedTitle);
 	}
 
+	protected updateTitle(title: string) {
+		if (this.titleContainer) {
+
+		}
+		if (this.headerContainer) {
+
+		}
+		if (this.titleDescriptionContainer) {
+
+		}
+	}
+
 	private scrollableElement!: DomScrollableElement;
 
 	protected renderBody(container: HTMLElement): void {

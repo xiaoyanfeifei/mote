@@ -14,7 +14,7 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 
 	static readonly HEIGHT = 45;
 
-	private headerView: WorkspaceHeaderView;
+	private headerView!: WorkspaceHeaderView;
 
 	private picker!: WorkspacesPicker;
 
@@ -31,17 +31,11 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 		container.style.display = 'flex';
 		container.style.cursor = 'pointer';
 
-		const spaceStore = this.workspaceService.getSpaceStore();
-		if (spaceStore) {
-			this.headerView = new WorkspaceHeaderView();
-			this.headerView.create(container, this.getTitle());
-		}
+		this.headerView = new WorkspaceHeaderView();
+		this.headerView.create(container, this.getTitle());
+
 		this._register(workspaceService.onDidChangeWorkspace(() => {
 			clearNode(container);
-			const spaceStore = this.workspaceService.getSpaceStore();
-			if (!spaceStore) {
-				return;
-			}
 			this.headerView = new WorkspaceHeaderView();
 			this.headerView.create(container, this.getTitle());
 		}));
@@ -68,6 +62,9 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 
 	getTitle() {
 		const spaceStore = this.workspaceService.getSpaceStore();
-		return spaceStore && spaceStore.getSpaceName() || 'Untitled Space';
+		if (spaceStore) {
+			return spaceStore && spaceStore.getSpaceName() || 'Untitled Space';
+		}
+		return 'Create a new space';
 	}
 }

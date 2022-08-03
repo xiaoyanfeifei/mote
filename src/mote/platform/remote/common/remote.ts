@@ -1,16 +1,18 @@
-import { Pointer, RecordWithRole } from 'mote/editor/common/store/record';
+import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export const IRemoteService = createDecorator<IRemoteService>('remoteService');
 
 export interface IRemoteService {
+	readonly _serviceBrand: undefined;
+
 	getUser(userId: string): Promise<LoginData>;
 
 	login(payload: UserLoginPayload): Promise<LoginData>;
 
 	signup(payload: UserSignupPayload): Promise<LoginData>;
 
-	syncRecordValue(userId: string, pointer: Pointer): Promise<RecordWithRole>;
+	syncRecordValue(userId: string, pointer: Pointer, version?: number): Promise<RecordWithRole>;
 }
 
 //#region payload

@@ -17,6 +17,11 @@ export interface IColorScheme {
 	readonly highContrast: boolean;
 }
 
+export interface IOSConfiguration {
+	readonly release: string;
+	readonly hostname: string;
+}
+
 export interface INativeWindowConfiguration extends NativeParsedArgs, ISandboxConfiguration {
 	mainPid: number;
 
@@ -33,6 +38,8 @@ export interface INativeWindowConfiguration extends NativeParsedArgs, ISandboxCo
 	accessibilitySupport?: boolean;
 	colorScheme: IColorScheme;
 	autoDetectHighContrast?: boolean;
+
+	os: IOSConfiguration;
 }
 
 export interface IBaseWindowOpenable {

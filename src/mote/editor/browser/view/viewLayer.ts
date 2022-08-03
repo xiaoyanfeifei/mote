@@ -1,5 +1,4 @@
-import BlockStore from 'mote/editor/common/store/blockStore';
-import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { FastDomNode } from 'vs/base/browser/fastDomNode';
 
 export interface ILine {

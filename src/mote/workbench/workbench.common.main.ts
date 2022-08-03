@@ -26,7 +26,6 @@ import 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspace.contrib
 
 import 'mote/workbench/services/hover/browser/hoverService';
 import 'mote/workbench/services/commands/common/commandService';
-import 'mote/workbench/services/editor/browser/editorService';
 import 'mote/workbench/services/quickmenu/browser/quickmenuService';
 import 'mote/workbench/services/views/browser/viewDescriptorService';
 import 'mote/workbench/services/user/common/userService';
@@ -44,9 +43,12 @@ import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
 import { BrowserHostColorSchemeService } from 'mote/platform/theme/browser/browserHostColorSchemeService';
+import { IStoreService } from 'mote/platform/store/common/store';
+import { StoreService } from 'mote/platform/store/common/storeService';
 
 
 registerSingleton(IContextViewService, ContextViewService, true);
 registerSingleton(IThemeService, BrowserThemeService);
 registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
+registerSingleton(IStoreService, StoreService);
 

@@ -1,0 +1,6 @@
+suite('Store - RecordStore', () => {
+
+	test('', () => {
+
+	});
+});

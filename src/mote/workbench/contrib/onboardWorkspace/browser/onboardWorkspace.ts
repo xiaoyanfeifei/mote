@@ -9,8 +9,6 @@ import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Dimension, $, reset, clearNode } from 'vs/base/browser/dom';
-import Severity from 'vs/base/common/severity';
-import { localize } from 'vs/nls';
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 
 class OnboardContainer {
@@ -103,11 +101,9 @@ interface WorkspacePlan {
 class PlanPicker {
 	public plan = 'local';
 
-	private parent!: HTMLElement;
 	private container!: HTMLElement;
 
 	create(parent: HTMLElement) {
-		this.parent = parent;
 		const container = $('.picker-container');
 		this.container = container;
 		container.style.display = 'inline-flex';
@@ -297,7 +293,7 @@ export class OnboardWorkspacePage extends EditorPane {
 
 	constructor(
 		@IThemeService themeService: IThemeService,
-		@IDialogService private dialogService: IDialogService,
+		@IDialogService dialogService: IDialogService,
 		@IWorkspaceContextService private workspaceService: IWorkspaceContextService,
 		@IUserService private userService: IUserService,
 		@IEditorService private editorService: IEditorService,

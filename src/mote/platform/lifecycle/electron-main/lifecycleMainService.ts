@@ -28,7 +28,7 @@ interface WindowLoadEvent {
 	/**
 	 * The workspace the window is loaded into.
 	 */
-    workspace: any | undefined;
+	workspace: any | undefined;
 
 	/**
 	 * More details why the window loads to a new workspace.
@@ -177,7 +177,7 @@ export interface ILifecycleMainService {
 
 
 export class LifecycleMainService extends Disposable implements ILifecycleMainService {
-    declare readonly _serviceBrand: undefined;
+	declare readonly _serviceBrand: undefined;
 
 	private static readonly QUIT_AND_RESTART_KEY = 'lifecycle.quitAndRestart';
 
@@ -382,7 +382,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
 
 		// Window Before Closing: Main -> Renderer
 		const win = assertIsDefined(window.win);
-		win.on('close', e => {
+		win.on('close', (e: any) => {
 
 			// The window already acknowledged to be closed
 			const windowId = window.id;
@@ -469,7 +469,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
 
 		// first ask the window itself if it vetos the unload
 		const windowUnloadReason = this._quitRequested ? UnloadReason.QUIT : reason;
-		let veto = await this.onBeforeUnloadWindowInRenderer(window, windowUnloadReason);
+		const veto = await this.onBeforeUnloadWindowInRenderer(window, windowUnloadReason);
 		if (veto) {
 			this.logService.trace(`Lifecycle#unload() - veto in renderer (window ID ${window.id})`);
 

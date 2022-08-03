@@ -57,7 +57,7 @@ export class HoverWidget extends Widget {
 
 	constructor(
 		options: IHoverOptions,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService _instantiationService: IInstantiationService,
 	) {
 		super();
 

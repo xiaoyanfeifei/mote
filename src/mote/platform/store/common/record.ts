@@ -1,6 +1,8 @@
 export enum Role {
 	Editor = 0,
 	Reader,
+	CommmetOnly,
+	ReadAndWrite,
 }
 
 export enum RecordTable {
@@ -14,8 +16,11 @@ export interface RecordValue {
 	title: string;
 	table: RecordTable;
 	content?: string[];
+	properties?: any;
 	version: number;
+	last_version: number;
 	type: BlockType;
+	space_id?: string;
 }
 
 export interface RecordWithRole {

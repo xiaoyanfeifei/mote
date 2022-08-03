@@ -113,7 +113,7 @@ export class RangeUtils {
 		if (0 === index) {
 			if (!(element.childNodes.length > 0)
 				|| isTextMentionNode(element.childNodes[0])
-				|| isIgnoreTextContentElement(element.childNodes[0])
+				|| isIgnoreTextContentElement(element.childNodes[0] as any)
 			) {
 				return {
 					container: element,

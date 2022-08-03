@@ -1,4 +1,5 @@
-import { CommandsRegistry, ICommandEvent, ICommandService, ICommand } from "mote/platform/commands/common/commands";
+/* eslint-disable code-no-unexternalized-strings */
+import { CommandsRegistry, ICommandEvent, ICommandService } from "mote/platform/commands/common/commands";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
@@ -7,27 +8,27 @@ import { ILogService } from "vs/platform/log/common/log";
 
 export class CommandService extends Disposable implements ICommandService {
 
-    declare readonly _serviceBrand: undefined;
-    
-    private readonly _onWillExecuteCommand: Emitter<ICommandEvent> = this._register(new Emitter<ICommandEvent>());
+	declare readonly _serviceBrand: undefined;
+
+	private readonly _onWillExecuteCommand: Emitter<ICommandEvent> = this._register(new Emitter<ICommandEvent>());
 	public readonly onWillExecuteCommand: Event<ICommandEvent> = this._onWillExecuteCommand.event;
 
 	private readonly _onDidExecuteCommand: Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
 	public readonly onDidExecuteCommand: Event<ICommandEvent> = this._onDidExecuteCommand.event;
 
-    constructor(
-        @IInstantiationService private readonly _instantiationService: IInstantiationService,
-        @ILogService private readonly logService: ILogService
-    ) {
-        super();
-    }
+	constructor(
+		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@ILogService private readonly logService: ILogService
+	) {
+		super();
+	}
 
-    executeCommand<T = any>(commandId: string, ...args: any[]): Promise<T | undefined> {
-        this.logService.trace('CommandService#executeCommand', commandId);
-        return this.tryExecuteCommand(commandId, args);
-    }
+	executeCommand<T = any>(commandId: string, ...args: any[]): Promise<T | undefined> {
+		this.logService.trace('CommandService#executeCommand', commandId);
+		return this.tryExecuteCommand(commandId, args);
+	}
 
-    private tryExecuteCommand(id: string, args: any[]): Promise<any> {
+	private tryExecuteCommand(id: string, args: any[]): Promise<any> {
 		const command = CommandsRegistry.getCommand(id);
 		if (!command) {
 			return Promise.reject(new Error(`command '${id}' not found`));

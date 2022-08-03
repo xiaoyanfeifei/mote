@@ -1,4 +1,4 @@
-import BlockStore from 'mote/editor/common/store/blockStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 
 
