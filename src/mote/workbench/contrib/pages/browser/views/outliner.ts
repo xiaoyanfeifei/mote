@@ -46,8 +46,8 @@ export class NameFromStore {
 	};
 
 	getTitle = () => {
-		const title = this._store.getValue();
-		if (null !== title && title.length > 0) {
+		const title = this._store.getValue() || [];
+		if (title.length > 0) {
 			return title.join("");
 		}
 		return this.getEmptyTitle();

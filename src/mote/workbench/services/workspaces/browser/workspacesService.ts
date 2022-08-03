@@ -13,6 +13,8 @@ import { IUserProfile } from 'mote/platform/user/common/user';
 import SpaceRootStore from 'mote/platform/store/common/spaceRootStore';
 import SpaceStore from 'mote/platform/store/common/spaceStore';
 import { IStoreService } from 'mote/platform/store/common/store';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { StoreStorageProvider } from 'mote/platform/store/common/storeStorageProvider';
 
 export class WorkspaceService extends Disposable implements IWorkspaceContextService {
 	declare _serviceBrand: undefined;
@@ -39,10 +41,14 @@ export class WorkspaceService extends Disposable implements IWorkspaceContextSer
 		@IUserService private readonly userService: IUserService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IStoreService private readonly storeService: IStoreService,
+		@IStorageService storageService: IStorageService,
 	) {
 		super();
 
 		this.spaceRootStores = [];
+
+		// Register storeage to use later
+		StoreStorageProvider.INSTANCE.registerStorage(storageService);
 
 		this._register(userService.onDidChangeCurrentProfile((profile) => this.onProfileChange(profile)));
 

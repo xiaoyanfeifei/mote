@@ -37,6 +37,7 @@ export class StoreService implements IStoreService {
 			recordWithRole = await this.remoteService.syncRecordValue(userId, pointer, version);
 			if (recordWithRole) {
 				StoreUtils.updateCache(userId, pointer, recordWithRole, cacheStore, this.storeageService);
+				cacheStore.fire(key);
 			}
 		} catch (err) {
 			console.error(err);

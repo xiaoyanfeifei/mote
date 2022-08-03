@@ -56,6 +56,19 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 			if (viewLine.getDomNode()) {
 				this.domNode.appendChild(viewLine.getDomNode()!);
 			}
+			this._register(blockStore.onDidUpdate((e) => {
+				const viewLineNode = this.lines[idx].getDomNode()!.domNode;
+
+				const viewLine = this.createVisibleLine();
+				this.lines[idx] = viewLine;
+				viewLine.renderLine(idx, blockStore);
+
+				const childNode = viewLine.getDomNode();
+				if (childNode) {
+					this.domNode.domNode.replaceChild(childNode.domNode, viewLineNode);
+				}
+			}));
+
 		});
 		if (pageIds.length === 0) {
 			const line = new EmptyViewLine(this.viewController);

@@ -18,6 +18,7 @@ export interface RecordValue {
 	content?: string[];
 	properties?: any;
 	version: number;
+	last_version: number;
 	type: BlockType;
 	space_id?: string;
 }

@@ -48,6 +48,30 @@ suite('Editor Controller - View Controller Commands', () => {
 		assert.equal('1', collectValueFromSegment(lineStore.getTitleStore().getValue()));
 
 	});
+
+	test('view controller type on header', () => {
+		const [viewController, contentStore] = createViewController();
+		const pageStore = contentStore.recordStoreParentStore as BlockStore;
+
+		viewController.select({ startIndex: 0, endIndex: 0, lineNumber: -1 });
+
+		viewController.type('1');
+
+		assert.equal('1', collectValueFromSegment(pageStore.getTitleStore().getValue()));
+
+
+	});
+
+	test('view controller isEmpty on header', () => {
+		const [viewController] = createViewController();
+
+		viewController.select({ startIndex: 0, endIndex: 0, lineNumber: -1 });
+
+		viewController.type('1');
+
+		assert.equal(false, viewController.isEmpty(-1));
+
+	});
 });
 
 function createViewController(): [ViewController, RecordStore<string[]>] {

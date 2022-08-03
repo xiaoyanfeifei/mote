@@ -81,10 +81,6 @@ export default class RecordCacheStore extends Disposable {
 		}
 	}
 
-	fire(key: string) {
-		this._onDidChange.fire(key);
-	}
-
 	deleteRecord(e: CacheKeyProps) {
 		const key = RecordCacheStore.generateCacheKey(e);
 		this.state.cache.delete(key);
@@ -108,6 +104,10 @@ export default class RecordCacheStore extends Disposable {
 
 	clearSyncState(e: CacheKeyProps) {
 		this.state.syncStates.delete(RecordCacheStore.generateCacheKey(e));
+	}
+
+	fire(key: string) {
+		this._onDidUpdate.fire(key);
 	}
 
 	emit(key: string) {

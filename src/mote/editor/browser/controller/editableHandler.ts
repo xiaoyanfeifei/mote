@@ -12,8 +12,9 @@ import { RangeUtils, TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 
-interface EditableHandlerOptions {
+export interface EditableHandlerOptions {
 	placeholder?: string;
+	forcePlaceholder?: boolean;
 }
 
 export interface ICommandDelegate {
@@ -51,6 +52,13 @@ export class EditableHandler extends ViewPart {
 
 		this.editableWrapper = this._register(new EditableWrapper(this.editable.domNode));
 		this.editableInput = this._register(new EditableInput(editableInputHost, this.editableWrapper, platform.OS, browser, {}));
+
+		if (this.options.forcePlaceholder && this.options.placeholder) {
+			this.editable.setAttribute('placeholder', this.options.placeholder);
+			if (this.isEmpty()) {
+				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;
+			}
+		}
 
 		this.registerListener();
 	}
@@ -136,7 +144,7 @@ export class EditableHandler extends ViewPart {
 			}
 		}));
 		this._register(this.editableInput.onBlur((e) => {
-			if (this.options.placeholder) {
+			if (this.options.placeholder && !(this.options.forcePlaceholder === true)) {
 				this.editable.removeAttribute('placeholder');
 			}
 		}));

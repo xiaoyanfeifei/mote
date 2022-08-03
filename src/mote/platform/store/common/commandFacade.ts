@@ -91,7 +91,8 @@ class CommandFacade {
 	execute(operation: Operation, record: any) {
 		record = record || {};
 		let value = operation.path.length > 0 ? get(record, operation.path) : record;
-		let version = record.version ? record.version + calcVersion(operation) : calcVersion(operation);
+		const lastVersion = record.version ?? 0;
+		const version = record.version ? record.version + calcVersion(operation) : calcVersion(operation);
 
 		const handler = this.registry[operation.command];
 		if (!handler) {
@@ -102,6 +103,7 @@ class CommandFacade {
 		record = operation.path.length > 0 ? updateValueByPath(record, operation.path, value) : value;
 		record.id = operation.id;
 		record.version = version;
+		record.last_version = lastVersion;
 		return record;
 	}
 }

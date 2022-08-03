@@ -31,7 +31,7 @@ export class ViewController {
 	constructor(
 		private readonly contentStore: RecordStore<string[]>,
 	) {
-		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -1 };
+		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
 		this.eventDispatcher = new ViewEventDispatcher();
 		this.onEvent = this.eventDispatcher.onEvent;
 	}
@@ -79,8 +79,8 @@ export class ViewController {
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -88,8 +88,8 @@ export class ViewController {
 	public compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onType(eventsCollector, store.getTitleStore(), transaction, this.selection, text);
+				const titleStore = this.getTitleStore();
+				this.onType(eventsCollector, titleStore, transaction, this.selection, text);
 			}, this.contentStore.userId);
 		});
 	}
@@ -97,8 +97,8 @@ export class ViewController {
 	public backspace() {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
-				this.onBackspace(eventsCollector, store.getTitleStore(), transaction, this.selection);
+				const titleStore = this.getTitleStore();
+				this.onBackspace(eventsCollector, titleStore, transaction, this.selection);
 			}, this.contentStore.userId);
 		});
 	}
@@ -135,7 +135,7 @@ export class ViewController {
 	 * @param selection
 	 */
 	private setSelection(selection: TextSelection) {
-		if (selection.lineNumber < 0) {
+		if (selection.lineNumber < -1) {
 			throw new BugIndicatingError('lineNumber should never be negative');
 		}
 		this.selection = Object.assign({}, this.selection);
@@ -149,12 +149,21 @@ export class ViewController {
 	}
 
 	public isEmpty(lineNumber: number) {
-		const value: any[] = StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore).getTitleStore().getValue() || [];
+		let titleStore: RecordStore;
+		// header
+		if (lineNumber === -1) {
+			const pageStore = this.getPageStore();
+			titleStore = pageStore.getTitleStore();
+		} else {
+			const store = StoreUtils.createStoreForLineNumber(lineNumber, this.contentStore);
+			titleStore = store.getTitleStore();
+		}
+		const value: any[] = titleStore.getValue() || [];
 		return value.length === 0;
 	}
 
 	private executeCursorEdit(callback: (eventsCollector: ViewEventsCollector) => void) {
-		if (this.selection === null || this.selection.lineNumber < 0) {
+		if (this.selection === null || this.selection.lineNumber < -1) {
 			return;
 		}
 		const contents = this.contentStore.getValue() || [];
@@ -173,6 +182,23 @@ export class ViewController {
 		} finally {
 			this.eventDispatcher.endEmitViewEvents();
 		}
+	}
+
+	private getTitleStore() {
+		let titleStore: RecordStore;
+		// header
+		if (this.selection.lineNumber === -1) {
+			const pageStore = this.getPageStore();
+			titleStore = pageStore.getTitleStore();
+		} else {
+			const store = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
+			titleStore = store.getTitleStore();
+		}
+		return titleStore;
+	}
+
+	private getPageStore() {
+		return this.contentStore.recordStoreParentStore as BlockStore;
 	}
 
 	//#region line handle

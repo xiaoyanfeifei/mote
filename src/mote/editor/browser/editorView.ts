@@ -14,6 +14,7 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import BlockStore from 'mote/platform/store/common/blockStore';
+import { ViewBlock } from 'mote/editor/browser/viewParts/lines/viewLine';
 
 export class EditorView extends ViewEventHandler {
 
@@ -29,7 +30,7 @@ export class EditorView extends ViewEventHandler {
 	constructor(
 		commandDelegate: ICommandDelegate,
 		viewController: ViewController,
-		pageStore: BlockStore,
+		private readonly pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super();
@@ -68,7 +69,11 @@ export class EditorView extends ViewEventHandler {
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 		headerContainer.domNode.style.width = '100%';
 
-
+		const headerHandler = new ViewBlock(-1, this.context, viewController, {
+			placeholder: 'Untitled', forcePlaceholder: true
+		});
+		headerHandler.setValue(this.pageStore);
+		headerContainer.appendChild(headerHandler.getDomNode());
 
 		headerDomNode.appendChild(headerContainer);
 		setStyles(headerDomNode.domNode, this.getTitleStyle());

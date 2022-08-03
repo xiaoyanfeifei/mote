@@ -3,8 +3,9 @@ import { Operation } from 'mote/platform/transaction/common/operations';
 import CommandFacade from '../../../platform/store/common/commandFacade';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 import RecordStore from 'mote/platform/store/common/recordStore';
-import RecordCacheStore from 'mote/platform/store/common/recordCacheStore';
 import { Role } from 'mote/platform/store/common/record';
+import { StoreUtils } from 'mote/platform/store/common/storeUtils';
+import { StoreStorageProvider } from 'mote/platform/store/common/storeStorageProvider';
 
 
 export interface TransactionCallback {
@@ -73,10 +74,6 @@ export class Transaction {
 
 			}
 
-			for (const store of this.stores) {
-				RecordCacheStore.Default.fire(store.identify);
-			}
-
 			if (this.isLocal) {
 				// Trigger postSubmitAction
 				for (const postSubmitAction of this.postSubmitActions) {
@@ -107,13 +104,17 @@ export class Transaction {
 		const role = store.getRecordStoreAtRootPath().getRole();
 		record = CommandFacade.execute(operation, record);
 
-		RecordCacheStore.Default.setRecord({
-			pointer: store.pointer,
-			userId: store.userId
-		}, {
+		const { userId, pointer, inMemoryRecordCacheStore } = store;
+		const recordWithRole = {
 			value: record,
 			role: role || Role.Editor
-		});
+		};
+
+		StoreUtils.updateCache(
+			userId, pointer, recordWithRole, inMemoryRecordCacheStore,
+			StoreStorageProvider.INSTANCE.get(),
+			true
+		);
 
 		this.operations.push(operation);
 		this.stores.push(store);
