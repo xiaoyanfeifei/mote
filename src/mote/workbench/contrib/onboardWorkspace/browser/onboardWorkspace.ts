@@ -2,6 +2,7 @@ import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
 import fonts from 'mote/base/browser/ui/fonts';
+import { IntlProvider } from 'mote/base/common/i18n';
 import { ThemedColors, ThemedStyles } from 'mote/base/common/themes';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -117,17 +118,17 @@ class PlanPicker {
 			checked: isLocalPlan,
 			illustration: '/static/sources/image/onboarding/use-case-note.png',
 			plan: 'local',
-			label: 'For local usage',
-			description: 'Keep you data local. Never sync to cloud. More safe.',
-			callout: 'Free to use',
+			label: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.local.label', defaultMessage: 'For local usage' }),
+			description: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.local.description', defaultMessage: 'Keep you data local. Never sync to cloud. More safe.' }),
+			callout: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.local.callout', defaultMessage: 'Free to use' }),
 		});
 		this.createPlan(this.container, {
 			checked: !isLocalPlan,
 			illustration: '/static/sources/image/onboarding/team-features-illustration.png',
 			plan: 'personal',
-			label: 'For anywhere',
-			description: 'Save to cloud. Write better. Think more clearly. Stay organized.',
-			callout: 'Start for free',
+			label: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.personal.label', defaultMessage: 'For anywhere' }),
+			description: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.personal.description', defaultMessage: 'Save to cloud. Write better. Think more clearly. Stay organized.' }),
+			callout: IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.personal.callout', defaultMessage: 'Start for free' }),
 		});
 	}
 
@@ -338,7 +339,7 @@ export class OnboardWorkspacePage extends EditorPane {
 		label.style.marginTop = '16px';
 		label.style.marginBottom = '5px';
 		label.style.color = ThemedStyles.mediumTextColor.dark;
-		label.innerText = 'Workspace name';
+		label.innerText = IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspaceCreate.inputHelp', defaultMessage: 'Workspace name' });
 
 		const input: HTMLInputElement = $('input');
 		input.placeholder = 'Mote space';
@@ -354,8 +355,8 @@ export class OnboardWorkspacePage extends EditorPane {
 		inputContainer.appendChild(input);
 
 		parent.appendChild(container.create(
-			'Create a new workspace',
-			'Fill in some details for your workspace.',
+			IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspaceCreate.title', defaultMessage: 'Create a new workspace' }),
+			IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspaceCreate.subtitle', defaultMessage: 'Fill in some details for your workspace.' }),
 			formDom
 		));
 
@@ -364,7 +365,7 @@ export class OnboardWorkspacePage extends EditorPane {
 
 		const button = new Button(formDom, { style: this.getButtonStyle() });
 		button.element.style.marginTop = '15px';
-		button.element.innerText = 'Continue';
+		button.element.innerText = IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspaceCreate.continue', defaultMessage: 'Continue' });
 		button.onDidClick(() => {
 			const userId = this.plan === 'local' ? 'local' : this.userService.currentProfile?.id;
 			this.workspaceService.createWorkspace(userId!, input.value);
@@ -403,13 +404,19 @@ export class OnboardWorkspacePage extends EditorPane {
 		const planPicker = new PlanPicker();
 		planPicker.create(pickerDom);
 		parent.appendChild(container.create(
-			'How are you planning to use Mote?',
-			'We’ll streamline your setup experience accordingly.',
+			IntlProvider.INSTANCE.formatMessage({
+				id: 'onboarding.workspacePlanChoose.title',
+				defaultMessage: 'How are you planning to use Mote?'
+			}),
+			IntlProvider.INSTANCE.formatMessage({
+				id: 'onboarding.workspacePlanChoose.subtitle',
+				defaultMessage: 'We’ll streamline your setup experience accordingly.'
+			}),
 			pickerDom
 		));
 
 		const button = new Button(pickerDom, { style: this.getButtonStyle() });
-		button.element.innerText = 'Continue';
+		button.element.innerText = IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspacePlanChoose.continue', defaultMessage: 'Continue' });
 		button.onDidClick(() => {
 			this.plan = planPicker.plan;
 			this.stage = 'workspace_create';

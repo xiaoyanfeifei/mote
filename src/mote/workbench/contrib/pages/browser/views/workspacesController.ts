@@ -1,4 +1,5 @@
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
+import { IntlProvider } from 'mote/base/common/i18n';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { BrowserContextViewBasedService } from 'mote/platform/contextview/browser/contextViewBasedService';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -65,6 +66,6 @@ export class WorkspacesController extends BrowserContextViewBasedService {
 		if (spaceStore) {
 			return spaceStore && spaceStore.getSpaceName() || 'Untitled Space';
 		}
-		return 'Create a new space';
+		return IntlProvider.INSTANCE.formatMessage({ id: 'sidebar.createWorkspace', defaultMessage: 'Create a new space' });
 	}
 }
