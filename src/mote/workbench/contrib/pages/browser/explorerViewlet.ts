@@ -96,7 +96,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 	private createEmptyViewDescriptor(): IViewDescriptor {
 		return {
 			id: EmptyView.ID,
-			name: 'No Workspace Opened', //EmptyView.NAME,
+			name: EmptyView.NAME,
 			//containerIcon: explorerViewIcon,
 			ctorDescriptor: new SyncDescriptor(EmptyView),
 			order: 1,

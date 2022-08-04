@@ -16,6 +16,7 @@ import { IAction } from 'vs/base/common/actions';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
+import { IntlProvider } from 'mote/base/common/i18n';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -71,8 +72,9 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 
 	}
 
-
 }
+
+const ExplorerViewTitle = IntlProvider.INSTANCE.formatMessage({ id: 'sidebar.private', defaultMessage: 'Private' });
 
 export class ExplorerView extends ViewPane {
 
@@ -93,7 +95,7 @@ export class ExplorerView extends ViewPane {
 		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
-		super({ ...options, title: 'Private' }, logService, contextMenuService);
+		super({ ...options, title: ExplorerViewTitle }, logService, contextMenuService);
 	}
 
 	override renderBody(container: HTMLElement) {
@@ -122,7 +124,7 @@ export class ExplorerView extends ViewPane {
 		const domNode = $('.list-item');
 		domNode.style.display = 'flex';
 		const icon = SVGIcon({ name: 'plus', style: { fill: ThemedStyles.mediumIconColor.dark } });
-		const child = document.createTextNode('Add new page');
+		const child = document.createTextNode(IntlProvider.INSTANCE.formatMessage({ id: 'addNewPage', defaultMessage: 'Add new page' }));
 		const addPageBtn = new ListItem(domNode, { enableClick: true });
 		addPageBtn.child = child as any;
 		addPageBtn.icon = icon as any;

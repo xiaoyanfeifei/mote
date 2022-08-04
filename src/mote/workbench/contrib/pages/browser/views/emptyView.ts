@@ -1,3 +1,4 @@
+import { IntlProvider } from 'mote/base/common/i18n';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IViewPaneOptions, ViewPane } from "mote/workbench/browser/parts/views/viewPane";
 import { Extensions, IViewsRegistry } from "mote/workbench/common/views";
@@ -9,7 +10,7 @@ const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 export class EmptyView extends ViewPane {
 
 	static readonly ID: string = 'workbench.explorer.emptyView';
-	//static readonly NAME = nls.localize('noWorkspace', "No Folder Opened");
+	static readonly NAME = IntlProvider.INSTANCE.formatMessage({ id: 'noWorkspace', defaultMessage: 'No Workspace Opened' });
 
 	constructor(
 		options: IViewPaneOptions,
@@ -27,5 +28,5 @@ export class EmptyView extends ViewPane {
 }
 
 viewsRegistry.registerViewWelcomeContent(EmptyView.ID, {
-	content: 'You have not yet opened a workspace'
+	content: IntlProvider.INSTANCE.formatMessage({ id: 'noWorkspaceHelp', defaultMessage: 'You have not yet opened a workspace' })
 });

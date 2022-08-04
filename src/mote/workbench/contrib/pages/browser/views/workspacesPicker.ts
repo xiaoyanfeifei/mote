@@ -8,6 +8,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { OnboardWorkspaceInput } from 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspaceInput';
+import { IntlProvider } from 'mote/base/common/i18n';
 
 interface ILayoutInfo {
 	maxHeight: number;
@@ -32,8 +33,19 @@ class PickerFooter {
 		this.domNode.style.paddingBottom = '6px';
 		this.domNode.style.boxShadow = 'rgb(255 255 255 / 9%) 0px -1px 0px';
 
-		this.joinOrCreate = this.createAction(this.domNode, 'Join or create workspace');
-		this.logOut = this.createAction(this.domNode, 'Log out');
+		this.joinOrCreate = this.createAction(
+			this.domNode,
+			IntlProvider.INSTANCE.formatMessage({
+				id: 'sidebar.createWorkspace',
+				defaultMessage: 'Join or create workspace',
+			})
+		);
+		this.logOut = this.createAction(
+			this.domNode,
+			IntlProvider.INSTANCE.formatMessage({
+				id: 'sidebar.logout',
+				defaultMessage: 'Log out'
+			}));
 		parent.append(this.domNode);
 	}
 
