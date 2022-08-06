@@ -5,7 +5,7 @@
 	"routes": [
 		{
 			"route": "*",
-			"rewrite": "/index.html"
+			"rewrite": "/"
 		}
 	]
 }
