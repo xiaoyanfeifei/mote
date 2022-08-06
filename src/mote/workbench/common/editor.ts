@@ -55,9 +55,13 @@ export async function pathToEditor(path: IPathData, accessor: ServicesAccessor) 
 		return;
 	}
 
+	if (resource.path.length !== 42) {
+		return;
+	}
+
 	//const remoteService = accessor.get(IRemoteService);
 	const userService = accessor.get(IUserService);
-	const pointer = { table: 'page', id: resource.path.substring(1) };
+	const pointer = { table: 'page', id: resource.path.substring(6) };
 	// Set to guest as default behavior
 	let userId = GUEST_USER;
 	if (userService.currentProfile) {
