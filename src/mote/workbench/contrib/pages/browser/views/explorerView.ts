@@ -74,7 +74,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 
 }
 
-const ExplorerViewTitle = IntlProvider.INSTANCE.formatMessage({ id: 'sidebar.private', defaultMessage: 'Private' });
+const ExplorerViewTitle = IntlProvider.formatMessage({ id: 'sidebar.private', defaultMessage: 'Private' });
 
 export class ExplorerView extends ViewPane {
 

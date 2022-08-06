@@ -71,6 +71,7 @@ export class Button extends Disposable implements IButton {
 			const style = Object.assign({
 				cursor: 'pointer',
 				backgroundColor: '',
+				transition: 'background 20ms ease-in 0s'
 			}, this.options.style);
 			setStyles(this._element, style);
 		}

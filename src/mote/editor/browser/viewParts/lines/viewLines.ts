@@ -28,6 +28,11 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-lines');
 		this.domNode.setAttribute('data-root', '');
+		this.domNode.domNode.style.width = '900px';
+
+		this._register(this.context.contentStore.onDidUpdate(() => {
+			this.renderLines({});
+		}));
 	}
 
 	public getDomNode(): FastDomNode<HTMLElement> {

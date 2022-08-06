@@ -59,8 +59,8 @@ class IntlShape {
 	}
 }
 
-export class IntlProvider {
-	public static INSTANCE: IntlProvider = new IntlProvider();
+class IntlHolder {
+	public static INSTANCE: IntlHolder = new IntlHolder();
 
 	private intl: IntlShape;
 
@@ -82,5 +82,12 @@ export class IntlProvider {
 
 	formatMessage(descriptor: MessageDescriptor) {
 		return this.intl.formatMessage(descriptor);
+	}
+}
+
+export namespace IntlProvider {
+	export const INSTANCE = IntlHolder.INSTANCE;
+	export function formatMessage(descriptor: MessageDescriptor) {
+		return IntlHolder.INSTANCE.formatMessage(descriptor);
 	}
 }
