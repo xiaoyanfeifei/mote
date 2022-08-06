@@ -135,7 +135,7 @@ export class DocumentEditor extends EditorPane {
 	}
 
 	layout(dimension: Dimension): void {
-
+		this.editorControl?.layout(dimension);
 	}
 }
 

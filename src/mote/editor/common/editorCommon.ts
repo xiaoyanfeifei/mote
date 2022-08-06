@@ -20,6 +20,11 @@ export interface IEditorContribution {
 	//restoreViewState?(state: any): void;
 }
 
+export const enum ScrollType {
+	Smooth = 0,
+	Immediate = 1,
+}
+
 /**
  * An editor.
  */

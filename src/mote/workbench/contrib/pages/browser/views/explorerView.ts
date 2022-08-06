@@ -17,6 +17,7 @@ import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspa
 import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/browser/documentEditorInput';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IntlProvider } from 'mote/base/common/i18n';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -87,6 +88,8 @@ export class ExplorerView extends ViewPane {
 	private height!: number;
 	private width!: number;
 
+	private spaceUpdateListener: IDisposable | undefined = undefined;
+
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
@@ -106,12 +109,13 @@ export class ExplorerView extends ViewPane {
 		if (!spaceStore) {
 			return;
 		}
+
 		this._register(this.contextService.onDidChangeWorkspace(() => {
+			this.registerSpaceListener();
 			this.refresh();
 		}));
-		this._register(spaceStore.onDidChange(() => {
-			this.refresh();
-		}));
+
+		this.registerSpaceListener();
 
 		this.bodyViewContainer = document.createElement('div');
 
@@ -130,11 +134,11 @@ export class ExplorerView extends ViewPane {
 		addPageBtn.icon = icon as any;
 		addPageBtn.create();
 		addPageBtn.onDidClick((e) => {
+			const spaceStore = this.contextService.getSpaceStore();
+			if (!spaceStore) {
+				return;
+			}
 			Transaction.createAndCommit((transaction) => {
-				const spaceStore = this.contextService.getSpaceStore();
-				if (!spaceStore) {
-					return;
-				}
 				let child = EditOperation.createBlockStore('page', transaction, spaceStore.getPagesStore(), 'page');
 
 				child = EditOperation.appendToParent(
@@ -144,6 +148,19 @@ export class ExplorerView extends ViewPane {
 		});
 		container.append(this.bodyViewContainer);
 		container.append(domNode);
+	}
+
+	private registerSpaceListener() {
+		if (this.spaceUpdateListener) {
+			this.spaceUpdateListener.dispose();
+		}
+		const spaceStore = this.contextService.getSpaceStore();
+		if (!spaceStore) {
+			return;
+		}
+		this.spaceUpdateListener = this._register(spaceStore.onDidChange(() => {
+			this.refresh();
+		}));
 	}
 
 	private refresh() {

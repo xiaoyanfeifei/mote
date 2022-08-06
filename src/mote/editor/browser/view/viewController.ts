@@ -16,24 +16,68 @@ import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
+import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
+import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 
 export interface ICommandDelegate {
 	type(text: string): void;
 	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
 }
 
-export class ViewController {
+export class ViewController extends Disposable {
 	public readonly onEvent: Event<OutgoingViewEvent>;
 
 	private selection: TextSelection;
 	private readonly eventDispatcher: ViewEventDispatcher;
+	private viewLayout!: ViewLayout;
 
 	constructor(
+		configuration: IEditorConfiguration,
+
 		private readonly contentStore: RecordStore<string[]>,
 	) {
+		super();
+
 		this.selection = { startIndex: -1, endIndex: -1, lineNumber: -2 };
 		this.eventDispatcher = new ViewEventDispatcher();
 		this.onEvent = this.eventDispatcher.onEvent;
+
+		this._register(configuration.onDidChangeFast((e) => {
+			try {
+				const eventsCollector = this.eventDispatcher.beginEmitViewEvents();
+				this.onConfigurationChanged(eventsCollector, e);
+			} finally {
+				this.eventDispatcher.endEmitViewEvents();
+			}
+		}));
+
+
+	}
+
+	public setViewLayout(viewLayout: ViewLayout) {
+		this.viewLayout = viewLayout;
+		this._register(this.viewLayout.onDidScroll((e) => {
+			if (e.scrollTopChanged) {
+				//this._tokenizeViewportSoon.schedule();
+			}
+			if (e.scrollTopChanged) {
+				//this._viewportStart.invalidate();
+			}
+			this.eventDispatcher.emitSingleViewEvent(new viewEvents.ViewScrollChangedEvent(e));
+			/*
+			this.eventDispatcher.emitOutgoingEvent(new ScrollChangedEvent(
+				e.oldScrollWidth, e.oldScrollLeft, e.oldScrollHeight, e.oldScrollTop,
+				e.scrollWidth, e.scrollLeft, e.scrollHeight, e.scrollTop
+			));
+			*/
+		}));
+	}
+
+	private onConfigurationChanged(eventsCollector: ViewEventsCollector, e: ConfigurationChangedEvent): void {
+		console.log('emit ViewConfigurationChangedEvent');
+		eventsCollector.emitViewEvent(new viewEvents.ViewConfigurationChangedEvent(e));
 	}
 
 	public addViewEventHandler(eventHandler: ViewEventHandler): void {

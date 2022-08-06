@@ -16,9 +16,6 @@ export class StoreService implements IStoreService {
 	}
 
 	addSubscription(userId: string, pointer: Pointer): void {
-		if (isLocalUser(userId)) {
-			return;
-		}
 		const record = RecordCacheStore.Default.getRecord({ userId, pointer });
 		if (record) {
 			// todo
@@ -33,6 +30,9 @@ export class StoreService implements IStoreService {
 		const recordPersisted = this.storeageService.get(key, StorageScope.WORKSPACE);
 		if (recordPersisted) {
 			StoreUtils.updateCache(userId, pointer, JSON.parse(recordPersisted), cacheStore, this.storeageService);
+		}
+		if (isLocalUser(userId)) {
+			return recordPersisted;
 		}
 
 		try {

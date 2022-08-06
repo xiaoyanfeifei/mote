@@ -2,7 +2,7 @@ import * as dom from 'vs/base/browser/dom';
 import * as viewEvents from 'mote/editor/common/viewEvents';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import { ViewPart } from 'mote/editor/browser/view/viewPart';
+import { PartFingerprint, PartFingerprints, ViewPart } from 'mote/editor/browser/view/viewPart';
 import { ViewLines } from 'mote/editor/browser/viewParts/lines/viewLines';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
@@ -17,13 +17,16 @@ import BlockStore from 'mote/platform/store/common/blockStore';
 import { ViewBlock } from 'mote/editor/browser/viewParts/lines/viewLine';
 import { ViewOverlayWidgets } from 'mote/editor/browser/viewParts/overlayWidgets/overlayWidgets';
 import { IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/editorBrowser';
+import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
+import { EditorOption } from 'mote/editor/common/config/editorOptions';
+import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
+import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
 	position: IOverlayWidgetPosition | null;
 }
 
-const CONTENT_WIDTH = '900px';
 
 export class EditorView extends ViewEventHandler {
 
@@ -33,36 +36,51 @@ export class EditorView extends ViewEventHandler {
 	private readonly viewParts: ViewPart[];
 	private readonly overlayWidgets: ViewOverlayWidgets;
 	private readonly viewLines: ViewLines;
+	private readonly scrollbar: EditorScrollbar;
 
 	// Dom nodes
 	public readonly domNode: FastDomNode<HTMLElement>;
+	private readonly overflowGuardContainer: FastDomNode<HTMLElement>;
 	private readonly linesContent: FastDomNode<HTMLElement>;
+	private readonly headerContainer!: FastDomNode<HTMLElement>;;
 
 	constructor(
+		configuration: IEditorConfiguration,
 		viewController: ViewController,
 		private readonly pageStore: BlockStore,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.domNode = createFastDomNode(document.createElement('div'));
+		this.headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
 
 		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
 		this.linesContent = createFastDomNode(document.createElement('div'));
 		this.linesContent.setClassName('lines-content' + ' monaco-editor-background');
-		this.linesContent.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
-		this.linesContent.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 		// Make sure content is in the center
 		this.linesContent.domNode.style.display = 'flex';
-		this.linesContent.domNode.style.justifyContent = 'center';
+		this.linesContent.domNode.style.flexDirection = 'column';
+		this.linesContent.domNode.style.alignItems = 'center';
+		this.linesContent.domNode.style.position = 'relative';
 
 		const contentStore = pageStore.getContentStore();
-		this.context = new ViewContext(contentStore, viewController);
+		const viewLayout = this._register(this.createViewLayout(configuration, 0));
+		viewController.setViewLayout(viewLayout);
+		this.context = new ViewContext(configuration, contentStore, viewLayout, viewController);
 
 		// Ensure the view is the first event handler in order to update the layout
 		this.context.addEventHandler(this);
 
 		this.viewParts = [];
+
+		this.domNode = createFastDomNode(document.createElement('div'));
+
+		this.overflowGuardContainer = createFastDomNode(document.createElement('div'));
+		PartFingerprints.write(this.overflowGuardContainer, PartFingerprint.OverflowGuard);
+		this.overflowGuardContainer.setClassName('overflow-guard');
+
+		this.scrollbar = new EditorScrollbar(this.context, this.linesContent, this.domNode, this.overflowGuardContainer);
+		this.viewParts.push(this.scrollbar);
 
 		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, viewController, this.linesContent);
 
@@ -71,21 +89,24 @@ export class EditorView extends ViewEventHandler {
 		this.viewParts.push(this.overlayWidgets);
 
 		// -------------- Wire dom nodes up
+		this.createHeader(this.linesContent, viewController);
 		this.linesContent.appendChild(this.viewLines.getDomNode());
 
-		this.createHeader(this.domNode, viewController);
-		this.domNode.appendChild(this.overlayWidgets.getDomNode());
-		this.domNode.appendChild(this.linesContent);
+		this.overflowGuardContainer.appendChild(this.scrollbar.getDomNode());
+		this.overflowGuardContainer.appendChild(this.overlayWidgets.getDomNode());
+
+		this.domNode.appendChild(this.overflowGuardContainer);
+
+		this.applyLayout();
 	}
 
 	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
 		this.createCover(parent);
 		const headerDomNode = createFastDomNode(dom.$('.editor-header'));
-		const headerContainer = createFastDomNode<HTMLDivElement>(dom.$(''));
+		const headerContainer = this.headerContainer;
 
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
-		headerContainer.domNode.style.width = CONTENT_WIDTH;
 
 		const headerHandler = new ViewBlock(-1, this.context, viewController, {
 			placeholder: 'Untitled', forcePlaceholder: true
@@ -233,6 +254,40 @@ export class EditorView extends ViewEventHandler {
 		if (shouldRender) {
 			this.scheduleRender();
 		}
+	}
+
+	private applyLayout() {
+		const options = this.context.configuration.options;
+		const layoutInfo = options.get(EditorOption.LayoutInfo);
+
+		this.domNode.setWidth(layoutInfo.width);
+		this.domNode.setHeight(layoutInfo.height);
+
+		this.overflowGuardContainer.setWidth(layoutInfo.width);
+		this.overflowGuardContainer.setHeight(layoutInfo.height);
+
+		this.linesContent.setHeight(1000000);
+
+		const padding = layoutInfo.width < 600 ? 24 : 96;
+
+		this.headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(padding);
+		this.headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(padding);
+
+		this.viewLines.getDomNode().domNode.style.paddingLeft = this.getSafePaddingLeftCSS(padding);
+		this.viewLines.getDomNode().domNode.style.paddingRight = this.getSafePaddingRightCSS(padding);
+
+		if (layoutInfo.width > 1200) {
+			this.headerContainer.setWidth(900);
+			this.viewLines.getDomNode().setWidth(900);
+		} else {
+			this.headerContainer.setWidth(layoutInfo.width - padding * 2 - 1);
+			this.viewLines.getDomNode().setWidth(layoutInfo.width - padding * 2 - 1);
+		}
+
+	}
+
+	private createViewLayout(configuration: IEditorConfiguration, lineCount: number) {
+		return new ViewLayout(configuration, () => this.viewLines && this.viewLines.getDomNode(), dom.scheduleAtNextAnimationFrame);
 	}
 }
 

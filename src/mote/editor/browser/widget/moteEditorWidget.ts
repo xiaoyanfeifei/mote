@@ -11,8 +11,9 @@ import { ViewController } from 'mote/editor/browser/view/viewController';
 import { OutgoingViewEventKind } from 'mote/editor/common/viewEventDispatcher';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { EditorExtensionsRegistry, IEditorContributionDescription } from 'mote/editor/browser/editorExtensions';
-import { IEditorConstructionOptions } from 'mote/editor/browser/config/editorConfiguration';
+import { EditorConfiguration, IEditorConstructionOptions } from 'mote/editor/browser/config/editorConfiguration';
 import { onUnexpectedError } from 'vs/base/common/errors';
+import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 
 let EDITOR_ID = 0;
 
@@ -52,6 +53,7 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 	public readonly onDidChangeSelection: Event<TextSelection> = this._onDidChangeSelection.event;
 
 	private readonly id: number;
+	private readonly configuration: IEditorConfiguration;
 
 	protected contributions: { [key: string]: editorCommon.IEditorContribution };
 
@@ -71,6 +73,8 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 		this.modelData = null;
 		this.overlayWidgets = {};
 		this.contributions = {};
+
+		this.configuration = this._register(this.createConfiguration());
 
 		let contributions: IEditorContributionDescription[];
 		if (Array.isArray(moteEditorWidgetOptions.contributions)) {
@@ -111,7 +115,7 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 	private attachStore(store: BlockStore) {
 
-		const viewController = new ViewController(store.getContentStore());
+		const viewController = new ViewController(this.configuration, store.getContentStore());
 
 		const listenersToRemove = new DisposableStore();
 
@@ -155,7 +159,8 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 
 	private createView(viewController: ViewController, pageStore: BlockStore): [EditorView, boolean] {
 
-		const editorView = this.instantiationService.createInstance(EditorView, viewController, pageStore);
+		const editorView = this.instantiationService.createInstance(
+			EditorView, this.configuration, viewController, pageStore);
 		return [editorView, true];
 	}
 
@@ -211,7 +216,8 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 	}
 
 	layout(dimension?: IDimension | undefined): void {
-		throw new Error('Method not implemented.');
+		this.configuration.observeContainer(dimension);
+		this.render(false);
 	}
 	focus(): void {
 		throw new Error('Method not implemented.');
@@ -220,4 +226,14 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 		throw new Error('Method not implemented.');
 	}
 
+	public render(forceRedraw: boolean = false): void {
+		if (!this.modelData || !this.modelData.hasRealView) {
+			return;
+		}
+		this.modelData.view.render(true, forceRedraw);
+	}
+
+	private createConfiguration() {
+		return new EditorConfiguration({}, this.domElement);
+	}
 }
