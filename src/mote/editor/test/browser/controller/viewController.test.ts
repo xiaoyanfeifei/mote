@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import { EditorConfiguration } from 'mote/editor/browser/config/editorConfiguration';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
 import BlockStore from 'mote/platform/store/common/blockStore';
@@ -75,8 +76,9 @@ suite('Editor Controller - View Controller Commands', () => {
 });
 
 function createViewController(): [ViewController, RecordStore<string[]>] {
+	const config = new EditorConfiguration({}, document.createElement('div'));
 	const store = new BlockStore({ table: 'page', id: '1' }, '1', [], RecordCacheStore.Default, storeService);
 	const contentStore = store.getContentStore();
-	const viewController = new ViewController(contentStore);
+	const viewController = new ViewController(config, contentStore);
 	return [viewController, contentStore];
 }

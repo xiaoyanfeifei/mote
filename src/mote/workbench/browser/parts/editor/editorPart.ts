@@ -27,7 +27,7 @@ export class EditorPart extends Part implements IEditorService {
 	declare readonly _serviceBrand: undefined;
 
 	get minimumWidth(): number {
-		return 800;
+		return 400;
 	}
 
 	get maximumWidth(): number {
