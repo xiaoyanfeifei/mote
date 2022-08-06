@@ -130,6 +130,7 @@ abstract class BaseBlock extends Disposable {
 	setValue(store: BlockStore) {
 		const html = segmentsToElement(store.getTitleStore().getValue()).join('');
 		this.editableHandler.setValue(html);
+		this.editableHandler.setEnabled(store.canEdit());
 	}
 
 	getDomNode() {

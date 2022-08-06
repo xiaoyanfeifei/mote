@@ -366,6 +366,20 @@
 						]
 					},
 					{
+						"target": "src/mote/editor/contrib/*/~",
+						"restrictions": [
+							"mote/base/~",
+							"vs/base/~",
+							"vs/base/parts/*/~",
+							"mote/platform/*/~",
+							"vs/platform/*/~",
+							"vs/editor/~",
+							"mote/editor/~",
+							"vs/editor/contrib/*/~",
+							"mote/editor/contrib/*/~"
+						]
+					},
+					{
 						"target": "src/vs/editor/contrib/*/~",
 						"restrictions": [
 							"vs/base/~",
@@ -384,6 +398,19 @@
 							"vs/editor/~",
 							"vs/editor/contrib/*/~",
 							"vs/editor/standalone/~"
+						]
+					},
+					{
+						"target": "src/mote/editor/editor.all.ts",
+						"layer": "browser",
+						"restrictions": [
+							"vs/base/~",
+							"vs/base/parts/*/~",
+							"vs/platform/*/~",
+							"vs/editor/~",
+							"mote/editor/~",
+							"mote/editor/contrib/*/~",
+							"vs/editor/contrib/*/~"
 						]
 					},
 					{

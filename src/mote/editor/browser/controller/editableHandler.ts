@@ -78,6 +78,15 @@ export class EditableHandler extends ViewPart {
 		this.editableInput.focusEditable();
 	}
 
+	public setEnabled(enabled: boolean) {
+		if (enabled) {
+			this.editable.setAttribute('contenteditable', '');
+		} else {
+			this.editable.removeAttribute('contenteditable');
+			this.editable.domNode.style.cursor = '';
+		}
+	}
+
 	public setValue(value: string) {
 		this.editableWrapper.setValue('', value);
 		const selection = this.command.getSelection();

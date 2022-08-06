@@ -5,6 +5,7 @@ import { Pointer, RecordValue, Role } from 'mote/platform/store/common/record';
 import RecordCacheStore from './recordCacheStore';
 import { IStoreService } from 'mote/platform/store/common/store';
 import { Permission } from 'mote/platform/store/common/permission';
+import { isLocalUser } from 'mote/platform/user/common/user';
 
 
 interface RecordStoreState<T> {
@@ -36,8 +37,8 @@ export default class RecordStore<T = any> extends Disposable {
 	path: string[];
 	recordStoreParentStore?: RecordStore;
 	inMemoryRecordCacheStore: RecordCacheStore;
-	childStoreMap: { [key: string]: RecordStore } = {};
-	instanceState!: RecordStoreState<T>;
+	private childStoreMap: { [key: string]: RecordStore } = {};
+	private instanceState!: RecordStoreState<T>;
 
 	//#region static method
 
@@ -78,7 +79,7 @@ export default class RecordStore<T = any> extends Disposable {
 		this.instanceState = {} as any;
 		this.inMemoryRecordCacheStore = props.inMemoryRecordCacheStore || RecordCacheStore.Default;
 
-		if (this.isDefaultRecordCache() && this.userId !== 'local') {
+		if (this.isDefaultRecordCache() && !isLocalUser(this.userId)) {
 			storeService.addSubscription(this.userId, this.pointer);
 		}
 

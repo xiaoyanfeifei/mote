@@ -171,7 +171,11 @@ export class ViewController {
 			// Bad case, should we throw a BugIndicatingError here?
 			return;
 		}
-		// TODO check readOnly or not
+		const titleStore = this.getTitleStore();
+		if (!titleStore.canEdit() || !titleStore.state.ready) {
+			// we couldn't operate on it
+			return;
+		}
 		this.withViewEventsCollector(callback);
 	}
 

@@ -22,9 +22,19 @@ export interface IPaneCompositePart {
 	getPaneComposite(id: string): PaneCompositeDescriptor | undefined;
 
 	/**
+	 * Returns the current active viewlet if any.
+	 */
+	getActivePaneComposite(): IPaneComposite | undefined;
+
+	/**
 	 * Returns all enabled viewlets
 	 */
 	getPaneComposites(): PaneCompositeDescriptor[];
+
+	/**
+	 * Hide the active viewlet.
+	 */
+	hideActivePaneComposite(): void;
 }
 
 export class PaneCompositeParts extends Disposable implements IPaneCompositePartService {
@@ -50,6 +60,14 @@ export class PaneCompositeParts extends Disposable implements IPaneCompositePart
 
 	getPaneComposite(id: string, viewContainerLocation: ViewContainerLocation): PaneCompositeDescriptor | undefined {
 		return this.getPartByLocation(viewContainerLocation).getPaneComposite(id);
+	}
+
+	getActivePaneComposite(viewContainerLocation: ViewContainerLocation): IPaneComposite | undefined {
+		return this.getPartByLocation(viewContainerLocation).getActivePaneComposite();
+	}
+
+	hideActivePaneComposite(viewContainerLocation: ViewContainerLocation): void {
+		this.getPartByLocation(viewContainerLocation).hideActivePaneComposite();
 	}
 
 	private getPartByLocation(viewContainerLocation: ViewContainerLocation): IPaneCompositePart {

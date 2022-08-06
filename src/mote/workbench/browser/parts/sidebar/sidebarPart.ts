@@ -113,6 +113,11 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 		return this.getPaneComposites().filter(viewlet => viewlet.id === id)[0];
 	}
 
+	getActivePaneComposite(): IPaneComposite | undefined {
+		return <IPaneComposite>this.getActiveComposite();
+	}
+
+
 	getPaneComposites(): PaneCompositeDescriptor[] {
 		return this.viewletRegistry.getPaneComposites().sort((v1, v2) => {
 			if (typeof v1.order !== 'number') {
@@ -125,5 +130,9 @@ export class SidebarPart extends CompositePart<PaneComposite> implements IPaneCo
 
 			return v1.order - v2.order;
 		});
+	}
+
+	hideActivePaneComposite(): void {
+		this.hideActiveComposite();
 	}
 }

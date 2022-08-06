@@ -42,7 +42,7 @@ export class Transaction {
 
 	private constructor(userId: string) {
 		this.userId = userId;
-		this.isLocal = userId === 'local';
+		this.isLocal = userId === 'local' || userId === 'guest';
 	}
 
 	done(args?: any) {

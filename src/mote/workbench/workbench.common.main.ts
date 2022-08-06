@@ -1,24 +1,18 @@
 import 'vs/css!./workbench.common.main';
+
+//#region --- editor/workbench core
+
+import 'mote/editor/editor.all';
+
+//import 'mote/workbench/browser/workbench.contribution';
+
+//#endregion
+
 //#region --- workbench parts
 
 import 'mote/workbench/browser/parts/editor/editorPart';
 import 'mote/workbench/browser/parts/paneCompositePart';
 import 'mote/workbench/browser/parts/views/viewsService';
-
-//#endregion
-
-//#region --- workbench contributions
-
-// Explorer
-import 'mote/workbench/contrib/pages/browser/explorerViewlet';
-import 'mote/workbench/contrib/pages/browser/pages.contribution';
-
-// DocumentEditor
-import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contribution';
-
-import 'mote/workbench/contrib/login/browser/login.contribution';
-
-import 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspace.contribution';
 
 //#endregion
 
@@ -32,6 +26,7 @@ import 'mote/workbench/services/user/common/userService';
 import 'mote/workbench/services/remote/browser/remoteService';
 import 'mote/workbench/services/dialogs/common/dialogService';
 import 'mote/workbench/services/workspaces/browser/workspacesService';
+import 'mote/workbench/services/editor/browser/editorResolverService';
 
 //#endregion
 
@@ -52,3 +47,19 @@ registerSingleton(IThemeService, BrowserThemeService);
 registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
 registerSingleton(IStoreService, StoreService);
 
+
+
+//#region --- workbench contributions
+
+// Explorer
+import 'mote/workbench/contrib/pages/browser/explorerViewlet';
+import 'mote/workbench/contrib/pages/browser/pages.contribution';
+
+// DocumentEditor
+import 'mote/workbench/contrib/documentEditor/browser/documentEditor.contribution';
+
+import 'mote/workbench/contrib/login/browser/login.contribution';
+
+import 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspace.contribution';
+
+//#endregion

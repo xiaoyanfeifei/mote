@@ -31,4 +31,7 @@ export default {
 	'onboarding.workspaceCreate.inputHelp': '工作区名称',
 
 	'onboarding.workspaceCreate.continue': '确认',
+
+	'topbar.share.label': '分享',
+	'topbar.share.tooltip': '将你的页面分享到互联网',
 };
