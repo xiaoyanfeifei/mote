@@ -181,12 +181,12 @@ export class ViewLayout extends Disposable implements IViewLayout {
 			const width = layoutInfo.width;
 			const height = layoutInfo.height;
 			const scrollDimensions = this.scrollable.getScrollDimensions();
-			//const contentWidth = scrollDimensions.contentWidth;
+			const contentWidth = scrollDimensions.contentWidth;
 			this.scrollable.setScrollDimensions(new EditorScrollDimensions(
 				width,
 				scrollDimensions.contentWidth,
 				height,
-				height//this.getContentHeight(width, height, contentWidth)
+				this._getContentHeight(width, height, contentWidth)
 			));
 		} else {
 			this.updateHeight();
@@ -198,9 +198,9 @@ export class ViewLayout extends Disposable implements IViewLayout {
 	private _getContentHeight(width: number, height: number, contentWidth: number): number {
 		const viewLinesDom = this.viewLineDomProvider();
 		if (viewLinesDom) {
-			return viewLinesDom.domNode.clientHeight + 100;
+			return viewLinesDom.domNode.clientHeight + 200;
 		}
-		return height + 100;
+		return height + 200;
 	}
 
 	private updateHeight() {

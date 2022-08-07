@@ -10,6 +10,7 @@ import { clearNode } from 'vs/base/browser/dom';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { StoreUtils } from 'mote/platform/store/common/storeUtils';
+import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
 
 export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
@@ -88,6 +89,9 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 		// (3) handle scrolling
 		const adjustedScrollTop = this.context.viewLayout.getCurrentScrollTop();
 		this.linesContent.setTop(-adjustedScrollTop);
+
+		// TODO fixme, use it to let viewlayout know the content change
+		this.context.viewLayout.onConfigurationChanged(new ConfigurationChangedEvent([]));
 	}
 
 	//#region view events handler
