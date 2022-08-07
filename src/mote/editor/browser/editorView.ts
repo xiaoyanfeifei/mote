@@ -42,7 +42,7 @@ export class EditorView extends ViewEventHandler {
 	public readonly domNode: FastDomNode<HTMLElement>;
 	private readonly overflowGuardContainer: FastDomNode<HTMLElement>;
 	private readonly linesContent: FastDomNode<HTMLElement>;
-	private readonly headerContainer!: FastDomNode<HTMLElement>;;
+	private readonly headerContainer!: FastDomNode<HTMLElement>;
 
 	constructor(
 		configuration: IEditorConfiguration,

@@ -107,6 +107,7 @@ class PlanPicker {
 	create(parent: HTMLElement) {
 		const container = $('.picker-container');
 		this.container = container;
+		setStyles(container, this.getToggleGroupWrap());
 		container.style.display = 'inline-flex';
 		parent.appendChild(container);
 		this.render();
@@ -139,11 +140,10 @@ class PlanPicker {
 	}
 
 	createPlan(parent: HTMLElement, plan: WorkspacePlan) {
-		const container = $('.pplan-container');
-		parent.appendChild(container);
+		//const container = $('.pplan-container');
+		//parent.appendChild(container);
 
-		setStyles(container, this.getToggleGroupWrap(plan.checked));
-		const button = new Button(container, {
+		const button = new Button(parent, {
 			style: this.getToggleButtonStyle(plan.checked),
 			hoverStyle: this.getToggleButtonHoveredStyle()
 		});
@@ -169,7 +169,7 @@ class PlanPicker {
 		checkMarkImg.src = `/static/sources/image/onboarding/${plan.checked ? 'checked.svg' : 'unchecked.svg'}`;
 
 		const illustration = $('div');
-		illustration.style.height = '57px';
+		illustration.style.height = '90px';
 		const illustrationImg: HTMLImageElement = $('img');
 		illustrationImg.src = plan.illustration;
 		illustrationImg.style.height = '100%';
@@ -209,8 +209,8 @@ class PlanPicker {
 	getButtonHeadingStyle() {
 		return {
 			fontWeight: fonts.fontWeight.semibold,
-			fontSize: 18,
-			marginTop: 30,
+			fontSize: '18px',
+			marginTop: '30px',
 			color: ThemedStyles.regularTextColor.light
 		};
 	}
@@ -242,10 +242,10 @@ class PlanPicker {
 		});
 	}
 
-	getToggleGroupWrap(checked?: boolean): CSSProperties {
+	getToggleGroupWrap(): CSSProperties {
 		return {
-			marginTop: "72px",
-			marginBottom: "32px",
+			marginTop: '10px',
+			marginBottom: '32px',
 			display: "inline-flex",
 			width: "100%",
 			justifyContent: "center"
@@ -258,6 +258,7 @@ class PlanPicker {
 			textAlign: 'center',
 			width: '230px',
 			height: '218px',
+			borderRadius: '5px',
 			padding: '40px 0',
 			boxShadow: "".concat(ThemedStyles.outlineButtonBorder.dark, " 0 0 0 1px, rgba(167, 167, 167, 0.25) 0px 1px 2px")
 		};
