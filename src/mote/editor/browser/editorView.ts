@@ -108,7 +108,7 @@ export class EditorView extends ViewEventHandler {
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
-		const headerHandler = new ViewBlock(-1, this.context, viewController, {
+		const headerHandler = this.instantiationService.createInstance(ViewBlock, -1, this.context, viewController, {
 			placeholder: 'Untitled', forcePlaceholder: true
 		});
 		headerHandler.setValue(this.pageStore);

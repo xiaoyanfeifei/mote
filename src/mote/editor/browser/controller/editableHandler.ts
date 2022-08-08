@@ -5,12 +5,12 @@ import { ViewPart } from 'mote/editor/browser/view/viewPart';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { ITypeData, _debugComposition } from 'mote/editor/browser/controller/editableState';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
-import { ThemedStyles } from 'mote/base/common/themes';
 import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
 import { KeyCode } from 'vs/base/common/keyCodes';
 import { RangeUtils, TextSelection } from 'mote/editor/common/core/rangeUtils';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
+import { Color } from 'vs/base/common/color';
 
 export interface EditableHandlerOptions {
 	placeholder?: string;
@@ -28,11 +28,17 @@ export interface ICommandDelegate {
 	enter(): void;
 }
 
+interface IEditableHandlerStyles {
+	textFillColor: Color;
+}
+
 export class EditableHandler extends ViewPart {
 
 	public readonly editable: FastDomNode<HTMLDivElement>;
 	private editableInput: EditableInput;
 	private editableWrapper: EditableWrapper;
+
+	private textFillColor: Color | undefined;
 
 	constructor(
 		private readonly lineNumber: number,
@@ -52,14 +58,7 @@ export class EditableHandler extends ViewPart {
 
 		this.editableWrapper = this._register(new EditableWrapper(this.editable.domNode));
 		this.editableInput = this._register(new EditableInput(editableInputHost, this.editableWrapper, platform.OS, browser, {}));
-
-		if (this.options.forcePlaceholder && this.options.placeholder) {
-			this.editable.setAttribute('placeholder', this.options.placeholder);
-			if (this.isEmpty()) {
-				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;
-			}
-		}
-
+		this._applyStyles();
 		this.registerListener();
 	}
 
@@ -70,8 +69,26 @@ export class EditableHandler extends ViewPart {
 
 	}
 
+	/**
+	 * Todo remove it later, use style instead
+	 * @param style
+	 */
 	public applyStyles(style: CSSProperties) {
 		setStyles(this.editable.domNode, style);
+	}
+
+	public style(style: IEditableHandlerStyles) {
+		this.textFillColor = style.textFillColor;
+		this._applyStyles();
+	}
+
+	private _applyStyles() {
+		if (this.options.forcePlaceholder && this.options.placeholder) {
+			this.editable.setAttribute('placeholder', this.options.placeholder);
+			if (this.isEmpty() && this.textFillColor) {
+				this.editable.domNode.style.webkitTextFillColor = this.textFillColor.toString();
+			}
+		}
 	}
 
 	public focusEditable(): void {
@@ -80,10 +97,9 @@ export class EditableHandler extends ViewPart {
 
 	public setEnabled(enabled: boolean) {
 		if (enabled) {
-			this.editable.setAttribute('contenteditable', '');
+			this.editable.setAttribute('contenteditable', 'true');
 		} else {
-			this.editable.removeAttribute('contenteditable');
-			this.editable.domNode.style.cursor = '';
+			this.editable.setAttribute('contenteditable', 'false');
 		}
 	}
 
@@ -149,7 +165,9 @@ export class EditableHandler extends ViewPart {
 			if (this.options.placeholder && this.isEmpty()) {
 				// add placeholder and placeholder text style
 				this.editable.setAttribute('placeholder', this.options.placeholder);
-				this.editable.domNode.style.webkitTextFillColor = ThemedStyles.lightTextColor.dark;
+				if (this.textFillColor) {
+					this.editable.domNode.style.webkitTextFillColor = this.textFillColor.toString();
+				}
 			}
 		}));
 		this._register(this.editableInput.onBlur((e) => {

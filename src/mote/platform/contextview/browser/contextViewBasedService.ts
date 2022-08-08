@@ -7,7 +7,7 @@ import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
 import { IMenuOptions } from 'vs/base/browser/ui/menu/menu';
 import { ActionRunner, IAction, IRunEvent } from 'vs/base/common/actions';
 import { Emitter } from 'vs/base/common/event';
-import { combinedDisposable, Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { combinedDisposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
 import { IContextMenuService, IContextViewService } from './contextView';
 
 export interface IContextViewHandlerOptions {

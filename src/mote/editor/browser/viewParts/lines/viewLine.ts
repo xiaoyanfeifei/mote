@@ -11,6 +11,8 @@ import { IVisibleLine } from 'mote/editor/browser/view/viewLayer';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import fonts from 'mote/base/browser/ui/fonts';
 import { CheckBox } from 'mote/base/browser/ui/checkbox/checkbox';
+import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
+import { lightTextColor } from 'mote/platform/theme/common/themeColors';
 
 export class EmptyViewLine extends Disposable {
 
@@ -45,7 +47,7 @@ export class ViewLine implements IVisibleLine {
 	constructor(
 		private readonly viewContext: ViewContext,
 		private readonly viewController: ViewController,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) {
 
 	}
@@ -69,27 +71,18 @@ export class ViewLine implements IVisibleLine {
 	public renderLine(lineNumber: number, store: BlockStore) {
 		// TODO move this part to contrib, block should register by registry
 		const type = store.getType() || 'text';
-		let viewBlock: ViewBlock;
-		switch (type) {
-			case 'header':
-				viewBlock = new HeaderBlock(lineNumber, this.viewContext, this.viewController);
-				break;
-			case 'quote':
-				viewBlock = new QuoteBlock(lineNumber, this.viewContext, this.viewController);
-				break;
-			case 'todo':
-				viewBlock = new TodoBlock(lineNumber, this.viewContext, this.viewController);
-				break;
-			case 'heading2':
-				viewBlock = new Heading2Block(lineNumber, this.viewContext, this.viewController);
-				break;
-			case 'heading3':
-				viewBlock = new Heading3Block(lineNumber, this.viewContext, this.viewController);
-				break;
-			default:
-				viewBlock = new ViewBlock(lineNumber, this.viewContext, this.viewController);
-
-		}
+		const viewBlockMap = {
+			'header': HeaderBlock,
+			'heading2': Heading2Block,
+			'heading3': Heading3Block,
+			'quote': QuoteBlock,
+			'todo': TodoBlock,
+			'text': ViewBlock,
+			'image': ViewBlock,
+		};
+		const factory = viewBlockMap[type];
+		const viewBlock: ViewBlock = (this.instantiationService as any).createInstance(
+			factory, lineNumber, this.viewContext, this.viewController, {});
 		viewBlock.setValue(store);
 		this.domNode = viewBlock.getDomNode();
 		this.domNode.setClassName('view-line');
@@ -99,16 +92,17 @@ export class ViewLine implements IVisibleLine {
 	}
 }
 
-abstract class BaseBlock extends Disposable {
+abstract class BaseBlock extends Themable {
 	private editableHandler: EditableHandler;
 
 	constructor(
 		lineNumber: number,
 		viewContext: ViewContext,
 		viewController: ViewController,
-		protected readonly options?: EditableHandlerOptions,
+		protected readonly options: EditableHandlerOptions,
+		@IThemeService themeService: IThemeService,
 	) {
-		super();
+		super(themeService);
 		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
 		if (viewController.getSelection().lineNumber === lineNumber) {
@@ -119,6 +113,7 @@ abstract class BaseBlock extends Disposable {
 		if (style) {
 			this.editableHandler.applyStyles(style);
 		}
+		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
 	}
 
 	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;
