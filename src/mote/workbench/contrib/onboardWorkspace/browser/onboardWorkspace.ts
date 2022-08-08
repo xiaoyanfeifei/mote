@@ -4,7 +4,8 @@ import { Button } from 'mote/base/browser/ui/button/button';
 import fonts from 'mote/base/browser/ui/fonts';
 import { IntlProvider } from 'mote/base/common/i18n';
 import { ThemedColors, ThemedStyles } from 'mote/base/common/themes';
-import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { inputBackground, mediumTextColor, outlineButtonBorder, regularTextColor } from 'mote/platform/theme/common/themeColors';
+import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { EditorPane } from 'mote/workbench/browser/parts/editor/editorPane';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
@@ -12,7 +13,7 @@ import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Dimension, $, reset, clearNode } from 'vs/base/browser/dom';
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 
-class OnboardContainer {
+class OnboardContainer extends Themable {
 	create(title: string, subTitle: string | undefined, bodyDom: HTMLElement, footerDom?: HTMLElement) {
 		const container = $('.container');
 		container.style.display = 'flex';
@@ -74,8 +75,7 @@ class OnboardContainer {
 		return {
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '28px',
-			color: ThemedStyles.regularTextColor.dark,
-			//fontFamily: font_config.getHeaderFontFamily()
+			color: this.getColor(regularTextColor)!,
 		};
 	}
 
@@ -84,7 +84,7 @@ class OnboardContainer {
 			fontSize: '18px',
 			lineHeight: 1.3,
 			paddingTop: '2px',
-			color: ThemedStyles.mediumTextColor.dark,
+			color: this.getColor(mediumTextColor)!,
 			fontWeight: fonts.fontWeight.regular
 		};
 	}
@@ -99,7 +99,7 @@ interface WorkspacePlan {
 	plan: string;
 }
 
-class PlanPicker {
+class PlanPicker extends Themable {
 	public plan = 'local';
 
 	private container!: HTMLElement;
@@ -140,8 +140,6 @@ class PlanPicker {
 	}
 
 	createPlan(parent: HTMLElement, plan: WorkspacePlan) {
-		//const container = $('.pplan-container');
-		//parent.appendChild(container);
 
 		const button = new Button(parent, {
 			style: this.getToggleButtonStyle(plan.checked),
@@ -185,7 +183,7 @@ class PlanPicker {
 	getToggleButtonHoveredStyle() {
 		return {
 			opacity: 1,
-			background: "white"
+			background: 'white'
 		};
 	}
 
@@ -211,16 +209,16 @@ class PlanPicker {
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '18px',
 			marginTop: '30px',
-			color: ThemedStyles.regularTextColor.light
+			color: '#37352f'
 		};
 	}
 
 	getBaseSubheadingStyle() {
 		return {
-			color: ThemedStyles.mediumTextColor.light,
+			color: '#37352fa6',
 			fontSize: '14px',
 			lineHeight: 1.4,
-			transition: "all 200ms ease"
+			transition: 'all 200ms ease'
 		};
 	}
 
@@ -246,13 +244,14 @@ class PlanPicker {
 		return {
 			marginTop: '10px',
 			marginBottom: '32px',
-			display: "inline-flex",
-			width: "100%",
-			justifyContent: "center"
+			display: 'inline-flex',
+			width: '100%',
+			justifyContent: 'center'
 		};
 	}
 
 	getToggleButtonStyle(checked?: boolean): CSSProperties {
+		const buttonBorder = this.getColor(outlineButtonBorder)!;
 		const style: CSSProperties = {
 			margin: '12px',
 			textAlign: 'center',
@@ -260,7 +259,7 @@ class PlanPicker {
 			height: '218px',
 			borderRadius: '5px',
 			padding: '40px 0',
-			boxShadow: "".concat(ThemedStyles.outlineButtonBorder.dark, " 0 0 0 1px, rgba(167, 167, 167, 0.25) 0px 1px 2px")
+			boxShadow: "".concat(buttonBorder, " 0 0 0 1px, rgba(167, 167, 167, 0.25) 0px 1px 2px")
 		};
 
 		const checkedStyle = {
@@ -330,7 +329,7 @@ export class OnboardWorkspacePage extends EditorPane {
 	}
 
 	private createWorkspace(parent: HTMLElement) {
-		const container = new OnboardContainer();
+		const container = new OnboardContainer(this.themeService);
 
 		const formDom = $('.onboard-form');
 		formDom.style.alignSelf = 'center';
@@ -339,7 +338,7 @@ export class OnboardWorkspacePage extends EditorPane {
 		const label = $('div');
 		label.style.marginTop = '16px';
 		label.style.marginBottom = '5px';
-		label.style.color = ThemedStyles.mediumTextColor.dark;
+		label.style.color = this.getColor(mediumTextColor)!;
 		label.innerText = IntlProvider.INSTANCE.formatMessage({ id: 'onboarding.workspaceCreate.inputHelp', defaultMessage: 'Workspace name' });
 
 		const input: HTMLInputElement = $('input');
@@ -376,25 +375,25 @@ export class OnboardWorkspacePage extends EditorPane {
 
 	getBaseInputStyle(): CSSProperties {
 		return {
-			display: "flex",
-			alignItems: "center",
-			width: "100%",
+			display: 'flex',
+			alignItems: 'center',
+			width: '100%',
 			fontSize: '14px',
-			lineHeight: "20px",
+			lineHeight: '20px',
 			paddingTop: '4px',
 			paddingBottom: '4px',
 			paddingLeft: '10px',
 			paddingRight: '10px',
-			position: "relative",
+			position: 'relative',
 			borderRadius: '3px',
 			boxShadow: ThemedStyles.inputBoxShadow.dark,
-			background: ThemedStyles.inputBackground.dark,
-			cursor: "text"
+			background: this.getColor(inputBackground)!,
+			cursor: 'text'
 		};
 	}
 
 	private createPlanPicker(parent: HTMLElement) {
-		const container = new OnboardContainer();
+		const container = new OnboardContainer(this.themeService);
 
 		const pickerDom = $('.onboard-picker');
 		pickerDom.style.display = 'flex';
@@ -402,7 +401,7 @@ export class OnboardWorkspacePage extends EditorPane {
 		pickerDom.style.justifyContent = 'center';
 		pickerDom.style.alignItems = 'center';
 
-		const planPicker = new PlanPicker();
+		const planPicker = new PlanPicker(this.themeService);
 		planPicker.create(pickerDom);
 		parent.appendChild(container.create(
 			IntlProvider.INSTANCE.formatMessage({

@@ -1,16 +1,15 @@
 import { ListItem } from 'mote/base/browser/ui/list/list';
-import SVGIcon from 'mote/base/browser/ui/svgicon/svgicon';
-import { ThemedStyles } from 'mote/base/common/themes';
+import { SVGIcon } from 'mote/base/browser/ui/icon/svgicon';
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { Transaction } from 'mote/editor/common/core/transaction';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { ICommandService } from 'mote/platform/commands/common/commands';
 import { IViewPaneOptions, ViewPane } from 'mote/workbench/browser/parts/views/viewPane';
-import { $, reset } from 'vs/base/browser/dom';
+import { $, createStyleSheet, reset } from 'vs/base/browser/dom';
 import { ILogService } from 'vs/platform/log/common/log';
 import { NameFromStore } from './outliner';
 import { CachedListVirtualDelegate, IListContextMenuEvent, IListRenderer, IListVirtualDelegate } from 'vs/base/browser/ui/list/list';
-import { List } from 'vs/base/browser/ui/list/listWidget';
+import { DefaultStyleController, List } from 'vs/base/browser/ui/list/listWidget';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
 import { IAction } from 'vs/base/common/actions';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
@@ -18,6 +17,10 @@ import { DocumentEditorInput } from 'mote/workbench/contrib/documentEditor/brows
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { IntlProvider } from 'mote/base/common/i18n';
 import { IDisposable } from 'vs/base/common/lifecycle';
+import { IWorkbenchThemeService } from 'mote/workbench/services/themes/common/workbenchThemeService';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
+import { buttonHoverBackground, iconBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
+import { attachListStyler } from 'mote/platform/theme/common/styler';
 
 const OUTLINER_HEIGHT = 31;
 
@@ -41,7 +44,8 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 	templateId: string = 'sidebar-outliner';
 
 	constructor(
-		private readonly editorService: IEditorService
+		private readonly editorService: IEditorService,
+		private readonly themeService: IThemeService,
 	) {
 
 	}
@@ -53,12 +57,15 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 	renderElement(element: BlockStore, index: number, templateData: HTMLElement, height: number | undefined): void {
 		const container = document.createElement('div');
 		const titleStore = element.getTitleStore();
-		const icon = SVGIcon({ name: 'page', style: { fill: ThemedStyles.mediumIconColor.dark } });
+		const icon = new SVGIcon('page');
+		icon.style({ iconFill: this.themeService.getColorTheme().getColor(iconBackground)! });
 		const child = new NameFromStore(titleStore);
 		const item = new ListItem(container, { enableClick: true });
 		item.child = child.element;
-		item.icon = icon as any;
+		item.icon = icon.element as any;
 		item.create();
+
+		item.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground, true)! });
 
 		reset(templateData);
 
@@ -93,16 +100,25 @@ export class ExplorerView extends ViewPane {
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
+		@IThemeService themeService: IWorkbenchThemeService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@ICommandService commandService: ICommandService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 	) {
-		super({ ...options, title: ExplorerViewTitle }, logService, contextMenuService);
+		super({ ...options, title: ExplorerViewTitle }, logService, contextMenuService, themeService);
 	}
 
 	override renderBody(container: HTMLElement) {
 		super.renderBody(container);
+
+		// create a shared default tree style sheet for performance reasons
+		const styleController = (id: string) => {
+			const controller = new DefaultStyleController(createStyleSheet(), id);
+			this._register(attachListStyler(controller, this.themeService));
+			return controller;
+		};
+
 		const that = this;
 
 		const spaceStore = this.contextService.getSpaceStore();
@@ -119,7 +135,11 @@ export class ExplorerView extends ViewPane {
 
 		this.bodyViewContainer = document.createElement('div');
 
-		const treeView = new List(spaceStore.userId, this.bodyViewContainer, new BlockListVirtualDelegate(), [new BlockListRenderer(this.editorService)], { horizontalScrolling: true });
+		const treeView = new List(
+			spaceStore.userId, this.bodyViewContainer, new BlockListVirtualDelegate(),
+			[new BlockListRenderer(this.editorService, this.themeService)],
+			{ horizontalScrolling: true, styleController: styleController }
+		);
 		treeView.splice(0, treeView.length, spaceStore.getPagesStores());
 		this.bodyView = treeView;
 
@@ -127,12 +147,14 @@ export class ExplorerView extends ViewPane {
 
 		const domNode = $('.list-item');
 		domNode.style.display = 'flex';
-		const icon = SVGIcon({ name: 'plus', style: { fill: ThemedStyles.mediumIconColor.dark } });
+		const icon = new SVGIcon('plus');
+		icon.style({ iconFill: this.themeService.getColorTheme().getColor(mediumIconColor)! });
 		const child = document.createTextNode(IntlProvider.INSTANCE.formatMessage({ id: 'addNewPage', defaultMessage: 'Add new page' }));
 		const addPageBtn = new ListItem(domNode, { enableClick: true });
 		addPageBtn.child = child as any;
-		addPageBtn.icon = icon as any;
+		addPageBtn.icon = icon.element as any;
 		addPageBtn.create();
+		addPageBtn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground, true)! });
 		addPageBtn.onDidClick((e) => {
 			const spaceStore = this.contextService.getSpaceStore();
 			if (!spaceStore) {

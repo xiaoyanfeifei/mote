@@ -1,5 +1,6 @@
 import { IntlProvider } from 'mote/base/common/i18n';
 import { IContextMenuService } from 'mote/platform/contextview/browser/contextView';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IViewPaneOptions, ViewPane } from "mote/workbench/browser/parts/views/viewPane";
 import { Extensions, IViewsRegistry } from "mote/workbench/common/views";
 import { ILogService } from "vs/platform/log/common/log";
@@ -15,9 +16,10 @@ export class EmptyView extends ViewPane {
 	constructor(
 		options: IViewPaneOptions,
 		@ILogService logService: ILogService,
+		@IThemeService themeService: IThemeService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
-		super(options, logService, contextMenuService);
+		super(options, logService, contextMenuService, themeService);
 		this.logService.debug('[EmptyView] created');
 	}
 

@@ -3,6 +3,7 @@ import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { ThemedStyles } from 'mote/base/common/themes';
 import { $, addDisposableListener, EventHelper, EventType, reset } from 'vs/base/browser/dom';
 import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
+import { Color } from 'vs/base/common/color';
 import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
 
@@ -16,10 +17,16 @@ export interface IButtonOptions {
 	hoverStyle?: CSSProperties;
 }
 
+interface IButtonStyles {
+	hoverBackground: Color;
+}
+
 export class Button extends Disposable implements IButton {
 
 	protected _element: HTMLElement;
 	protected options: IButtonOptions;
+
+	private hoverBackground: Color | undefined;
 
 	private _onDidClick = this._register(new Emitter<Event>());
 	get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
@@ -59,9 +66,14 @@ export class Button extends Disposable implements IButton {
 		this.applyStyles();
 	}
 
+	public style(style: IButtonStyles) {
+		this.hoverBackground = style.hoverBackground;
+		this.applyStyles();
+	}
+
 	private setHoverBackground(): void {
 		const style = Object.assign({
-			backgroundColor: ThemedStyles.buttonHoveredBackground.dark
+			backgroundColor: this.hoverBackground?.toString()
 		}, this.options.hoverStyle);
 		setStyles(this._element, style);
 	}

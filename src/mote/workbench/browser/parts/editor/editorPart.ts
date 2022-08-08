@@ -17,6 +17,7 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { EditorInput } from 'mote/workbench/common/editorInput';
 import { IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IEditorResolverService } from 'mote/workbench/services/editor/common/editorResolverService';
+import { editorBackground } from 'mote/platform/theme/common/themeColors';
 
 export class EditorPart extends Part implements IEditorService {
 
@@ -96,7 +97,7 @@ export class EditorPart extends Part implements IEditorService {
 	override createContentArea(parent: HTMLElement) {
 		// Container
 		this.element = parent;
-		this.element.style.backgroundColor = ThemedStyles.contentBackground.dark;
+		this.element.style.backgroundColor = this.getColor(editorBackground) || '';
 
 		this.container!.classList.add('content');
 		parent.appendChild(this.container!);
