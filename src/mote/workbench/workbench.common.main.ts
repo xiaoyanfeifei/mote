@@ -18,6 +18,7 @@ import 'mote/workbench/browser/parts/views/viewsService';
 
 //#region --- workbench services
 
+import 'mote/workbench/services/themes/browser/workbenchThemeService';
 import 'mote/workbench/services/hover/browser/hoverService';
 import 'mote/workbench/services/commands/common/commandService';
 import 'mote/workbench/services/quickmenu/browser/quickmenuService';
@@ -34,8 +35,7 @@ import 'mote/workbench/services/editor/browser/editorResolverService';
 import { registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
 import { ContextViewService } from 'mote/platform/contextview/browser/contextViewService';
-import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
+//import { BrowserThemeService } from 'mote/platform/theme/browser/browserThemeService';
 import { IHostColorSchemeService } from 'mote/platform/theme/common/hostColorSchemeService';
 import { BrowserHostColorSchemeService } from 'mote/platform/theme/browser/browserHostColorSchemeService';
 import { IStoreService } from 'mote/platform/store/common/store';
@@ -43,7 +43,6 @@ import { StoreService } from 'mote/platform/store/common/storeService';
 
 
 registerSingleton(IContextViewService, ContextViewService, true);
-registerSingleton(IThemeService, BrowserThemeService);
 registerSingleton(IHostColorSchemeService, BrowserHostColorSchemeService);
 registerSingleton(IStoreService, StoreService);
 

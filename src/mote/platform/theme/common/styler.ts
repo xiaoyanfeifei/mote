@@ -125,7 +125,7 @@ export function attachListStyler(widget: IThemable, themeService: IThemeService,
 }
 
 export const defaultListStyles: IColorMapping = {
-
+	listFocusBackground: themeColors.listFocusBackground
 };
 
 export interface IButtonStyleOverrides extends IStyleOverrides {

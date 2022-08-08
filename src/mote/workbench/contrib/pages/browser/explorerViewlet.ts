@@ -41,7 +41,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 	}
 
 	override renderHeader(parent: HTMLElement) {
-		new WorkspacesController(parent, this.contextViewService, this.contextService, this.instantiationService);
+		new WorkspacesController(parent, this.themeService, this.contextViewService, this.contextService, this.instantiationService);
 		return true;
 	}
 }

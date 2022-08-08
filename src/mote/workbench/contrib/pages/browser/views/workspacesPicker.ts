@@ -2,13 +2,14 @@ import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
 import { ThemedStyles } from 'mote/base/common/themes';
-import { Disposable } from 'vs/base/common/lifecycle';
 import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
 import { IWorkspaceContextService } from 'mote/platform/workspace/common/workspace';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { IEditorService } from 'mote/workbench/services/editor/common/editorService';
 import { OnboardWorkspaceInput } from 'mote/workbench/contrib/onboardWorkspace/browser/onboardWorkspaceInput';
 import { IntlProvider } from 'mote/base/common/i18n';
+import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
+import { buttonHoverBackground, iconBackground } from 'mote/platform/theme/common/themeColors';
 
 interface ILayoutInfo {
 	maxHeight: number;
@@ -18,7 +19,7 @@ interface ILayoutInfo {
 	inputHeight: number;
 }
 
-class PickerFooter {
+class PickerFooter extends Themable {
 
 	get onDidJoinOrCreate(): BaseEvent<Event> { return this.joinOrCreate.onDidClick; }
 	get onDidLogOut(): BaseEvent<Event> { return this.logOut.onDidClick; }
@@ -27,7 +28,8 @@ class PickerFooter {
 	private joinOrCreate!: Button;
 	private logOut!: Button;
 
-	constructor(parent: HTMLElement,) {
+	constructor(parent: HTMLElement, themeService: IThemeService) {
+		super(themeService);
 		this.domNode = document.createElement('div');
 		this.domNode.style.paddingTop = '6px';
 		this.domNode.style.paddingBottom = '6px';
@@ -70,13 +72,14 @@ class PickerFooter {
 			}
 		});
 		btn.setChildren(actionContainer);
+		btn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
 
 		parent.appendChild(container);
 		return btn;
 	}
 }
 
-export class WorkspacesPicker extends Disposable implements IMenuLike {
+export class WorkspacesPicker extends Themable implements IMenuLike {
 
 	private _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur = this._onDidBlur.event;
@@ -92,11 +95,12 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 
 	constructor(
 		parent: HTMLElement,
+		@IThemeService themeService: IThemeService,
 		@IUserService private readonly userService: IUserService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
 	) {
-		super();
+		super(themeService);
 
 		this.domNode = document.createElement('div');
 		parent.appendChild(this.domNode);
@@ -107,9 +111,8 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 			this.renderWorkspace(this.domNode, spaceStore.id, spaceName);
 		});
 
-		const footer = new PickerFooter(this.domNode);
+		const footer = new PickerFooter(this.domNode, this.themeService);
 		this._register(footer.onDidJoinOrCreate(() => {
-			//this.workspaceService.createWorkspace();
 			this.editorService.openEditor(new OnboardWorkspaceInput());
 			this._onDidBlur.fire();
 		}));
@@ -138,6 +141,7 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 		container.appendChild(this.createWorkspaceDesc(title));
 
 		const btn = new Button(element, { style: this.getButtonStyle() });
+		btn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
 		btn.setChildren(container);
 		btn.onDidClick(() => {
 			this.editorService.closeEditor();
@@ -151,7 +155,7 @@ export class WorkspacesPicker extends Disposable implements IMenuLike {
 		iconContainer.style.borderRadius = '3px';
 		iconContainer.style.height = '32px';
 		iconContainer.style.width = '32px';
-		iconContainer.style.backgroundColor = 'rgb(137, 137, 137)';
+		iconContainer.style.backgroundColor = this.getColor(iconBackground)!;
 		iconContainer.style.alignItems = 'center';
 		iconContainer.style.justifyContent = 'center';
 		iconContainer.style.display = 'flex';

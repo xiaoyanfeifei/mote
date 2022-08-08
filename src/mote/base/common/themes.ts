@@ -120,7 +120,7 @@ export const ThemedStyles = {
 	},
 	mediumIconColor: {
 		light: defaultLightWithAlpha(.4),
-		dark: ThemedBase.dark.lightgray.alpha(.6).css()
+		dark: ThemedBase.dark.lightgray.alpha(.6).hex()
 	},
 	lightIconColor: {
 		light: defaultLightWithAlpha(.3),
@@ -158,8 +158,8 @@ export const ThemedStyles = {
 		dark: "rgb(55, 60, 63)"
 	},
 	buttonHoveredBackground: {
-		light: ThemedBase.light.darkgray.alpha(.08).css(),
-		dark: ThemedBase.dark.darkgray.brighten(.6).css()
+		light: ThemedBase.light.darkgray.alpha(.08).hex(),
+		dark: ThemedBase.dark.darkgray.brighten(.6).hex()
 	},
 
 	buttonPressedBackground: {

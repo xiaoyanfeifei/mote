@@ -11,7 +11,6 @@ import { onUnexpectedError } from 'vs/base/common/errors';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportData';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
-import { ThemedStyles } from 'mote/base/common/themes';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { ViewBlock } from 'mote/editor/browser/viewParts/lines/viewLine';
@@ -102,7 +101,8 @@ export class EditorView extends ViewEventHandler {
 
 	createHeader(parent: FastDomNode<HTMLElement>, viewController: ViewController,) {
 		this.createCover(parent);
-		const headerDomNode = createFastDomNode(dom.$('.editor-header'));
+		const headerDomNode = createFastDomNode(dom.$('div'));
+		headerDomNode.setClassName('editor-header view-line');
 		const headerContainer = this.headerContainer;
 
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
@@ -231,7 +231,6 @@ export class EditorView extends ViewEventHandler {
 
 	getTitleStyle(): CSSProperties {
 		return {
-			color: ThemedStyles.regularTextColor.dark,
 			fontWeight: 700,
 			lineHeight: 1.2,
 			fontSize: '40px',
