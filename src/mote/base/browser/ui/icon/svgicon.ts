@@ -2,7 +2,7 @@ import { Color } from 'vs/base/common/color';
 import SVGData from './svgdata';
 
 export interface ISVGIconStyles {
-	iconFill: Color;
+	iconFill?: Color;
 }
 
 export type SVGProperty = keyof typeof SVGData;
