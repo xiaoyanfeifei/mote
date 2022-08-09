@@ -109,6 +109,7 @@ export abstract class BrowserContextViewBasedService extends Themable implements
 
 		menu.onDidCancel(() => this.contextViewService.hideContextView(true), null, menuDisposables);
 		menu.onDidBlur(() => this.contextViewService.hideContextView(true), null, menuDisposables);
+
 		menuDisposables.add(addDisposableListener(window, EventType.BLUR, () => this.contextViewService.hideContextView(true)));
 		menuDisposables.add(addDisposableListener(window, EventType.MOUSE_DOWN, (e: MouseEvent) => {
 			if (e.defaultPrevented) {
@@ -133,6 +134,7 @@ export abstract class BrowserContextViewBasedService extends Themable implements
 
 			this.contextViewService.hideContextView(true);
 		}));
+
 		return combinedDisposable(menuDisposables, menu);
 	}
 

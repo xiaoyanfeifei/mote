@@ -5,27 +5,36 @@ import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
 import { Color } from 'vs/base/common/color';
 import { Emitter, Event as BaseEvent } from 'vs/base/common/event';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { mixin } from 'vs/base/common/objects';
 
 export interface IButton extends IDisposable {
 	readonly element: HTMLElement;
 	readonly onDidClick: BaseEvent<Event | undefined>;
 }
 
-export interface IButtonOptions {
+export interface IButtonOptions extends IButtonStyles {
 	style?: CSSProperties;
 	hoverStyle?: CSSProperties;
 }
 
 interface IButtonStyles {
-	hoverBackground: Color;
+	buttonBackground?: Color;
+	buttonHoverBackground?: Color;
+	buttonForeground?: Color;
 }
+
+const defaultOptions: IButtonStyles = {
+	buttonBackground: Color.fromHex('#0E639C'),
+	buttonHoverBackground: Color.fromHex('#006BB3'),
+	buttonForeground: Color.white
+};
 
 export class Button extends Disposable implements IButton {
 
 	protected _element: HTMLElement;
 	protected options: IButtonOptions;
 
-	private hoverBackground: Color | undefined;
+	private buttonHoverBackground: Color | undefined;
 
 	private _onDidClick = this._register(new Emitter<Event>());
 	get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
@@ -34,6 +43,7 @@ export class Button extends Disposable implements IButton {
 		super();
 
 		this.options = options || Object.create(null);
+		mixin(this.options, defaultOptions, false);
 
 		this._element = $('div');
 
@@ -66,13 +76,13 @@ export class Button extends Disposable implements IButton {
 	}
 
 	public style(style: IButtonStyles) {
-		this.hoverBackground = style.hoverBackground;
+		this.buttonHoverBackground = style.buttonHoverBackground;
 		this.applyStyles();
 	}
 
 	private setHoverBackground(): void {
 		const style = Object.assign({
-			backgroundColor: this.hoverBackground?.toString()
+			backgroundColor: this.buttonHoverBackground?.toString()
 		}, this.options.hoverStyle);
 		setStyles(this._element, style);
 	}
