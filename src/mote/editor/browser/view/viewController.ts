@@ -120,6 +120,15 @@ export class ViewController extends Disposable {
 		});
 	}
 
+	public insert(text: string): void {
+		this.executeCursorEdit(eventsCollector => {
+			Transaction.createAndCommit((transaction) => {
+				const titleStore = this.getTitleStore();
+				this._insert(eventsCollector, text, transaction, titleStore, this.selection, TextSelectionMode.Editing);
+			}, this.contentStore.userId);
+		});
+	}
+
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
@@ -147,7 +156,7 @@ export class ViewController extends Disposable {
 		});
 	}
 
-	public enter() {
+	public enter(): boolean {
 		// We dont use executeCursorEdit because of some times user trigger this method
 		// before the content store has any children
 		this.withViewEventsCollector(eventsCollector => {
@@ -169,6 +178,7 @@ export class ViewController extends Disposable {
 				this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
 			}, this.contentStore.userId);
 		});
+		return true;
 	}
 
 	//#endregion
@@ -309,7 +319,7 @@ export class ViewController extends Disposable {
 			switch (op) {
 				case DIFF_INSERT:
 					needChange = true;
-					this.insert(
+					this._insert(
 						eventsCollector,
 						txt,
 						transaction,
@@ -351,7 +361,7 @@ export class ViewController extends Disposable {
 		}
 	}
 
-	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private _insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {
 			return;

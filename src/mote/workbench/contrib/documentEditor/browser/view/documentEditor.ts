@@ -100,7 +100,27 @@ export class DocumentEditor extends EditorPane {
 			tooltip: 'Underline',
 			run: () => control.trigger('quickmenu', 'decorate', ['_']),
 			enabled: true,
-			class: 'italic',
+			class: 'underline',
+			dispose: () => { }
+		});
+
+		actions.push({
+			id: 'quick.strikethrough',
+			label: 'ab',
+			tooltip: 'Strike-through',
+			run: () => control.trigger('quickmenu', 'decorate', ['s']),
+			enabled: true,
+			class: 'line-through',
+			dispose: () => { }
+		});
+
+		actions.push({
+			id: 'quick.code',
+			label: '< >',
+			tooltip: 'Mark as code',
+			run: () => control.trigger('quickmenu', 'decorate', ['c']),
+			enabled: true,
+			class: '',
 			dispose: () => { }
 		});
 

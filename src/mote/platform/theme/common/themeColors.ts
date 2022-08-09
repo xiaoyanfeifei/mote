@@ -41,8 +41,16 @@ export const iconBackground = colorRegistry.registerColor('icon.background', { l
 
 export const buttonHoverBackground = colorRegistry.registerColor('button.hoverBackground', { ...ThemedStyles.buttonHoveredBackground, }, 'buttonHoverBackground');
 export const outlineButtonBorder = colorRegistry.registerColor('button.outline.border', { light: '#37352f29', dark: '' }, '');
-//#region SidebarPart
 
+/**
+ * Editor widgets
+ */
+export const editorWidgetBackground = registerColor('editorWidget.background', { dark: '#252526', light: '#F3F3F3', hcDark: '#0C141F', hcLight: Color.white }, nls.localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
+
+
+//#region editorHover
+
+export const editorHoverBackground = registerColor('editorHoverWidget.background', { light: editorWidgetBackground, dark: editorWidgetBackground, hcDark: editorWidgetBackground, hcLight: editorWidgetBackground }, nls.localize('hoverBackground', 'Background color of the editor hover.'));
 
 
 //#endregion

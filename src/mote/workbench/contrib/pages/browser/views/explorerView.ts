@@ -19,7 +19,7 @@ import { IntlProvider } from 'mote/base/common/i18n';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { IWorkbenchThemeService } from 'mote/workbench/services/themes/common/workbenchThemeService';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
-import { buttonHoverBackground, iconBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
+import { buttonHoverBackground, mediumIconColor } from 'mote/platform/theme/common/themeColors';
 import { attachListStyler } from 'mote/platform/theme/common/styler';
 
 const OUTLINER_HEIGHT = 31;
@@ -58,7 +58,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 		const container = document.createElement('div');
 		const titleStore = element.getTitleStore();
 		const icon = new SVGIcon('page');
-		icon.style({ iconFill: this.themeService.getColorTheme().getColor(iconBackground)! });
+		icon.style({ iconFill: this.themeService.getColorTheme().getColor(mediumIconColor)! });
 		const child = new NameFromStore(titleStore);
 		const item = new ListItem(container, { enableClick: true });
 		item.child = child.element;

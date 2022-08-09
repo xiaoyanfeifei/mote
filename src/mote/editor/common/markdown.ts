@@ -55,6 +55,13 @@ markdownBlockParseRules.push({
 	insertTextAfter: false,
 });
 
+// Add Code tag
+markdownBlockParseRules.push({
+	matchRegex: /^```$/,
+	toBlockType: () => blockTypes.code,
+	insertTextAfter: false,
+});
+
 // Add Quote tag
 markdownBlockParseRules.push({
 	matchRegex: /^["“|] $/,

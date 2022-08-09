@@ -25,7 +25,7 @@ export interface ICommandDelegate {
 	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
 	select(e: TextSelection): void;
 	backspace(): void;
-	enter(): void;
+	enter(): boolean;
 }
 
 interface IEditableHandlerStyles {
@@ -141,7 +141,9 @@ export class EditableHandler extends ViewPart {
 		this._register(this.editableInput.onKeyDown((e) => {
 			const event = e as StandardKeyboardEvent;
 			if (event.equals(KeyCode.Enter)) {
-				this.command.enter();
+				if (this.command.enter()) {
+					event.preventDefault();
+				}
 			}
 			if (event.equals(KeyCode.Backspace)) {
 				this.command.backspace();
