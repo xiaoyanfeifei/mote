@@ -38,13 +38,14 @@ type Records = { [key: string]: RecordWithRole };
 
 export type RecordMap = { [key in keyof typeof RecordTable]: Records };
 
-export const blockTypes = {
+export const BlockTypes = {
 	text: 'text',
 	header: 'header',
 	image: 'image',
 	quote: 'quote',
 	todo: 'todo',
+	code: 'code',
 	heading2: 'heading2',
 	heading3: 'heading3',
 };
-export type BlockType = keyof typeof blockTypes;
+export type BlockType = keyof typeof BlockTypes;

@@ -71,7 +71,7 @@ export class ViewLine implements IVisibleLine {
 		// TODO move this part to contrib, block should register by registry
 		const type = store.getType() || 'text';
 		const contributions = ViewLineExtensionsRegistry.getViewLineContributions();
-		const contribution: IViewLineContributionDescription = contributions.get(type)!;
+		const contribution: IViewLineContributionDescription = contributions.get(type) || contributions.get('text')!;
 		const viewBlock: ViewBlock = this.instantiationService.createInstance(
 			contribution.ctor, lineNumber, this.viewContext, this.viewController, {});
 		viewBlock.setValue(store);

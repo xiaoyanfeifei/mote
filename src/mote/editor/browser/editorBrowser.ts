@@ -4,6 +4,7 @@ import { Position } from 'mote/editor/common/core/position';
 import { TextSelection } from 'mote/editor/common/core/rangeUtils';
 import * as editorCommon from 'mote/editor/common/editorCommon';
 import BlockStore from 'mote/platform/store/common/blockStore';
+import { FastDomNode } from 'vs/base/browser/fastDomNode';
 
 /**
  * Type of hit element with the mouse in the editor.
@@ -170,4 +171,10 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	addOverlayWidget(widget: IOverlayWidget): void;
 
 	setStore(store: BlockStore): void;
+}
+
+
+export interface IViewLineContribution {
+	setValue(store: BlockStore): void;
+	getDomNode(): FastDomNode<HTMLElement>;
 }

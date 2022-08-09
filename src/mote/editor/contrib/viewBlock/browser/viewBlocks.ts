@@ -1,60 +1,20 @@
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { CheckBox } from 'mote/base/browser/ui/checkbox/checkbox';
 import fonts from 'mote/base/browser/ui/fonts';
-import { EditableHandler, EditableHandlerOptions } from 'mote/editor/browser/controller/editableHandler';
+import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { registerViewLineContribution } from 'mote/editor/browser/viewLineExtensions';
-import { segmentsToElement } from 'mote/editor/common/textSerialize';
+import { BaseBlock } from 'mote/editor/contrib/viewBlock/browser/baseBlock';
+import { CodeBlock } from 'mote/editor/contrib/viewBlock/browser/codeBlock';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { lightTextColor } from 'mote/platform/theme/common/themeColors';
-import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
+import { BlockTypes } from 'mote/platform/store/common/record';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 
-abstract class BaseBlock extends Themable {
-	private editableHandler: EditableHandler;
-
-	constructor(
-		lineNumber: number,
-		viewContext: ViewContext,
-		viewController: ViewController,
-		protected readonly options: EditableHandlerOptions,
-		@IThemeService themeService: IThemeService,
-	) {
-		super(themeService);
-		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
-		this.editableHandler.editable.domNode.style.minHeight = '1em';
-		if (viewController.getSelection().lineNumber === lineNumber) {
-			this.editableHandler.focusEditable();
-		}
-
-		const style = this.getStyle();
-		if (style) {
-			this.editableHandler.applyStyles(style);
-		}
-		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
-	}
-
-	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;
-
-	protected getStyle(): void | CSSProperties {
-
-	}
-
-	setValue(store: BlockStore) {
-		const html = segmentsToElement(store.getTitleStore().getValue()).join('');
-		this.editableHandler.setValue(html);
-		this.editableHandler.setEnabled(store.canEdit());
-	}
-
-	getDomNode() {
-		return this.editableHandler.editable;
-	}
-}
 
 export class ViewBlock extends BaseBlock {
 
-	public static ID = 'text';
+	public static readonly ID = BlockTypes.text;
 
 	override renderPersisted(
 		lineNumber: number,
@@ -79,6 +39,8 @@ export class ViewBlock extends BaseBlock {
 }
 
 class HeaderBlock extends ViewBlock {
+	public static override readonly ID = BlockTypes.header;
+
 	override getStyle(): CSSProperties {
 		return Object.assign({
 			display: 'flex',
@@ -95,6 +57,9 @@ class HeaderBlock extends ViewBlock {
 }
 
 class Heading2Block extends ViewBlock {
+
+	public static override readonly ID = BlockTypes.heading2;
+
 	override getStyle(): CSSProperties {
 		return Object.assign({
 			display: 'flex',
@@ -111,6 +76,7 @@ class Heading2Block extends ViewBlock {
 }
 
 class Heading3Block extends ViewBlock {
+	public static override readonly ID = BlockTypes.heading3;
 	override getStyle(): CSSProperties {
 		return Object.assign({
 			display: 'flex',
@@ -127,6 +93,8 @@ class Heading3Block extends ViewBlock {
 }
 
 class QuoteBlock extends ViewBlock {
+
+	public static override readonly ID = BlockTypes.quote;
 
 	private container!: FastDomNode<HTMLDivElement>;
 
@@ -156,6 +124,8 @@ class QuoteBlock extends ViewBlock {
 }
 
 class TodoBlock extends ViewBlock {
+
+	public static override readonly ID = BlockTypes.todo;
 
 	private container!: FastDomNode<HTMLDivElement>;
 
@@ -198,3 +168,9 @@ class TodoBlock extends ViewBlock {
 }
 
 registerViewLineContribution(ViewBlock.ID, ViewBlock);
+registerViewLineContribution(HeaderBlock.ID, HeaderBlock);
+registerViewLineContribution(Heading2Block.ID, Heading2Block);
+registerViewLineContribution(Heading3Block.ID, Heading3Block);
+registerViewLineContribution(QuoteBlock.ID, QuoteBlock);
+registerViewLineContribution(TodoBlock.ID, TodoBlock);
+registerViewLineContribution(CodeBlock.ID, CodeBlock);

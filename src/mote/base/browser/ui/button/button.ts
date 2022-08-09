@@ -25,7 +25,7 @@ interface IButtonStyles {
 
 const defaultOptions: IButtonStyles = {
 	buttonBackground: Color.fromHex('#0E639C'),
-	buttonHoverBackground: Color.fromHex('#006BB3'),
+	buttonHoverBackground: Color.fromHex('#37352f14'),
 	buttonForeground: Color.white
 };
 
@@ -44,6 +44,7 @@ export class Button extends Disposable implements IButton {
 
 		this.options = options || Object.create(null);
 		mixin(this.options, defaultOptions, false);
+		this.buttonHoverBackground = this.options.buttonHoverBackground;
 
 		this._element = $('div');
 

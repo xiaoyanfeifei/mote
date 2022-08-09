@@ -20,10 +20,6 @@ export interface IEditorContribution {
 	//restoreViewState?(state: any): void;
 }
 
-export interface IViewLineContribution {
-
-}
-
 export const enum ScrollType {
 	Smooth = 0,
 	Immediate = 1,
