@@ -36,9 +36,8 @@ export class StoreService implements IStoreService {
 		}
 
 		try {
-			const recordCache = cacheStore.getRecord({ userId, pointer });
-			const version = recordCache && recordCache.value && recordCache.value.version ? recordCache.value.version : -1;
-			recordWithRole = await this.remoteService.syncRecordValue(userId, pointer, version);
+			// Force request latest version
+			recordWithRole = await this.remoteService.syncRecordValue(userId, pointer, -1);
 			if (recordWithRole) {
 				StoreUtils.updateCache(userId, pointer, recordWithRole, cacheStore, this.storeageService);
 				cacheStore.fire(key);

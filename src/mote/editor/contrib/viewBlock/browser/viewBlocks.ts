@@ -1,3 +1,4 @@
+import * as nls from 'vs/nls';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { CheckBox } from 'mote/base/browser/ui/checkbox/checkbox';
 import fonts from 'mote/base/browser/ui/fonts';
@@ -9,7 +10,12 @@ import { BaseBlock } from 'mote/editor/contrib/viewBlock/browser/baseBlock';
 import { CodeBlock } from 'mote/editor/contrib/viewBlock/browser/codeBlock';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { BlockTypes } from 'mote/platform/store/common/record';
+import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
+import { Codicon } from 'vs/base/common/codicons';
+import { ThemeIcon } from 'mote/platform/theme/common/themeService';
+
+const bulleteIcon = registerIcon('bullete', Codicon.circleFilled, nls.localize('diffInsertIcon', 'Line decoration for inserts in the diff editor.'));
 
 
 export class ViewBlock extends BaseBlock {
@@ -47,7 +53,8 @@ class HeaderBlock extends ViewBlock {
 			width: '100%',
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '1.875em',
-			lineHeight: 1.3
+			lineHeight: 1.3,
+			marginTop: '2em',
 		}, {});
 	}
 
@@ -66,7 +73,8 @@ class Heading2Block extends ViewBlock {
 			width: '100%',
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '1.5em',
-			lineHeight: 1.3
+			lineHeight: 1.3,
+			marginTop: '1.4em',
 		}, {});
 	}
 
@@ -83,7 +91,8 @@ class Heading3Block extends ViewBlock {
 			width: '100%',
 			fontWeight: fonts.fontWeight.semibold,
 			fontSize: '1.25em',
-			lineHeight: 1.3
+			lineHeight: 1.3,
+			marginTop: '1em',
 		}, {});
 	}
 
@@ -108,6 +117,13 @@ class QuoteBlock extends ViewBlock {
 		this.container.domNode.style.padding = '3px 2px';
 		this.container.appendChild(editableHandler.editable);
 		return editableHandler;
+	}
+
+	override getPlaceholder() {
+		if (this.options) {
+			return this.options.placeholder ?? 'Quote';
+		}
+		return 'Quote';
 	}
 
 	override getDomNode() {
@@ -154,6 +170,13 @@ class TodoBlock extends ViewBlock {
 		return editableHandler;
 	}
 
+	override getPlaceholder() {
+		if (this.options) {
+			return this.options.placeholder ?? 'Todo';
+		}
+		return 'Todo';
+	}
+
 	override setValue(store: BlockStore): void {
 		super.setValue(store);
 
@@ -167,10 +190,71 @@ class TodoBlock extends ViewBlock {
 	}
 }
 
+class BulletedListBlock extends ViewBlock {
+
+	public static override readonly ID = BlockTypes.bulletedList;
+
+	private container!: FastDomNode<HTMLDivElement>;
+
+	override renderPersisted(
+		lineNumber: number,
+		viewContext: ViewContext,
+		viewController: ViewController
+	) {
+		const editableHandler = super.renderPersisted(lineNumber, viewContext, viewController);
+		editableHandler.editable.domNode.style.width = '100%';
+
+		this.container = createFastDomNode(document.createElement('div'));
+
+		const listContainer = createFastDomNode(document.createElement('div'));
+		listContainer.domNode.style.display = 'flex';
+		listContainer.domNode.style.alignItems = 'flex-start';
+		listContainer.domNode.style.paddingLeft = '2px';
+
+		const dataContainer = createFastDomNode(document.createElement('div'));
+		dataContainer.domNode.style.width = '100%';
+		dataContainer.appendChild(editableHandler.editable);
+
+		this.createBullete(listContainer);
+		listContainer.appendChild(dataContainer);
+		this.container.appendChild(listContainer);
+		return editableHandler;
+	}
+
+	private createBullete(parent: FastDomNode<HTMLElement>) {
+		const bullete = createFastDomNode(document.createElement('div'));
+		//bullete.domNode.style.fontSize = '1.5em';
+		bullete.domNode.style.lineHeight = '1';
+		bullete.setClassName(ThemeIcon.asClassName(bulleteIcon));
+
+		const bulleteContainer = createFastDomNode(document.createElement('div'));
+		bulleteContainer.setWidth(24);
+		bulleteContainer.domNode.style.display = 'flex';
+		bulleteContainer.domNode.style.alignItems = 'center';
+		bulleteContainer.domNode.style.justifyContent = 'center';
+		bulleteContainer.domNode.style.minHeight = 'calc(1.5em + 6px)';
+
+		bulleteContainer.appendChild(bullete);
+		parent.appendChild(bulleteContainer);
+	}
+
+	override getPlaceholder() {
+		if (this.options) {
+			return this.options.placeholder ?? 'List';
+		}
+		return 'List';
+	}
+
+	override getDomNode() {
+		return this.container;
+	}
+}
+
 registerViewLineContribution(ViewBlock.ID, ViewBlock);
 registerViewLineContribution(HeaderBlock.ID, HeaderBlock);
 registerViewLineContribution(Heading2Block.ID, Heading2Block);
 registerViewLineContribution(Heading3Block.ID, Heading3Block);
 registerViewLineContribution(QuoteBlock.ID, QuoteBlock);
 registerViewLineContribution(TodoBlock.ID, TodoBlock);
+registerViewLineContribution(BulletedListBlock.ID, BulletedListBlock);
 registerViewLineContribution(CodeBlock.ID, CodeBlock);
