@@ -204,6 +204,8 @@ export class BrowserMain extends Disposable {
 		const userService = new UserService(storageService, remoteService);
 		serviceCollection.set(IUserService, userService);
 
+		remoteService.userService = userService;
+
 		// Workspace
 		//const workspaceService = await this.createWorkspaceService(userService, remoteService, storageService, logService);
 		//serviceCollection.set(IWorkspaceContextService, workspaceService);

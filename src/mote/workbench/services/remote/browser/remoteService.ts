@@ -82,9 +82,10 @@ export class RemoteService implements IRemoteService {
 
 	private timeout = 1200;
 
+	public userService!: IUserService;
+
 	constructor(
 		@IEnvironmentService environmentService: IEnvironmentService,
-		@IUserService private readonly userService: IUserService,
 	) {
 		if (environmentService.isBuilt) {
 			config.apiDomain = config.apiProd;
