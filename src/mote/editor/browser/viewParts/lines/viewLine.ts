@@ -78,6 +78,7 @@ export class ViewLine implements IVisibleLine {
 		this.domNode = viewBlock.getDomNode();
 		this.domNode.setClassName('view-line');
 		this.domNode.setAttribute('data-index', lineNumber.toString());
+		this.domNode.setAttribute('data-block-id', store.id);
 		return true;
 	}
 }

@@ -47,5 +47,6 @@ export const BlockTypes = {
 	code: 'code',
 	heading2: 'heading2',
 	heading3: 'heading3',
+	bulletedList: 'bulleted_list'
 };
 export type BlockType = keyof typeof BlockTypes;

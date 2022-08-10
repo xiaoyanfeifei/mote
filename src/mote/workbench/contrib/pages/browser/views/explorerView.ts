@@ -56,6 +56,7 @@ class BlockListRenderer implements IListRenderer<BlockStore, any> {
 
 	renderElement(element: BlockStore, index: number, templateData: HTMLElement, height: number | undefined): void {
 		const container = document.createElement('div');
+		container.setAttribute('data-page-id', element.id);
 		const titleStore = element.getTitleStore();
 		const icon = new SVGIcon('page');
 		icon.style({ iconFill: this.themeService.getColorTheme().getColor(mediumIconColor)! });

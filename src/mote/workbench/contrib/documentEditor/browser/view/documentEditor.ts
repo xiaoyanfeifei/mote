@@ -1,4 +1,3 @@
-import { ViewController } from 'mote/editor/browser/view/viewController';
 import RecordStore from 'mote/platform/store/common/recordStore';
 import { IEditorOptions, IResourceEditorInput } from 'mote/platform/editor/common/editor';
 import { IThemeService } from 'mote/platform/theme/common/themeService';
