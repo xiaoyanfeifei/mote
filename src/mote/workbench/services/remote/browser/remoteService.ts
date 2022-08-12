@@ -8,6 +8,7 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { generateUuid } from 'vs/base/common/uuid';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 import { CaffeineError } from 'mote/base/common/errors';
+import { IUserService } from 'mote/workbench/services/user/common/user';
 
 
 type IRecordMap = { [key: string]: { [key: string]: RecordWithRole } };
@@ -81,6 +82,8 @@ export class RemoteService implements IRemoteService {
 
 	private timeout = 1200;
 
+	public userService!: IUserService;
+
 	constructor(
 		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
@@ -139,18 +142,29 @@ export class RemoteService implements IRemoteService {
 		this.doPost('/api/applyTransactions', request);
 	}
 
-	private async doGet<T>(url: string) {
-		const response = await doFetch<CaffeineResponse<T>>(url, null, 'GET');
-		if (response.code === 0) {
-			return response.data;
-		}
-		throw new Error(response.message);
+	private async doGet<T>(url: string): Promise<T> {
+		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(url, null, 'GET'));
 	}
 
-	private async doPost<T>(url: string, payload: any) {
-		const response = await doFetch<CaffeineResponse<T>>(url, payload, 'POST');
-		if (response.code === 0) {
-			return response.data;
+	private async doPost<T>(url: string, payload: any): Promise<T> {
+		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(url, payload, 'POST'));
+	}
+
+	private async executeRequest<T>(callback: () => Promise<CaffeineResponse<T>>) {
+		// Check token valid or not
+		const token = sessionStorage.getItem('auth_token');
+		if (this.userService.currentProfile && !token) {
+			// We login without token, force logout
+			this.userService.logout();
+			return Promise.reject('No auth token');
+		}
+		const response = await callback();
+		switch (response.code) {
+			case 0:
+				return response.data;
+			case 111: // TokenExpired
+				this.userService.logout();
+				return Promise.reject('Token expired');
 		}
 		throw new CaffeineError(response.message, response.code);
 	}

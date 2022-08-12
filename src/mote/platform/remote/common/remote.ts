@@ -43,7 +43,7 @@ export interface LoginData {
 	username: string;
 	nickname: string;
 	email: string;
-	token?: string;
+	token: string;
 }
 
 export interface SyncRecordRequest {

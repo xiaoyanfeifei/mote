@@ -13,13 +13,13 @@ import { ViewportData } from 'mote/editor/common/viewLayout/viewLinesViewportDat
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import BlockStore from 'mote/platform/store/common/blockStore';
-import { ViewBlock } from 'mote/editor/browser/viewParts/lines/viewLine';
 import { ViewOverlayWidgets } from 'mote/editor/browser/viewParts/overlayWidgets/overlayWidgets';
 import { IOverlayWidget, IOverlayWidgetPosition } from 'mote/editor/browser/editorBrowser';
 import { IEditorConfiguration } from 'mote/editor/common/config/editorConfiguration';
 import { EditorOption } from 'mote/editor/common/config/editorOptions';
 import { EditorScrollbar } from 'mote/editor/browser/viewParts/editorScrollbar/editorScrollbar';
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
+import { ViewLineExtensionsRegistry } from 'mote/editor/browser/viewLineExtensions';
 
 export interface IOverlayWidgetData {
 	widget: IOverlayWidget;
@@ -108,7 +108,8 @@ export class EditorView extends ViewEventHandler {
 		headerContainer.domNode.style.paddingLeft = this.getSafePaddingLeftCSS(96);
 		headerContainer.domNode.style.paddingRight = this.getSafePaddingRightCSS(96);
 
-		const headerHandler = this.instantiationService.createInstance(ViewBlock, -1, this.context, viewController, {
+		const viewLineContrib = ViewLineExtensionsRegistry.getViewLineContribution('text')!;
+		const headerHandler = this.instantiationService.createInstance(viewLineContrib.ctor, -1, this.context, viewController, {
 			placeholder: 'Untitled', forcePlaceholder: true
 		});
 		headerHandler.setValue(this.pageStore);

@@ -207,10 +207,6 @@ export class EditableInput extends Disposable {
 				// Stop propagation for keyDown events if the IME is processing key input
 				event.stopPropagation();
 			}
-			if (event.keyCode === KeyCode.Enter) {
-				// prevent the enter behavior
-				event.preventDefault();
-			}
 			if (event.equals(KeyCode.Escape)) {
 				// Prevent default always for `Esc`, otherwise it will generate a keypress
 				// See https://msdn.microsoft.com/en-us/library/ie/ms536939(v=vs.85).aspx

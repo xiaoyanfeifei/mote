@@ -8,3 +8,12 @@
 
 .workbench-hover { border: 1px solid #454545; }
 
+.line-through {
+	text-decoration: line-through
+}
+.underline {
+	text-decoration: underline;
+}
+.italic {
+	font-style: italic;
+}

@@ -72,7 +72,7 @@ class PickerFooter extends Themable {
 			}
 		});
 		btn.setChildren(actionContainer);
-		btn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
+		btn.style({ buttonHoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
 
 		parent.appendChild(container);
 		return btn;
@@ -141,7 +141,7 @@ export class WorkspacesPicker extends Themable implements IMenuLike {
 		container.appendChild(this.createWorkspaceDesc(title));
 
 		const btn = new Button(element, { style: this.getButtonStyle() });
-		btn.style({ hoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
+		btn.style({ buttonHoverBackground: this.themeService.getColorTheme().getColor(buttonHoverBackground)! });
 		btn.setChildren(container);
 		btn.onDidClick(() => {
 			this.editorService.closeEditor();

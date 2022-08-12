@@ -94,6 +94,7 @@ export class DesktopMain extends Disposable {
 		const userService = new UserService(storageService, remoteService);
 		serviceCollection.set(IUserService, userService);
 
+		remoteService.userService = userService;
 
 		return { serviceCollection, logService };
 	}

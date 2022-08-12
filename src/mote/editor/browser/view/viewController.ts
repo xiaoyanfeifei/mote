@@ -11,7 +11,7 @@ import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/comm
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
-import blockTypes, { pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
+import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';
@@ -20,6 +20,7 @@ import { IEditorConfiguration } from 'mote/editor/common/config/editorConfigurat
 import { Disposable } from 'vs/base/common/lifecycle';
 import { ConfigurationChangedEvent } from 'mote/editor/common/config/editorOptions';
 import { ViewLayout } from 'mote/editor/common/viewLayout/viewLayout';
+import { BlockTypes } from 'mote/platform/store/common/record';
 
 export interface ICommandDelegate {
 	type(text: string): void;
@@ -120,6 +121,15 @@ export class ViewController extends Disposable {
 		});
 	}
 
+	public insert(text: string): void {
+		this.executeCursorEdit(eventsCollector => {
+			Transaction.createAndCommit((transaction) => {
+				const titleStore = this.getTitleStore();
+				this._insert(eventsCollector, text, transaction, titleStore, this.selection, TextSelectionMode.Editing);
+			}, this.contentStore.userId);
+		});
+	}
+
 	public type(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
@@ -147,19 +157,26 @@ export class ViewController extends Disposable {
 		});
 	}
 
-	public enter() {
+	public enter(): boolean {
 		// We dont use executeCursorEdit because of some times user trigger this method
 		// before the content store has any children
 		this.withViewEventsCollector(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
-				let child: BlockStore = EditOperation.createBlockStore('text', transaction, this.contentStore);
 				let lineNumber: number;
 				// create first child
 				if (this.selection.lineNumber < 0) {
+					let child: BlockStore = EditOperation.createBlockStore('text', transaction, this.contentStore);
 					child = EditOperation.appendToParent(this.contentStore, child, transaction).child as BlockStore;
 					lineNumber = 0;
 				} else {
+					let type = 'text';
 					const lineStore = StoreUtils.createStoreForLineNumber(this.selection.lineNumber, this.contentStore);
+					if (keepLineTypes.has(lineStore.getType() || '')) {
+						// Some blocks required keep same styles in next line
+						// Just like todo, list
+						type = lineStore.getType()!;
+					}
+					let child: BlockStore = EditOperation.createBlockStore(type, transaction, this.contentStore);
 					child = EditOperation.insertChildAfterTarget(
 						this.contentStore, child, lineStore, transaction).child as BlockStore;
 					lineNumber = StoreUtils.getLineNumberForStore(child, this.contentStore);
@@ -169,6 +186,7 @@ export class ViewController extends Disposable {
 				this.setSelection({ startIndex: 0, endIndex: 0, lineNumber: lineNumber });
 			}, this.contentStore.userId);
 		});
+		return true;
 	}
 
 	//#endregion
@@ -273,9 +291,9 @@ export class ViewController extends Disposable {
 				const record = blockStore.getValue();
 				if (record) {
 					if (textBasedTypes.has(record.type)) {
-						EditOperation.turnInto(blockStore, blockTypes.text as any, transaction);
+						EditOperation.turnInto(blockStore, BlockTypes.text as any, transaction);
 						eventsCollector.emitViewEvent(new viewEvents.ViewLinesChangedEvent(selection.lineNumber, 1));
-					} else if (pureTextTypes.has(record.type)) {
+					} else {
 						EditOperation.removeChild(this.contentStore, store, transaction);
 						const deletedLineNumber = this.selection.lineNumber;
 						const newLineNumber = this.selection.lineNumber - 1;
@@ -309,7 +327,7 @@ export class ViewController extends Disposable {
 			switch (op) {
 				case DIFF_INSERT:
 					needChange = true;
-					this.insert(
+					this._insert(
 						eventsCollector,
 						txt,
 						transaction,
@@ -351,7 +369,7 @@ export class ViewController extends Disposable {
 		}
 	}
 
-	private insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
+	private _insert(eventsCollector: ViewEventsCollector, content: string, transaction: Transaction, store: RecordStore, selection: TextSelection, selectionMode: TextSelectionMode) {
 		const userId = transaction.userId;
 		if (TextSelectionMode.Editing !== selectionMode) {
 			return;

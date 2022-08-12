@@ -25,7 +25,7 @@ export interface ICommandDelegate {
 	compositionType(text: string, replacePrevCharCnt: number, replaceNextCharCnt: number, positionDelta: number): void;
 	select(e: TextSelection): void;
 	backspace(): void;
-	enter(): void;
+	enter(): boolean;
 }
 
 interface IEditableHandlerStyles {
@@ -141,7 +141,9 @@ export class EditableHandler extends ViewPart {
 		this._register(this.editableInput.onKeyDown((e) => {
 			const event = e as StandardKeyboardEvent;
 			if (event.equals(KeyCode.Enter)) {
-				this.command.enter();
+				if (this.command.enter()) {
+					event.preventDefault();
+				}
 			}
 			if (event.equals(KeyCode.Backspace)) {
 				this.command.backspace();
@@ -152,6 +154,7 @@ export class EditableHandler extends ViewPart {
 			this.command.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
+			// wait 10ms for selection change
 			setTimeout(() => {
 				// force focus to set range
 				this.editable.domNode.focus();
@@ -160,7 +163,7 @@ export class EditableHandler extends ViewPart {
 				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
 					this.ensureSelection(selection);
 				}
-			}, 0);
+			}, 10);
 
 			if (this.options.placeholder && this.isEmpty()) {
 				// add placeholder and placeholder text style

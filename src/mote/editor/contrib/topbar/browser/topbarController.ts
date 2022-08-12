@@ -3,6 +3,7 @@ import { registerEditorContribution } from 'mote/editor/browser/editorExtensions
 import { IEditorContribution } from 'mote/editor/common/editorCommon';
 import { TopbarWidget } from 'mote/editor/contrib/topbar/browser/topbarWidget';
 import { IContextViewService } from 'mote/platform/contextview/browser/contextView';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { IUserService } from 'mote/workbench/services/user/common/user';
 import { Disposable } from 'vs/base/common/lifecycle';
 
@@ -14,12 +15,13 @@ export class TopbarController extends Disposable implements IEditorContribution 
 	constructor(
 		readonly editor: IMoteEditor,
 		@IUserService userService: IUserService,
+		@IThemeService themeService: IThemeService,
 		@IContextViewService contextViewService: IContextViewService,
 	) {
 		super();
 
 		if (userService.currentProfile) {
-			this.widget = new TopbarWidget(editor);
+			this.widget = new TopbarWidget(editor, themeService, contextViewService);
 			this.registerListeners();
 		}
 	}
