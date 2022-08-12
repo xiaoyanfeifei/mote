@@ -72,6 +72,9 @@ export class DocumentEditor extends EditorPane {
 		if (e.startIndex === e.endIndex) {
 			return;
 		}
+		if (e.lineNumber < 0) {
+			return;
+		}
 		const control = assertIsDefined(this.editorControl);
 		const actions: IAction[] = [];
 		actions.push({

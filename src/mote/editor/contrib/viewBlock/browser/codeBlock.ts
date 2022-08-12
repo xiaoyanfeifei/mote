@@ -1,6 +1,7 @@
 import 'vs/css!./media/prism';
+import * as nls from 'vs/nls';
 import { Prism } from 'mote/base/browser/prism/prism.all';
-import { EditableHandler } from 'mote/editor/browser/controller/editableHandler';
+import { EditableHandler, EditableHandlerOptions } from 'mote/editor/browser/controller/editableHandler';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
 import { BaseBlock } from 'mote/editor/contrib/viewBlock/browser/baseBlock';
@@ -11,12 +12,36 @@ import { ThemedStyles } from 'mote/base/common/themes';
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import BlockStore from 'mote/platform/store/common/blockStore';
 import { collectValueFromSegment } from 'mote/editor/common/segmentUtils';
+import { Button } from 'mote/base/browser/ui/button/button';
+import { addDisposableListener, EventType } from 'vs/base/browser/dom';
+import { mediumTextColor } from 'mote/platform/theme/common/themeColors';
+import { IThemable } from 'vs/base/common/styler';
+import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
+import { Codicon } from 'vs/base/common/codicons';
+import { IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
 
-export class CodeBlock extends BaseBlock {
+const defaultLanguage = 'JavaScript';
+
+const moreLanguageIcon = registerIcon('more-language', Codicon.chevronDown, nls.localize('moreLanguage', 'Line decoration for inserts in the diff editor.'));
+
+
+export class CodeBlock extends BaseBlock implements IThemable {
 
 	public static readonly ID = BlockTypes.code;
 
 	private container!: FastDomNode<HTMLElement>;
+	private languagePickerContainer!: HTMLElement;
+
+	constructor(
+		lineNumber: number,
+		viewContext: ViewContext,
+		viewController: ViewController,
+		options: EditableHandlerOptions,
+		@IThemeService themeService: IThemeService,
+		//@IQuickInputService private readonly quickInputService: IQuickInputService,
+	) {
+		super(lineNumber, viewContext, viewController, options, themeService);
+	}
 
 	renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler {
 		this.container = createFastDomNode(document.createElement('div'));
@@ -24,10 +49,32 @@ export class CodeBlock extends BaseBlock {
 
 		const blockContainer = createFastDomNode(document.createElement('div'));
 		setStyles(blockContainer.domNode, this.getContainerStyle());
+		this.registerHoverListener(blockContainer.domNode);
 
 		const codeContainer = createFastDomNode(document.createElement('div'));
 		codeContainer.setClassName('line-numbers');
 
+
+		const editableHandler = this.createEditableHandler(lineNumber, viewContext, viewController);
+		codeContainer.appendChild(editableHandler.editable);
+		blockContainer.appendChild(codeContainer);
+
+		this.createLanguagePicker(blockContainer.domNode);
+		this.container.appendChild(blockContainer);
+		return editableHandler;
+	}
+
+	private registerHoverListener(container: HTMLElement) {
+		this._register(addDisposableListener(container, EventType.MOUSE_OVER, e => {
+			this.languagePickerContainer.style.opacity = '1';
+		}));
+
+		this._register(addDisposableListener(container, EventType.MOUSE_OUT, e => {
+			this.languagePickerContainer.style.opacity = '0';
+		}));
+	}
+
+	private createEditableHandler(lineNumber: number, viewContext: ViewContext, viewController: ViewController) {
 		const editableHandler = new EditableHandler(lineNumber, viewContext, {
 			type: viewController.type.bind(viewController),
 			compositionType: viewController.compositionType.bind(viewController),
@@ -40,10 +87,34 @@ export class CodeBlock extends BaseBlock {
 		}, {});
 		setStyles(editableHandler.editable.domNode, this.getContentEditableStyle());
 
-		codeContainer.appendChild(editableHandler.editable);
-		blockContainer.appendChild(codeContainer);
-		this.container.appendChild(blockContainer);
 		return editableHandler;
+	}
+
+	private createLanguagePicker(parent: HTMLElement) {
+		const pickerContainer = document.createElement('div');
+		this.languagePickerContainer = pickerContainer;
+		setStyles(pickerContainer, this.getLanguageSelectorStyle());
+
+		const moreIconEle = document.createElement('div');
+		moreIconEle.className = ThemeIcon.asClassName(moreLanguageIcon);
+
+		const button = new Button(pickerContainer);
+		setStyles(button.element, this.getPickerButtonStyle());
+		button.element.appendChild(document.createTextNode(defaultLanguage));
+		button.element.appendChild(moreIconEle);
+
+		parent.appendChild(pickerContainer);
+	}
+
+	private getPickerButtonStyle(): CSSProperties {
+		return {
+			paddingLeft: '5px',
+			paddingRight: '5px',
+			height: '20px',
+			alignItems: 'center',
+			borderRadius: '3px',
+			display: 'inline-flex'
+		};
 	}
 
 	override setValue(store: BlockStore) {
@@ -51,6 +122,25 @@ export class CodeBlock extends BaseBlock {
 		const highlightHtml = Prism.highlight(code, Prism.languages['javascript'], 'javascript');
 		this.editableHandler.setValue(highlightHtml);
 		this.editableHandler.setEnabled(store.canEdit());
+	}
+
+	style() {
+
+	}
+
+	private getLanguageSelectorStyle(): CSSProperties {
+		return {
+			position: 'absolute',
+			top: '8px',
+			left: '8px',
+			color: this.getColor(mediumTextColor)!,
+			display: 'flex',
+			alignItems: 'center',
+			justifyContent: 'flex-end',
+			transition: 'opacity 300ms ease-in',
+			opacity: '0',
+			fontSize: '12px'
+		};
 	}
 
 	private getContentEditableStyle(): CSSProperties {

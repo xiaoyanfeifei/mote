@@ -96,15 +96,16 @@ abstract class BaseBlock extends Themable {
 		super(themeService);
 		this.editableHandler = this.renderPersisted(lineNumber, viewContext, viewController);
 		this.editableHandler.editable.domNode.style.minHeight = '1em';
-		if (viewController.getSelection().lineNumber === lineNumber) {
-			this.editableHandler.focusEditable();
-		}
 
 		const style = this.getStyle();
 		if (style) {
 			this.editableHandler.applyStyles(style);
 		}
 		this.editableHandler.style({ textFillColor: this.themeService.getColorTheme().getColor(lightTextColor)! });
+
+		if (viewController.getSelection().lineNumber === lineNumber) {
+			this.editableHandler.focusEditable();
+		}
 	}
 
 	abstract renderPersisted(lineNumber: number, viewContext: ViewContext, viewController: ViewController): EditableHandler;

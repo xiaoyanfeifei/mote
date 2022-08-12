@@ -154,6 +154,7 @@ export class EditableHandler extends ViewPart {
 			this.command.select(e);
 		}));
 		this._register(this.editableInput.onFocus((e) => {
+			// wait 10ms for selection change
 			setTimeout(() => {
 				// force focus to set range
 				this.editable.domNode.focus();
@@ -162,7 +163,7 @@ export class EditableHandler extends ViewPart {
 				if (selection.lineNumber >= 0 && selection.startIndex >= 0) {
 					this.ensureSelection(selection);
 				}
-			}, 0);
+			}, 10);
 
 			if (this.options.placeholder && this.isEmpty()) {
 				// add placeholder and placeholder text style
