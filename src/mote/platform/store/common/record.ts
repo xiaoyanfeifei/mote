@@ -5,6 +5,28 @@ export enum Role {
 	ReadAndWrite,
 }
 
+export enum Permission {
+	Public = 'public',
+	Space = 'space',
+	User = 'user',
+}
+
+export interface PermissionRecord {
+	role: Role;
+	type: Permission;
+}
+
+export interface PublicPermissionRecord {
+	role: Role;
+	type: Permission.Public;
+}
+
+export interface SpacePermissionRecord {
+	role: Role;
+	type: Permission.Space;
+}
+
+
 export enum RecordTable {
 	Block = 'block',
 	Page = 'page',

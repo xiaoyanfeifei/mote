@@ -11,7 +11,7 @@ import { collectValueFromSegment, IAnnotation, ISegment } from 'mote/editor/comm
 import { EditOperation } from 'mote/editor/common/core/editOperation';
 import { DIFF_DELETE, DIFF_EQUAL, DIFF_INSERT } from 'mote/editor/common/diffMatchPatch';
 import { ViewEventHandler } from 'mote/editor/common/viewEventHandler';
-import { keepLineTypes, pureTextTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
+import { keepLineTypes, textBasedTypes } from 'mote/editor/common/blockTypes';
 import { Markdown } from 'mote/editor/common/markdown';
 import { BugIndicatingError } from 'vs/base/common/errors';
 import { Segment } from 'mote/editor/common/core/segment';

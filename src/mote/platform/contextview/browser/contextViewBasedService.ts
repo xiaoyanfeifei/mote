@@ -15,7 +15,9 @@ export interface IContextViewHandlerOptions {
 }
 
 
-
+/**
+ * @deprecated use ContextViewHelper
+ */
 export abstract class BrowserContextViewBasedService extends Themable implements IContextMenuService {
 	declare readonly _serviceBrand: undefined;
 

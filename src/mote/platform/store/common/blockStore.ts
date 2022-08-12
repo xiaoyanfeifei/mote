@@ -62,6 +62,10 @@ export default class BlockStore extends RecordStore {
 		return RecordStore.createChildStore(this, this.pointer, ['properties']);
 	}
 
+	getPermissionsStore() {
+		return RecordStore.createChildStore(this, this.pointer, ['permissions']);
+	}
+
 	getContentStores(table: string = 'block'): RecordStore[] {
 		const contentStore = this.getContentStore();
 		const record = this.getValue();

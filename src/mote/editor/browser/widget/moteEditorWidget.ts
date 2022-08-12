@@ -113,6 +113,10 @@ export class MoteEditorWidget extends Disposable implements editorBrowser.IMoteE
 		this.attachStore(store);
 	}
 
+	getStore() {
+		return this.modelData?.store || null;
+	}
+
 	private attachStore(store: BlockStore) {
 
 		const viewController = new ViewController(this.configuration, store.getContentStore());

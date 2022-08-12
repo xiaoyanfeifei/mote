@@ -171,6 +171,16 @@ export interface IMoteEditor extends editorCommon.IEditor {
 	addOverlayWidget(widget: IOverlayWidget): void;
 
 	setStore(store: BlockStore): void;
+
+	getStore(): BlockStore | null;
+
+	/**
+	 * Directly trigger a handler or an editor action.
+	 * @param source The source of the call.
+	 * @param handlerId The id of the handler or the id of a contribution.
+	 * @param payload Extra data to be sent to the handler.
+	 */
+	trigger(source: string | null | undefined, handlerId: string, payload: any): void;
 }
 
 
