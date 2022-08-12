@@ -58,18 +58,20 @@ export class DarwinUpdateService extends AbstractUpdateService {
 		}
 		const url = createUpdateURL(assetID, quality, this.productService);
 		try {
-			electron.autoUpdater.setFeedURL({ url });
+			//electron.autoUpdater.setFeedURL({ url });
 		} catch (e) {
 			// application is very likely not signed
 			this.logService.error('Failed to set update feed URL', e);
-			return undefined;
+			return url;
 		}
 		return url;
 	}
 
-	protected doCheckForUpdates(context: any): void {
+	protected async doCheckForUpdates(context: any): Promise<void> {
 		this.setState(State.CheckingForUpdates(context));
-		electron.autoUpdater.checkForUpdates();
+		//electron.autoUpdater.checkForUpdates();
+		await this.isLatestVersion();
+		this.setState(State.Idle(context));
 	}
 
 	private onUpdateAvailable(update: IUpdate): void {
@@ -84,13 +86,6 @@ export class DarwinUpdateService extends AbstractUpdateService {
 		if (this.state.type !== StateType.Downloading) {
 			return;
 		}
-
-		type UpdateDownloadedClassification = {
-			owner: 'joaomoreno';
-			version: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The version number of the new VS Code that has been downloaded.' };
-			comment: 'This is used to know how often VS Code has successfully downloaded the update.';
-		};
-		//this.telemetryService.publicLog2<{ version: String }, UpdateDownloadedClassification>('update:downloaded', { version: update.version });
 
 		this.setState(State.Ready(update));
 	}

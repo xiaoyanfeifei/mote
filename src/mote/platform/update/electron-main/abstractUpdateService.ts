@@ -55,9 +55,6 @@ export abstract class AbstractUpdateService implements IUpdateService {
 	 * https://github.com/microsoft/vscode/issues/89784
 	 */
 	async initialize(): Promise<void> {
-		if (!this.environmentMainService.isBuilt) {
-			return; // updates are never enabled when running out of sources
-		}
 
 		if (this.environmentMainService.disableUpdates) {
 			this.logService.info('update#ctor - updates are disabled by the environment');
@@ -96,8 +93,9 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			// Check for updates only once after 30 seconds
 			setTimeout(() => this.checkForUpdates(false), 30 * 1000);
 		} else {
-			// Start checking for updates after 30 seconds
-			this.scheduleCheckForUpdates(30 * 1000).then(undefined, err => this.logService.error(err));
+			this.logService.info('update#ctor - automatic updates scheduled');
+			// Start checking for updates after 10 seconds
+			this.scheduleCheckForUpdates(10 * 1000).then(undefined, err => this.logService.error(err));
 		}
 	}
 
@@ -115,7 +113,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			.then(() => this.checkForUpdates(false))
 			.then(() => {
 				// Check again after 1 hour
-				return this.scheduleCheckForUpdates(60 * 60 * 1000);
+				return this.scheduleCheckForUpdates(10 * 1000);
 			});
 	}
 

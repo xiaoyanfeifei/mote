@@ -27,7 +27,7 @@ import { ServiceCollection } from "vs/platform/instantiation/common/serviceColle
 import { ConsoleMainLogger, ILoggerService, ILogService, LogLevel, LogService } from "vs/platform/log/common/log";
 import product from "vs/platform/product/common/product";
 import { IProductService } from "vs/platform/product/common/productService";
-import { RequestMainService } from 'vs/platform/request/electron-main/requestMainService';
+import { RequestMainService } from 'mote/platform/request/electron-main/requestMainService';
 import { IStateMainService } from "vs/platform/state/electron-main/state";
 import { StateMainService } from "vs/platform/state/electron-main/stateMainService";
 import { MoteApplication } from "./app";
