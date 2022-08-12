@@ -1,14 +1,19 @@
 import { setStyles } from 'mote/base/browser/jsx/createElement';
 import { CSSProperties } from 'mote/base/browser/jsx/style';
 import { Button } from 'mote/base/browser/ui/button/button';
+import { IContextViewProvider, AnchorAlignment } from 'mote/base/browser/ui/contextview/contextview';
 import { IntlProvider } from 'mote/base/common/i18n';
 import { IMoteEditor, IOverlayWidget, IOverlayWidgetPosition, OverlayWidgetPositionPreference } from 'mote/editor/browser/editorBrowser';
+import { ShareMenu } from 'mote/editor/contrib/topbar/browser/shareMenu';
+import { ContextViewHelper } from 'mote/platform/contextview/browser/contextViewHelper';
+import { IThemeService } from 'mote/platform/theme/common/themeService';
 import { Widget } from 'vs/base/browser/ui/widget';
 import { Emitter } from 'vs/base/common/event';
 
 export const TopbarDefaultHeight = 45;
 export const TopbarDesktopHeight = 37;
 export const TopbarTransitionDuration = 700;
+
 
 export class TopbarWidget extends Widget implements IOverlayWidget {
 
@@ -18,13 +23,20 @@ export class TopbarWidget extends Widget implements IOverlayWidget {
 	public readonly onDidShareBtnClick = this._onDidShareBtnClick.event;
 
 	private domNode: HTMLElement;
+	private contextViewHelper: ContextViewHelper;
+
+	private shareButton!: Button;
 
 	constructor(
-		editor: IMoteEditor,
+		private readonly editor: IMoteEditor,
+		readonly themeService: IThemeService,
+		readonly contextViewProvider: IContextViewProvider,
 	) {
 		super();
 
 		this.domNode = document.createElement('div');
+		this.contextViewHelper = new ContextViewHelper(contextViewProvider, themeService);
+
 		this.createDefaultTopbar(this.domNode);
 
 		editor.addOverlayWidget(this);
@@ -36,9 +48,17 @@ export class TopbarWidget extends Widget implements IOverlayWidget {
 
 		const shareLabel = this.formatMessage('topbar.share.label', 'Share');
 		const shareTooltip = this.formatMessage('topbar.share.tooltip', 'Share your page to the web');
-		this.createButton(shareLabel, shareTooltip, container, () => this._onDidShareBtnClick.fire());
+		this.shareButton = this.createButton(shareLabel, shareTooltip, container, () => this.showShareMenu());
 
 		parent.appendChild(container);
+	}
+
+	private showShareMenu() {
+		this.contextViewHelper.showContextView({
+			getAnchor: () => this.shareButton.element,
+			anchorAlignment: AnchorAlignment.LEFT,
+			getWidget: (container) => new ShareMenu(container, this.editor, this.themeService)
+		});
 	}
 
 	private formatMessage(id: string, defaultMessage: string) {
@@ -61,6 +81,7 @@ export class TopbarWidget extends Widget implements IOverlayWidget {
 		button.element.title = tooltip;
 
 		button.onDidClick(listener);
+		return button;
 	}
 
 	getTopbarHeight() {
