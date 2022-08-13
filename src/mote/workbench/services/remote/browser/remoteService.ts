@@ -1,15 +1,21 @@
 import { Lodash } from 'mote/base/common/lodash';
-import { doFetch, config } from 'mote/base/parts/request/common/request';
+import { doFetch } from 'mote/base/parts/request/common/request';
 import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import RequestQueue from 'mote/workbench/services/remote/common/requestQueue';
 import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { sha1Hex } from 'vs/base/browser/hash';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
 import { generateUuid } from 'vs/base/common/uuid';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
 import { CaffeineError } from 'mote/base/common/errors';
 import { IUserService } from 'mote/workbench/services/user/common/user';
+import { IProductService } from 'vs/platform/product/common/productService';
 
+
+let host: string;
+
+function genarateUrl(path: string) {
+	return `${host}${path}`;
+}
 
 type IRecordMap = { [key: string]: { [key: string]: RecordWithRole } };
 
@@ -70,7 +76,7 @@ const syncRecordValues = async (requests: SyncRecordRequest[]) => {
 		requestMap[key] = request;
 	}
 	requests = Object.keys(requestMap).map(key => requestMap[key]);
-	const recordValues = await doFetch<IRecordMap>('/api/syncRecordValues', requests, 'POST');
+	const recordValues = await doFetch<IRecordMap>(genarateUrl('/api/syncRecordValues'), requests, 'POST');
 	const data = recordValues ? recordValues : {};
 	const recordMap = new RecordMap(data);
 	return recordMap;
@@ -85,14 +91,10 @@ export class RemoteService implements IRemoteService {
 	public userService!: IUserService;
 
 	constructor(
-		@IEnvironmentService environmentService: IEnvironmentService,
+		@IProductService productService: IProductService,
 	) {
-		if (environmentService.isBuilt) {
-			config.apiDomain = config.apiProd;
-		} else {
-			config.apiDomain = config.apiDev;
-		}
 
+		host = productService.updateUrl || 'http://localhost:7071';
 		setInterval(() => this.applyTransactions(), this.timeout);
 	}
 
@@ -142,12 +144,12 @@ export class RemoteService implements IRemoteService {
 		this.doPost('/api/applyTransactions', request);
 	}
 
-	private async doGet<T>(url: string): Promise<T> {
-		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(url, null, 'GET'));
+	private async doGet<T>(path: string): Promise<T> {
+		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(genarateUrl(path), null, 'GET'));
 	}
 
-	private async doPost<T>(url: string, payload: any): Promise<T> {
-		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(url, payload, 'POST'));
+	private async doPost<T>(path: string, payload: any): Promise<T> {
+		return this.executeRequest(() => doFetch<CaffeineResponse<T>>(genarateUrl(path), payload, 'POST'));
 	}
 
 	private async executeRequest<T>(callback: () => Promise<CaffeineResponse<T>>) {

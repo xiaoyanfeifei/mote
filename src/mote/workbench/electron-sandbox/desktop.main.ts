@@ -6,7 +6,7 @@ import { ServiceCollection } from "vs/platform/instantiation/common/serviceColle
 import { Workbench } from "mote/workbench/browser/workbench";
 import { INativeWorkbenchEnvironmentService, NativeWorkbenchEnvironmentService } from "mote/workbench/services/environment/electron-sandbox/environmentService";
 import { IProductService } from "vs/platform/product/common/productService";
-import product from "vs/platform/product/common/product";
+import product from "mote/platform/product/common/product";
 import { LoggerChannelClient, LogLevelChannelClient } from "vs/platform/log/common/logIpc";
 import { ILoggerService, ILogService, LogLevel } from "vs/platform/log/common/log";
 import { isCI } from "vs/base/common/platform";
@@ -87,7 +87,7 @@ export class DesktopMain extends Disposable {
 		serviceCollection.set(IStorageService, storageService);
 
 		// Remote
-		const remoteService = new RemoteService(environmentService);
+		const remoteService = new RemoteService(productService);
 		serviceCollection.set(IRemoteService, remoteService);
 
 		// User

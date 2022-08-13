@@ -325,6 +325,7 @@
 						"restrictions": [
 							"mote/base/~",
 							"vs/base/~",
+							"mote/base/parts/*/~",
 							"vs/base/parts/*/~",
 							"vs/platform/*/~",
 							"mote/platform/*/~",

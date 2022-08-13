@@ -29,6 +29,7 @@ const WEB_FOLDER = path.join(REPO_ROOT, 'remote', 'web');
 const commit = util.getVersion(REPO_ROOT);
 const quality = product.quality;
 const version = (quality && quality !== 'stable') ? `${packageJson.version}-${quality}` : packageJson.version;
+const host = 'https://caffeine-function-edog.azurewebsites.net/';
 
 const moteWebResourceIncludes = [
 	// Workbench
@@ -79,6 +80,7 @@ const createMoteWebProductConfigurationPatcher = (product) => {
 		if (path.endsWith('vs/platform/product/common/product.js')) {
 			const productConfiguration = JSON.stringify({
 				...product,
+				updateUrl: 'https://caffeine-function-edog.azurewebsites.net',
 				version,
 				commit,
 				date: buildDate
