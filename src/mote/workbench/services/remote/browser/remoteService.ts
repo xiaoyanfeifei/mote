@@ -76,13 +76,15 @@ const syncRecordValues = async (requests: SyncRecordRequest[]) => {
 		requestMap[key] = request;
 	}
 	requests = Object.keys(requestMap).map(key => requestMap[key]);
-	const recordValues = await doFetch<IRecordMap>(genarateUrl('/api/syncRecordValues'), requests, 'POST');
+	const recordValues = await RemoteService.INSTANCE.syncRecordValues(requests);
 	const data = recordValues ? recordValues : {};
 	const recordMap = new RecordMap(data);
 	return recordMap;
 };
 
 export class RemoteService implements IRemoteService {
+
+	public static INSTANCE: RemoteService;
 
 	readonly _serviceBrand: undefined;
 
@@ -96,6 +98,7 @@ export class RemoteService implements IRemoteService {
 
 		host = productService.updateUrl || 'http://localhost:7071';
 		setInterval(() => this.applyTransactions(), this.timeout);
+		RemoteService.INSTANCE = this;
 	}
 
 	//#region user
@@ -130,6 +133,10 @@ export class RemoteService implements IRemoteService {
 			table: pointer.table,
 			version: version ?? -1
 		});
+	}
+
+	async syncRecordValues(payload: SyncRecordRequest[]) {
+		return await this.doPost<IRecordMap>('/api/syncRecordValues', payload);
 	}
 
 	private async applyTransactions() {
