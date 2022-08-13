@@ -77,7 +77,7 @@ const createMoteWebProductConfigurationPatcher = (product) => {
 	 */
 	const result = (content, path) => {
 		// (1) Patch product configuration
-		if (path.endsWith('vs/platform/product/common/product.js')) {
+		if (path.endsWith('mote/platform/product/common/product.js')) {
 			const productConfiguration = JSON.stringify({
 				...product,
 				updateUrl: 'https://caffeine-function-edog.azurewebsites.net',
