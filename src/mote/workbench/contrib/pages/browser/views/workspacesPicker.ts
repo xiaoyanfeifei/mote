@@ -194,4 +194,8 @@ export class WorkspacesPicker extends Themable implements IMenuLike {
 			height: '100%'
 		}, this.getBorderRight());
 	};
+
+	style() {
+
+	}
 }

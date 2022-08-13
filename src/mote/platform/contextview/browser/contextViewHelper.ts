@@ -12,11 +12,12 @@ export interface IDelegate {
 	getWidget(container: HTMLElement): IWidget;
 	anchorAlignment?: AnchorAlignment; // default: left
 	anchorPosition?: AnchorPosition; // default: below
-	anchorAxisAlignment?: AnchorAxisAlignment; // default: vertical
+	anchorAxisAlignment?: AnchorAxisAlignment; // default: vertical,
+	debug?: boolean;
 }
 
 interface IWidget extends IThemable {
-	onDidBlur: Event<void>;
+	onDidBlur?: Event<void>;
 }
 
 export class ContextViewHelper {
@@ -37,36 +38,43 @@ export class ContextViewHelper {
 
 				widgetDisposables.add(attachMenuStyler(widget, this.themeService));
 
-				widget.onDidBlur(() => this.contextViewProvider.hideContextView(), null, widgetDisposables);
+				if (widget.onDidBlur) {
+					widget.onDidBlur(() => this.contextViewProvider.hideContextView(), null, widgetDisposables);
+				}
 
-				widgetDisposables.add(addDisposableListener(window, EventType.BLUR, () => this.contextViewProvider.hideContextView()));
-				widgetDisposables.add(addDisposableListener(window, EventType.MOUSE_DOWN, (e: MouseEvent) => {
-					if (e.defaultPrevented) {
-						return;
-					}
-
-					const event = new StandardMouseEvent(e);
-					let element: HTMLElement | null = event.target;
-
-					// Don't do anything as we are likely creating a context menu
-					if (event.rightButton) {
-						return;
-					}
-
-					while (element) {
-						if (element === container) {
+				if (!delegate.debug) {
+					widgetDisposables.add(addDisposableListener(window, EventType.BLUR, () => this.contextViewProvider.hideContextView()));
+					widgetDisposables.add(addDisposableListener(window, EventType.MOUSE_DOWN, (e: MouseEvent) => {
+						if (e.defaultPrevented) {
 							return;
 						}
 
-						element = element.parentElement;
-					}
+						const event = new StandardMouseEvent(e);
+						let element: HTMLElement | null = event.target;
 
-					this.contextViewProvider.hideContextView();
-				}));
+						// Don't do anything as we are likely creating a context menu
+						if (event.rightButton) {
+							return;
+						}
 
+						while (element) {
+							if (element === container) {
+								return;
+							}
+
+							element = element.parentElement;
+						}
+
+						this.contextViewProvider.hideContextView();
+					}));
+				}
 
 				return widgetDisposables;
 			}
 		});
+	}
+
+	hideContextView() {
+		this.contextViewProvider.hideContextView();
 	}
 }

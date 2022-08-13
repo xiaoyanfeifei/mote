@@ -1,5 +1,6 @@
 import { IContextMenuDelegate } from 'mote/base/browser/contextmenu';
 import { IMenuLike } from 'mote/base/browser/ui/menu/menu';
+import { attachMenuStyler } from 'mote/platform/theme/common/styler';
 import { contextViewBackground, regularTextColor } from 'mote/platform/theme/common/themeColors';
 import { IThemeService, Themable } from 'mote/platform/theme/common/themeService';
 import { $, addDisposableListener, EventType, isHTMLElement } from 'vs/base/browser/dom';
@@ -101,7 +102,7 @@ export abstract class BrowserContextViewBasedService extends Themable implements
 
 		const menu = this.createMenu(container, actions, { actionRunner: actionRunner });
 
-		//menuDisposables.add(attachMenuStyler(menu, this.themeService));
+		menuDisposables.add(attachMenuStyler(menu, this.themeService));
 
 		// TODO fixme later, use auto detch instead of force style
 		const menuContainer = menu.getContainer();

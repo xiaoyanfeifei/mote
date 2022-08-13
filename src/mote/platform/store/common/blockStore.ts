@@ -42,7 +42,7 @@ export default class BlockStore extends RecordStore {
 		return BlockStore.createChildStore(this, this.pointer, [property]);
 	}
 
-	getProperties() {
+	getProperties(): { [key: string]: any } {
 		const value = this.getValue();
 		if (value && value.properties) {
 			return value.properties;
