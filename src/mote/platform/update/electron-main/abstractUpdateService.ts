@@ -113,7 +113,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
 			.then(() => this.checkForUpdates(false))
 			.then(() => {
 				// Check again after 1 hour
-				return this.scheduleCheckForUpdates(10 * 1000);
+				return this.scheduleCheckForUpdates(60 * 60 * 1000);
 			});
 	}
 

@@ -17,7 +17,7 @@ import { IRequestContext, IRequestOptions } from 'vs/base/parts/request/common/r
 import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
 import { getResolvedShellEnv } from 'vs/platform/shell/node/shellEnv';
 import { ILogService } from 'vs/platform/log/common/log';
-import { IHTTPConfiguration, IRequestService } from 'vs/platform/request/common/request';
+import { IRequestService } from 'vs/platform/request/common/request';
 import { Agent, getProxyAgent } from 'vs/platform/request/node/proxy';
 import { createGunzip } from 'zlib';
 
@@ -49,12 +49,6 @@ export class RequestService extends Disposable implements IRequestService {
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
-	}
-
-	private configure(config: IHTTPConfiguration) {
-		this.proxyUrl = config.http && config.http.proxy;
-		this.strictSSL = !!(config.http && config.http.proxyStrictSSL);
-		this.authorization = config.http && config.http.proxyAuthorization;
 	}
 
 	async request(options: NodeRequestOptions, token: CancellationToken): Promise<IRequestContext> {

@@ -12,7 +12,7 @@ import { BrowserWorkbenchEnvironmentService, IBrowserWorkbenchEnvironmentService
 import { Workbench } from 'mote/workbench/browser/workbench';
 import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
 import { IProductService } from 'vs/platform/product/common/productService';
-import product from 'vs/platform/product/common/product';
+import product from 'mote/platform/product/common/product';
 import { RemoteAuthorityResolverService } from 'vs/platform/remote/browser/remoteAuthorityResolverService';
 import { IRemoteAuthorityResolverService } from 'vs/platform/remote/common/remoteAuthorityResolver';
 import { IWorkbenchFileService } from 'vs/workbench/services/files/common/files';
@@ -197,7 +197,7 @@ export class BrowserMain extends Disposable {
 		serviceCollection.set(IStorageService, storageService);
 
 		// Remote
-		const remoteService = new RemoteService(environmentService);
+		const remoteService = new RemoteService(productService);
 		serviceCollection.set(IRemoteService, remoteService);
 
 		// User

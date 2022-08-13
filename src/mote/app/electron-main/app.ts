@@ -19,7 +19,6 @@ import { IProcessEnvironment, isMacintosh } from 'vs/base/common/platform';
 import { machineIdKey } from 'vs/platform/telemetry/common/telemetry';
 import { getMachineId } from 'vs/base/node/id';
 import { SharedProcess } from 'mote/platform/sharedProcess/electron-main/sharedProcess';
-import { once } from 'vs/base/common/functional';
 import { WindowError } from 'vs/platform/window/electron-main/window';
 
 export class MoteApplication extends Disposable {
@@ -213,8 +212,8 @@ export class MoteApplication extends Disposable {
 		this.lifecycleMainService.phase = LifecycleMainPhase.AfterWindowOpen;
 
 		// Observe shared process for errors
-		let willShutdown = false;
-		once(this.lifecycleMainService.onWillShutdown)(() => willShutdown = true);
+		//let willShutdown = false;
+		//once(this.lifecycleMainService.onWillShutdown)(() => willShutdown = true);
 		this._register(sharedProcess.onDidError(({ type, details }) => {
 
 			// Logging
