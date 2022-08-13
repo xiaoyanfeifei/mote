@@ -1,10 +1,6 @@
 .scrollbar > .slider {
     background: rgba(121, 121, 121, 0.4);
 }
-.action-item.focused > .action-menu-item {
-	color: rgb(255,255,255);
-	background-color: rgb(4,54,94);
-}
 
 .workbench-hover { border: 1px solid #454545; }
 

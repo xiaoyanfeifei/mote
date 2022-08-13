@@ -2,7 +2,7 @@ import { Lodash } from 'mote/base/common/lodash';
 import { doFetch } from 'mote/base/parts/request/common/request';
 import { Pointer, RecordWithRole } from 'mote/platform/store/common/record';
 import RequestQueue from 'mote/workbench/services/remote/common/requestQueue';
-import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
+import { CaffeineResponse, IRemoteService, LoginData, SyncRecordRequest, UploadData, UserLoginPayload, UserSignupPayload } from 'mote/platform/remote/common/remote';
 import { sha1Hex } from 'vs/base/browser/hash';
 import { generateUuid } from 'vs/base/common/uuid';
 import { TransactionQueue } from 'mote/platform/transaction/common/transaction';
@@ -137,6 +137,13 @@ export class RemoteService implements IRemoteService {
 
 	async syncRecordValues(payload: SyncRecordRequest[]) {
 		return await this.doPost<IRecordMap>('/api/syncRecordValues', payload);
+	}
+
+	async uploadFile(file: File) {
+		const userId = this.userService.currentProfile?.id;
+		const data = new FormData();
+		data.append('file', file);
+		return await this.doPost<UploadData>(`/api/upload?filename=${file.name}&username=${userId}`, data);
 	}
 
 	private async applyTransactions() {

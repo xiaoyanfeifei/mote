@@ -114,4 +114,8 @@ export class QuickMenu extends ActionBar implements IMenuLike {
 	private doGetActionViewItem(action: IAction, options: IMenuLikeOptions, parentData: ISubMenuData): BaseActionViewItem {
 		return new QuickActionViewItem(options.context, action, options);
 	}
+
+	style() {
+
+	}
 }

@@ -14,6 +14,7 @@ import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Codicon } from 'vs/base/common/codicons';
 import { ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { ImageBlock } from 'mote/editor/contrib/viewBlock/browser/imageBlock';
 
 const bulleteIcon = registerIcon('bullete', Codicon.circleFilled, nls.localize('diffInsertIcon', 'Line decoration for inserts in the diff editor.'));
 
@@ -258,3 +259,4 @@ registerViewLineContribution(QuoteBlock.ID, QuoteBlock);
 registerViewLineContribution(TodoBlock.ID, TodoBlock);
 registerViewLineContribution(BulletedListBlock.ID, BulletedListBlock);
 registerViewLineContribution(CodeBlock.ID, CodeBlock);
+registerViewLineContribution(ImageBlock.ID, ImageBlock);

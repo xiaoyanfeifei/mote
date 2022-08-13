@@ -27,6 +27,14 @@ interface ParseMarkdownBlockProps extends MarkdownBlockParseRule {
 }
 
 const markdownBlockParseRules: MarkdownBlockParseRule[] = [];
+
+// Image tag
+markdownBlockParseRules.push({
+	matchRegex: /^\!\[\]$/,
+	toBlockType: () => BlockTypes.image,
+	insertTextAfter: false,
+});
+
 // Todo tag
 markdownBlockParseRules.push({
 	matchRegex: /^\[\]$/,

@@ -11,6 +11,7 @@ export function registerColor(id: string, defaults: ColorDefaults | null, descri
 }
 
 export const foreground = colorRegistry.registerColor('foreground', { dark: '#CCCCCC', light: '#616161', hcDark: '#FFFFFF', hcLight: '#292929' }, 'Overall foreground color. This color is only used if not overridden by a component.');
+export const disabledForeground = registerColor('disabledForeground', { dark: '#CCCCCC80', light: '#61616180', hcDark: '#A5A5A5', hcLight: '#7F7F7F' }, nls.localize('disabledForeground', "Overall foreground for disabled elements. This color is only used if not overridden by a component."));
 export const regularTextColor = colorRegistry.registerColor('text.regular.color', { dark: '#ffffffcf', light: '#37352f' }, 'regularTextColor');
 export const mediumTextColor = colorRegistry.registerColor('text.medium.color', { dark: '#ffffffa6', light: '#37352fa6' }, 'regularTextColor');
 export const lightTextColor = colorRegistry.registerColor('text.light.color', { dark: '#ffffff26', light: '#37352f26' }, '');
@@ -68,6 +69,9 @@ export const editorWidgetBackground = registerColor('editorWidget.background', {
 //#region editorHover
 
 export const editorHoverBackground = registerColor('editorHoverWidget.background', { light: editorWidgetBackground, dark: editorWidgetBackground, hcDark: editorWidgetBackground, hcLight: editorWidgetBackground }, nls.localize('hoverBackground', 'Background color of the editor hover.'));
+
+export const codeBlockBackground = registerColor('codeBlock.background', { dark: '#3f4447', light: '#f7f6f2', hcDark: '#0C141F', hcLight: Color.white }, nls.localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
+export const imageBlockBackground = registerColor('imageBlock.background', { dark: codeBlockBackground, light: codeBlockBackground, hcDark: '#0C141F', hcLight: Color.white }, nls.localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
 
 
 //#endregion

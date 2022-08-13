@@ -23,12 +23,13 @@ interface IButtonStyles {
 	buttonBackground?: Color;
 	buttonHoverBackground?: Color;
 	buttonForeground?: Color;
+	buttonBorderColor?: Color;
 }
 
 const defaultOptions: IButtonStyles = {
-	buttonBackground: Color.fromHex('#0E639C'),
+	//buttonBackground: Color.fromHex('#0E639C'),
 	buttonHoverBackground: Color.fromHex('#37352f14'),
-	buttonForeground: Color.white
+	buttonForeground: Color.white,
 };
 
 export class Button extends Disposable implements IButton {
@@ -37,6 +38,7 @@ export class Button extends Disposable implements IButton {
 	protected options: IButtonOptions;
 
 	private buttonHoverBackground: Color | undefined;
+	private buttonBackground: Color | undefined;
 
 	private _onDidClick = this._register(new Emitter<Event>());
 	get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
@@ -47,6 +49,7 @@ export class Button extends Disposable implements IButton {
 		this.options = options || Object.create(null);
 		mixin(this.options, defaultOptions, false);
 		this.buttonHoverBackground = this.options.buttonHoverBackground;
+		this.buttonBackground = this.options.buttonBackground;
 
 		this._element = $('div');
 
@@ -80,6 +83,10 @@ export class Button extends Disposable implements IButton {
 
 	public style(style: IButtonStyles) {
 		this.buttonHoverBackground = style.buttonHoverBackground;
+		if (style.buttonBorderColor) {
+			this.element.style.border = `1px solid ${style.buttonBorderColor}`;
+		}
+
 		this.applyStyles();
 	}
 
@@ -94,7 +101,7 @@ export class Button extends Disposable implements IButton {
 		if (this._element) {
 			const style = Object.assign({
 				cursor: 'pointer',
-				backgroundColor: '',
+				backgroundColor: this.buttonBackground || '',
 				transition: 'background 20ms ease-in 0s'
 			}, this.options.style);
 			setStyles(this._element, style);

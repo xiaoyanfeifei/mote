@@ -133,8 +133,8 @@ export const ThemedStyles = {
 	},
 
 	darkDividerColor: {
-		light: ThemedBase.light.darkgray.alpha(.16).css(),
-		dark: ThemedBase.dark.white.alpha(.14).css()
+		light: ThemedBase.light.darkgray.alpha(.16).hex(),
+		dark: ThemedBase.dark.white.alpha(.14).hex()
 	},
 
 	sidebarTextColor: {

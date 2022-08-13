@@ -3,6 +3,8 @@ import SVGData from './svgdata';
 
 export interface ISVGIconStyles {
 	iconFill?: Color;
+	width?: string;
+	height?: string;
 }
 
 export type SVGProperty = keyof typeof SVGData;
@@ -34,6 +36,12 @@ export class SVGIcon {
 
 	style(styles: ISVGIconStyles): void {
 		this.iconFill = styles.iconFill;
+		if (styles.height) {
+			this._element.style.height = styles.height;
+		}
+		if (styles.width) {
+			this._element.style.width = styles.width;
+		}
 
 		this.applyStyles();
 	}
