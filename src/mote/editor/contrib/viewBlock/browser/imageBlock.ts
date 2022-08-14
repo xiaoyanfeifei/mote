@@ -4,7 +4,7 @@ import { EditableHandlerOptions } from 'mote/editor/browser/controller/editableH
 import { IViewLineContribution } from 'mote/editor/browser/editorBrowser';
 import { ViewContext } from 'mote/editor/browser/view/viewContext';
 import { ViewController } from 'mote/editor/browser/view/viewController';
-import blockStore from 'mote/platform/store/common/blockStore';
+import BlockStore from 'mote/platform/store/common/blockStore';
 import { IThemeService, Themable, ThemeIcon } from 'mote/platform/theme/common/themeService';
 import { createFastDomNode, FastDomNode } from 'vs/base/browser/fastDomNode';
 import { SVGIcon } from 'mote/base/browser/ui/icon/svgicon';
@@ -20,7 +20,6 @@ import { Codicon } from 'vs/base/common/codicons';
 import { IAction } from 'vs/base/common/actions';
 import { BlockTypes } from 'mote/platform/store/common/record';
 import { isLocalUser } from 'mote/platform/user/common/user';
-import BlockStore from 'mote/platform/store/common/blockStore';
 
 const menuIcon = registerIcon('menu-icon', Codicon.kebabHorizontal, '');
 
@@ -57,7 +56,7 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 		this.contextViewHelper = new ContextViewHelper(contextViewService, themeService);
 	}
 
-	setValue(store: blockStore): void {
+	setValue(store: BlockStore): void {
 		this.store = store;
 		const source = this.getSource(store);
 		if (source) {
@@ -201,6 +200,7 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 				widget.addTabs([uploadTab, embedLinkTab]);
 				return widget;
 			},
+			debug: true,
 		});
 	}
 
@@ -226,6 +226,13 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 				this.viewController.updateProperties({ source: result.url });
 			}
 		}
+	}
+
+	private handleEmbed(source: string) {
+		this.contextViewHelper.hideContextView();
+		this.createImage(this.domNode.domNode, source);
+		this.viewController.select({ startIndex: 0, endIndex: 0, lineNumber: this.lineNumber });
+		this.viewController.updateProperties({ source: source });
 	}
 
 	private renderUploadTab(parent: HTMLElement) {
@@ -257,6 +264,28 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 		const container = document.createElement('div');
 		container.style.width = '500px';
 		container.style.paddingTop = '16px';
+
+		const inputContainer = document.createElement('div');
+		setStyles(inputContainer, this.getUploadImageBtnContainerStyle());
+		const input = document.createElement('input');
+		setStyles(input, this.getUploadImageButtonStyle());
+		input.style.border = '1px solid #d9d9d9';
+		input.placeholder = 'Paste your link here';
+
+		const buttonContainer = document.createElement('div');
+		setStyles(buttonContainer, this.getUploadTipsStyle());
+		const confirmButton = new Button(buttonContainer);
+		confirmButton.element.innerText = 'Embed Link';
+		setStyles(confirmButton.element, this.getUploadImageButtonStyle());
+		confirmButton.element.style.width = '';
+		confirmButton.onDidClick(() => {
+			this.handleEmbed(input.value);
+		});
+
+		inputContainer.appendChild(input);
+		container.appendChild(inputContainer);
+		container.appendChild(buttonContainer);
+
 		parent.appendChild(container);
 	}
 
@@ -306,7 +335,7 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 		};
 	}
 
-	private getSource(store: blockStore) {
+	private getSource(store: BlockStore) {
 		const properties = store.getProperties();
 		const source = properties.source;
 		return source;
