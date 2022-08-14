@@ -16,15 +16,17 @@ export class ViewLines extends ViewPart implements IVisibleLinesHost<ViewLine> {
 
 	private domNode: FastDomNode<HTMLElement>;
 
+	private readonly viewController: ViewController;
 	private lines: ViewLine[] = [];
 
 	constructor(
 		context: ViewContext,
-		private readonly viewController: ViewController,
+
 		private readonly linesContent: FastDomNode<HTMLElement>,
 		@IInstantiationService private instantiationService: IInstantiationService,
 	) {
 		super(context);
+		this.viewController = context.controller;
 
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-lines');

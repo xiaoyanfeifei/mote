@@ -6,6 +6,6 @@ suite('Base - Prism', () => {
 		const code = 'const';
 		const result = Prism.highlight(code, Prism.languages['javascript'], 'javascript');
 
-		assert.equal(result, '<span class="token keyword" data-token-index="0">const</span>');
+		assert.equal(result, '<span class="token keyword">const</span>');
 	});
 });

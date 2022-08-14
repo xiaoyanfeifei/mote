@@ -2,6 +2,7 @@ import { IEditorConfiguration } from 'mote/editor/common/config/editorConfigurat
 import { ConfigurationChangedEvent, EditorOption } from 'mote/editor/common/config/editorOptions';
 import { ScrollType } from 'mote/editor/common/editorCommon';
 import { IViewLayout, Viewport } from 'mote/editor/common/viewlayout';
+import { LinesLayout } from 'mote/editor/common/viewLayout/linesLayout';
 import { FastDomNode } from 'vs/base/browser/fastDomNode';
 import { Event } from 'vs/base/common/event';
 import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
@@ -145,6 +146,8 @@ class EditorScrollable extends Disposable {
 export class ViewLayout extends Disposable implements IViewLayout {
 
 	private readonly scrollable: EditorScrollable;
+	private linesLayout!: LinesLayout;
+
 	public readonly onDidScroll: Event<ScrollEvent>;
 
 	constructor(
@@ -198,7 +201,11 @@ export class ViewLayout extends Disposable implements IViewLayout {
 	private _getContentHeight(width: number, height: number, contentWidth: number): number {
 		const viewLinesDom = this.viewLineDomProvider();
 		if (viewLinesDom) {
-			return viewLinesDom.domNode.clientHeight + 200;
+			if (!this.linesLayout) {
+				this.linesLayout = new LinesLayout(viewLinesDom.domNode);
+				this._register(this.linesLayout.onDidChange(() => this.updateHeight()));
+			}
+			return viewLinesDom.domNode.clientHeight + 300;
 		}
 		return height + 200;
 	}

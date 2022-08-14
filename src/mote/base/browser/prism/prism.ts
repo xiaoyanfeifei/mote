@@ -359,7 +359,7 @@ export namespace Prism {
 	 */
 	export type TokenStream = string | Token | Array<string | Token>;
 
-	class Token {
+	export class Token {
 
 		public readonly length: number;
 

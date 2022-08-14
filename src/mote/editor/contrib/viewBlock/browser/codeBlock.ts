@@ -19,6 +19,8 @@ import { IThemable } from 'vs/base/common/styler';
 import { registerIcon } from 'mote/platform/theme/common/iconRegistry';
 import { Codicon } from 'vs/base/common/codicons';
 import { IThemeService, ThemeIcon } from 'mote/platform/theme/common/themeService';
+import { flattenNode } from 'mote/editor/common/htmlElementUtils';
+import { TextSelection } from 'mote/editor/common/core/selectionUtils';
 
 const defaultLanguage = 'JavaScript';
 
@@ -80,14 +82,23 @@ export class CodeBlock extends BaseBlock implements IThemable {
 			compositionType: viewController.compositionType.bind(viewController),
 			backspace: viewController.backspace.bind(viewController),
 			// prevent default enter behavior
-			enter: () => { viewController.insert('\n'); return false; },
-			select: viewController.select.bind(viewController),
+			enter: () => this.handleEnter(viewController),
+			select: (e) => this.handleSelect(viewController, e),
 			isEmpty: viewController.isEmpty.bind(viewController),
 			getSelection: viewController.getSelection.bind(viewController),
 		}, {});
 		setStyles(editableHandler.editable.domNode, this.getContentEditableStyle());
 
 		return editableHandler;
+	}
+
+	private handleSelect(viewController: ViewController, selection: TextSelection) {
+		viewController.select(selection);
+	}
+
+	private handleEnter(viewController: ViewController) {
+		viewController.insert('\n');
+		return false;
 	}
 
 	private createLanguagePicker(parent: HTMLElement) {
@@ -120,8 +131,31 @@ export class CodeBlock extends BaseBlock implements IThemable {
 	override setValue(store: BlockStore) {
 		const code = collectValueFromSegment(store.getTitleStore().getValue());
 		const highlightHtml = Prism.highlight(code, Prism.languages['javascript'], 'javascript');
-		this.editableHandler.setValue(highlightHtml);
+		const flattenHtml = this.flattenHtml(highlightHtml);
+		this.editableHandler.setValue(flattenHtml);
 		this.editableHandler.setEnabled(store.canEdit());
+	}
+
+	private flattenHtml(html: string) {
+		let result = '';
+		const testNode = document.createElement('div');
+		testNode.innerHTML = html;
+		const nodes = flattenNode(testNode);
+		let lastData;
+		for (const node of nodes) {
+			const data = node.data;
+			if (node.parentNode !== testNode) {
+				const className = (node.parentNode! as any).className;
+				result += `<span class="${className}" >${data}</span>`;
+			} else {
+				lastData = data;
+				result += `<span >${data}</span>`;
+			}
+		}
+		if (lastData === '\n') {
+			result += `<div style="min-height: 1em" ></siv>`;
+		}
+		return result;
 	}
 
 	style() {
@@ -152,6 +186,7 @@ export class CodeBlock extends BaseBlock implements IThemable {
 			tabSize: 2,
 			padding: '34px 16px 32px 32px',
 			minHeight: '1em',
+			whiteSpace: 'pre'
 			color: ThemedStyles.regularTextColor.light
 		};
 	}

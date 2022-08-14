@@ -102,6 +102,8 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 		this.validatedOptions = EditorOptionsUtil.validateOptions(this.rawOptions);
 		this.options = this.computeOptions();
 
+		this.containerObserver.startObserving();
+
 		this._register(this.containerObserver.onDidChange(() => this.recomputeOptions()));
 	}
 
@@ -112,6 +114,8 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 			// nothing changed!
 			return;
 		}
+
+		console.log('changeEvent:', newOptions);
 
 		this.options = newOptions;
 		this._onDidChangeFast.fire(changeEvent);

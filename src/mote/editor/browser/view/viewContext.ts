@@ -10,7 +10,7 @@ export class ViewContext {
 		public readonly configuration: IEditorConfiguration,
 		public readonly contentStore: RecordStore,
 		public readonly viewLayout: ViewLayout,
-		private readonly controller: ViewController
+		public readonly controller: ViewController
 	) {
 
 	}

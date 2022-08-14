@@ -124,8 +124,11 @@ export class ViewController extends Disposable {
 	public insert(text: string): void {
 		this.executeCursorEdit(eventsCollector => {
 			Transaction.createAndCommit((transaction) => {
+				const lineNumber = this.selection.lineNumber;
 				const titleStore = this.getTitleStore();
 				this._insert(eventsCollector, text, transaction, titleStore, this.selection, TextSelectionMode.Editing);
+				// emit the line change event
+				eventsCollector.emitViewEvent(new viewEvents.ViewLinesInsertedEvent(lineNumber, lineNumber));
 			}, this.contentStore.userId);
 		});
 	}

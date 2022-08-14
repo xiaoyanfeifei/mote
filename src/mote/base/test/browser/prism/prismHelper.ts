@@ -18,11 +18,7 @@ export namespace Prismhelper {
 			.map(innerSimple)
 			.filter((value: any) => !(typeof value === 'string' && isBlank(value)));
 
-		/**
-		 * @param {string | TokenStreamItem} value
-		 * @returns {string | [string, string | Array]}
-		 */
-		function innerSimple(value: any) {
+		function innerSimple(value: string | Prism.Token): string | [string, string | Prism.TokenStream] {
 			if (typeof value === 'object') {
 				if (Array.isArray(value.content)) {
 					return [value.type, simplify(value.content)];
@@ -36,7 +32,7 @@ export namespace Prismhelper {
 	}
 
 	function isBlank(str: string) {
-		return /^\s*$/.test(str);
+		return str.length === 0;
 	}
 
 }

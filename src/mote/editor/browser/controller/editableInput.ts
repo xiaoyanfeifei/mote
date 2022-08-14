@@ -182,6 +182,10 @@ export class EditableInput extends Disposable {
 				console.log(`[input]`, e);
 			}
 
+			if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') {
+				return;
+			}
+
 			const newState = EditableState.readFromEditable(this.editable);
 			const typeInput = EditableState.deduceInput(this.editableState, newState, /*couldBeEmojiInput*/this.OS === OperatingSystem.Macintosh);
 

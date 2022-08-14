@@ -81,7 +81,7 @@ export class EditorView extends ViewEventHandler {
 		this.scrollbar = new EditorScrollbar(this.context, this.linesContent, this.domNode, this.overflowGuardContainer);
 		this.viewParts.push(this.scrollbar);
 
-		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, viewController, this.linesContent);
+		this.viewLines = this.instantiationService.createInstance(ViewLines, this.context, this.linesContent);
 
 		// Overlay widgets
 		this.overlayWidgets = new ViewOverlayWidgets(this.context);
@@ -276,7 +276,10 @@ export class EditorView extends ViewEventHandler {
 		this.viewLines.getDomNode().domNode.style.paddingLeft = this.getSafePaddingLeftCSS(padding);
 		this.viewLines.getDomNode().domNode.style.paddingRight = this.getSafePaddingRightCSS(padding);
 
-		if (layoutInfo.width > 1200) {
+		if (layoutInfo.width > 1500) {
+			this.headerContainer.setWidth(1200);
+			this.viewLines.getDomNode().setWidth(1200);
+		} else if (layoutInfo.width > 1200) {
 			this.headerContainer.setWidth(900);
 			this.viewLines.getDomNode().setWidth(900);
 		} else {
