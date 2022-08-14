@@ -200,7 +200,7 @@ export class ImageBlock extends Themable implements IViewLineContribution {
 				widget.addTabs([uploadTab, embedLinkTab]);
 				return widget;
 			},
-			debug: true,
+			debug: false,
 		});
 	}
 
