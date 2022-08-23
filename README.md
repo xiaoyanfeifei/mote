@@ -24,6 +24,9 @@ There are many ways in which you can participate in this project, for example:
 * [Submit bugs and feature requests](https://github.com/zurex/mote/issues), and help us verify as they are checked in
 * Review [source code changes](https://github.com/zurex/mote/pulls)
 
+If you are interested in fixing issues and contributing directly to the code base, please see the document [How to Contribute](https://github.com/zurex/mote/wiki/How-to-Contribute), which covers the following:
+* [How to build and run from source](https://github.com/zurex/mote/wiki/How-to-Contribute#build-and-run)
+
 ## Feedback
 
 * [Request a new feature](CONTRIBUTING.md)
