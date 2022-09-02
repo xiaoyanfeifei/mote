@@ -62,14 +62,10 @@ class IntlShape {
 class IntlHolder {
 	public static INSTANCE: IntlHolder = new IntlHolder();
 
-	private intl: IntlShape;
+	private intl!: IntlShape;
 
 	constructor() {
-		this.intl = new IntlShape({
-			locale: LOCALE_ZH_CN,
-			defaultLocale: DEFAULT_LOCALE,
-			messages: loadTranslation(LOCALE_ZH_CN)
-		});
+		this.load(LOCALE_EN_US);
 	}
 
 	public load(locale: LOCALE) {

@@ -186,7 +186,7 @@ export class CodeBlock extends BaseBlock implements IThemable {
 			tabSize: 2,
 			padding: '34px 16px 32px 32px',
 			minHeight: '1em',
-			whiteSpace: 'pre'
+			whiteSpace: 'pre',
 			color: ThemedStyles.regularTextColor.light
 		};
 	}
