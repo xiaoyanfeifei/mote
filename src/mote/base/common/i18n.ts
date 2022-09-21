@@ -65,7 +65,7 @@ class IntlHolder {
 	private intl!: IntlShape;
 
 	constructor() {
-		this.load(LOCALE_EN_US);
+		this.load(navigator.language === 'zh-CN' ? LOCALE_ZH_CN : LOCALE_EN_US);
 	}
 
 	public load(locale: LOCALE) {
